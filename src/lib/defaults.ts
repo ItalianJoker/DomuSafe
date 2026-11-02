@@ -1,6 +1,7 @@
-import { DEFAULT_TIER } from '@/lib/licensing';
+import { resolveConfiguredTier } from '@/lib/licensing';
 import type {
   DomusRunbookDocument,
+  EncryptedVaultPayload,
   PetRecord,
   PublicHouseData,
   ResidentHealthRecord,
@@ -58,13 +59,39 @@ export function createEmptyPet(): PetRecord {
   };
 }
 
-/** Documento iniziale offline a tier BASIC (nessun mock di dati reali). */
+/**
+ * Payload vuoto della cassaforte patrimoniale (Livello 3).
+ * Mai persistito in chiaro: solo cifrato via `encryptVault` dopo conferma PIN.
+ */
+export function createEmptyVaultPayload(): EncryptedVaultPayload {
+  return {
+    bankAccounts: [],
+    lifeInsurances: [],
+    laborAndPension: {
+      socialSecurityInstitution: '',
+      supplementaryPensionFund: '',
+      tfrStorageLocation: 'IN_AZIENDA',
+      hrContact: '',
+    },
+    utilitiesLocations: {
+      lastBillsFolderLocation: '',
+      activeSubscriptionsToRevoke: [],
+    },
+    digitalLegacy: {
+      appleLegacyContactActive: false,
+      googleInactiveManagerActive: false,
+      passwordManagerKitLocation: '',
+    },
+  };
+}
+
+/** Documento iniziale offline; tier da env self-host (default BASIC). */
 export function createEmptyRunbook(): DomusRunbookDocument {
   return {
     version: '1.0.0',
     documentId: createId(),
     updatedAt: new Date().toISOString(),
-    tier: DEFAULT_TIER,
+    tier: resolveConfiguredTier(),
     level1_public: createEmptyPublicHouse(),
     level2_ice: {
       residents: [],

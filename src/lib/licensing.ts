@@ -41,6 +41,27 @@ export const MAX_RESIDENTS_BY_TIER: Record<LicenseTier, number> = {
 /** Tier predefinito per installazioni self-host senza chiave SaaS. */
 export const DEFAULT_TIER: LicenseTier = 'BASIC';
 
+const VALID_TIERS: ReadonlySet<string> = new Set([
+  'BASIC',
+  'ADVANCED',
+  'PREMIUM',
+]);
+
+/**
+ * Risolve il piano attivo da `NEXT_PUBLIC_DOMUSAFE_TIER` (self-host / test).
+ * Valori ammessi: BASIC | ADVANCED | PREMIUM. Qualsiasi altro valore → BASIC.
+ * Non richiede rete: sicuro da usare anche offline.
+ */
+export function resolveConfiguredTier(
+  envValue: string | undefined = process.env.NEXT_PUBLIC_DOMUSAFE_TIER
+): LicenseTier {
+  const normalized = envValue?.trim().toUpperCase();
+  if (normalized && VALID_TIERS.has(normalized)) {
+    return normalized as LicenseTier;
+  }
+  return DEFAULT_TIER;
+}
+
 /**
  * Verifica se l'operazione richiesta è permessa nel piano corrente.
  * Utilizzato sia nei componenti UI per nascondere/bloccare sezioni,
@@ -57,6 +78,16 @@ export function canAccessFeature(
   return Boolean(value);
 }
 
+/** Numero massimo di abitazioni ammesse dal piano attivo. */
+export function getMaxHouses(tier: LicenseTier): number {
+  return TIER_LIMITS[tier].maxHouses;
+}
+
+/** True se è ancora possibile aggiungere un'abitazione. */
+export function canAddHouse(tier: LicenseTier, currentCount: number): boolean {
+  return currentCount < getMaxHouses(tier);
+}
+
 /** Numero massimo di residenti ICE ammessi dal piano attivo. */
 export function getMaxResidents(tier: LicenseTier): number {
   return MAX_RESIDENTS_BY_TIER[tier];
@@ -71,11 +102,19 @@ export function canAddResident(
 }
 
 /**
+ * Watermark di stampa DomuSafe: solo BASIC (PRD).
+ * ADVANCED/PREMIUM stampano senza watermark (privacy flap resta).
+ */
+export function shouldShowPrintWatermark(tier: LicenseTier): boolean {
+  return tier === 'BASIC';
+}
+
+/**
  * Costruisce una LicenseConfig locale (self-host) senza firma SaaS.
  * La firma Ed25519 resta opzionale e riservata al percorso cloud.
  */
 export function createLocalLicense(
-  tier: LicenseTier = DEFAULT_TIER,
+  tier: LicenseTier = resolveConfiguredTier(),
   issuedTo = 'Self-Host'
 ): LicenseConfig {
   return {

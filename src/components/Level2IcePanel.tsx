@@ -2,7 +2,7 @@
 
 /**
  * Livello 2 — Triage ICE (In Case of Emergency) per soccorso 118/112.
- * Piano BASIC: massimo 2 residenti; animali domestici ammessi secondo lo schema tipi.
+ * Piano BASIC: massimo 2 residenti; ADVANCED/PREMIUM: illimitati + animali.
  */
 
 import { AlertTriangle, Cat, Plus, Trash2, UserRound } from 'lucide-react';
@@ -35,6 +35,9 @@ export function Level2IcePanel({
 }: Level2IcePanelProps) {
   const maxResidents = getMaxResidents(tier);
   const canAdd = canAddResident(tier, residents.length);
+  const maxLabel = Number.isFinite(maxResidents)
+    ? String(maxResidents)
+    : 'illimitati';
 
   return (
     <section aria-labelledby="level2-title" className="space-y-8">
@@ -51,9 +54,8 @@ export function Level2IcePanel({
         </p>
         <p className="mt-3 inline-flex items-start gap-2 rounded-md border-2 border-red-800 bg-red-50 px-3 py-2 text-sm font-semibold text-red-950">
           <AlertTriangle className="mt-0.5 size-5 shrink-0" aria-hidden />
-          Piano {tier}: massimo{' '}
-          {Number.isFinite(maxResidents) ? maxResidents : 'illimitati'}{' '}
-          residenti ({residents.length} inseriti).
+          Piano {tier}: massimo {maxLabel} residenti ({residents.length}{' '}
+          inseriti).
         </p>
       </header>
 
@@ -78,7 +80,9 @@ export function Level2IcePanel({
 
         {residents.length === 0 ? (
           <p className="rounded-lg border-2 border-dashed border-zinc-400 p-4 text-zinc-700">
-            Nessun residente. Aggiungi fino a {maxResidents} schede ICE.
+            {Number.isFinite(maxResidents)
+              ? `Nessun residente. Aggiungi fino a ${maxResidents} schede ICE.`
+              : 'Nessun residente. Puoi aggiungere schede ICE illimitate.'}
           </p>
         ) : (
           <ul className="space-y-6">
