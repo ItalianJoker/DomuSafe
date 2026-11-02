@@ -1,0 +1,60 @@
+/* Stampa A4 + linguetta privacy ICE (Livello 2) */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm 8mm 8mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #ffffff !important;
+    font-size: 10pt;
+    color: #000000;
+  }
+
+  /* Nasconde elementi di navigazione e bottoni durante la stampa */
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-page {
+    width: 194mm;
+    height: 281mm;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Linguetta riservata inferiore pieghevole */
+  .ice-privacy-flap {
+    border-top: 2px dashed #b91c1c;
+    margin-top: auto;
+    padding-top: 4mm;
+    position: relative;
+    background: #fffafa;
+  }
+
+  .ice-privacy-flap::before {
+    content: "✂ PIEGA O SIGILLA VERSO L'INTERNO PER PRIVACY - APRIRE SOLO PER SOCCORSO SANITARIO 118 / 112";
+    display: block;
+    font-size: 7.5pt;
+    font-weight: 800;
+    color: #b91c1c;
+    text-align: center;
+    margin-bottom: 2mm;
+    letter-spacing: 0.5px;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
