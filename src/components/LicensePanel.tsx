@@ -104,6 +104,10 @@ export function LicensePanel({
             Campi personalizzati:{' '}
             {features.allowCustomFields ? 'inclusi' : 'solo campi standard'}
           </li>
+          <li>
+            Registro scan / SOS / marchio host:{' '}
+            {features.auditLog ? 'inclusi' : 'non inclusi'}
+          </li>
         </ul>
 
         {trialOn ? (
@@ -176,7 +180,7 @@ export function LicensePanel({
               <td className="px-3 py-2">Tutto</td>
               <td className="px-3 py-2">Illimitati</td>
               <td className="px-3 py-2">
-                Sync · tasse · successione · custom fields
+                Sync · tasse · successione · custom · audit · SOS · white-label
               </td>
             </tr>
           </tbody>

@@ -8,8 +8,12 @@ import { mkdir, readFile, writeFile, rename, readdir, unlink } from 'node:fs/pro
 import path from 'node:path';
 import { createHash, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
 import type { AccountLicenseState, DomuFamily, FamilyInvite, FamilyMember } from '@/types/account';
+import type { AuditLogDocument, AuditLogEntry, FamilyBranding } from '@/types/premium';
 import { createInitialLicense } from '@/lib/trial';
 import { resolveConfiguredTier } from '@/lib/licensing';
+
+/** Cap audit log: evita crescita illimitata su disco. */
+const AUDIT_LOG_MAX_ENTRIES = 500;
 
 const PBKDF2_ITERATIONS = 100_000;
 const SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -139,6 +143,10 @@ function housesBlobFile(familyId: string): string {
 
 function successionBlobFile(familyId: string): string {
   return path.join(blobsDir(), `${familyId}.succession.json`);
+}
+
+function auditLogFile(familyId: string): string {
+  return path.join(blobsDir(), `${familyId}.audit.json`);
 }
 
 export async function findAccountByEmail(
@@ -305,6 +313,7 @@ export async function createFamilyOnServer(input: {
     ownerAccountId: input.ownerAccountId,
     members: [owner],
     invites: [],
+    scanToken: randomBytes(18).toString('base64url'),
     createdAt: now,
     updatedAt: now,
   };
@@ -430,6 +439,104 @@ export async function writeSuccessionBlob(
 ): Promise<void> {
   await ensureAppDataDirs();
   await writeJsonAtomic(successionBlobFile(familyId), blob);
+}
+
+/** Garantisce un scanToken sulla Famiglia (lazy per Famiglie create prima di Premium pack). */
+export async function ensureFamilyScanToken(
+  familyId: string
+): Promise<DomuFamily> {
+  const family = await getFamily(familyId);
+  if (!family) throw new Error('Famiglia non trovata');
+  if (family.scanToken) return family;
+  const next: DomuFamily = {
+    ...family,
+    scanToken: randomBytes(18).toString('base64url'),
+    updatedAt: new Date().toISOString(),
+  };
+  await saveFamily(next);
+  return next;
+}
+
+export async function findFamilyByScanToken(
+  token: string
+): Promise<DomuFamily | null> {
+  const normalized = token.trim();
+  if (!normalized) return null;
+  await ensureAppDataDirs();
+  const files = await readdir(familiesDir()).catch(() => [] as string[]);
+  for (const file of files) {
+    if (!file.endsWith('.json')) continue;
+    const family = await readJson<DomuFamily>(path.join(familiesDir(), file));
+    if (family?.scanToken === normalized) return family;
+  }
+  return null;
+}
+
+export async function updateFamilyBranding(
+  familyId: string,
+  branding: FamilyBranding | null
+): Promise<DomuFamily> {
+  const family = await getFamily(familyId);
+  if (!family) throw new Error('Famiglia non trovata');
+  const next: DomuFamily = {
+    ...family,
+    branding: branding ?? undefined,
+    updatedAt: new Date().toISOString(),
+  };
+  if (!branding) {
+    delete next.branding;
+  }
+  await saveFamily(next);
+  return next;
+}
+
+export async function readAuditLog(
+  familyId: string
+): Promise<AuditLogDocument> {
+  const existing = await readJson<AuditLogDocument>(auditLogFile(familyId));
+  if (existing?.version === '1.0.0') return existing;
+  return {
+    version: '1.0.0',
+    familyId,
+    entries: [],
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Appende una voce all’audit log Famiglia (cap FIFO).
+ * Metadati di accesso — non contiene ICE/vault in chiaro.
+ */
+export async function appendAuditEntry(
+  familyId: string,
+  entry: Omit<AuditLogEntry, 'id' | 'at'> & { id?: string; at?: string }
+): Promise<AuditLogDocument> {
+  await ensureAppDataDirs();
+  const current = await readAuditLog(familyId);
+  const full: AuditLogEntry = {
+    id: entry.id ?? createId(),
+    kind: entry.kind,
+    at: entry.at ?? new Date().toISOString(),
+    actorLabel: entry.actorLabel.slice(0, 120),
+    note: entry.note?.slice(0, 280),
+    houseName: entry.houseName?.slice(0, 120),
+    ipHash: entry.ipHash,
+  };
+  const entries = [full, ...current.entries].slice(0, AUDIT_LOG_MAX_ENTRIES);
+  const next: AuditLogDocument = {
+    version: '1.0.0',
+    familyId,
+    entries,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeJsonAtomic(auditLogFile(familyId), next);
+  return next;
+}
+
+/** Hash privacy-safe di un indirizzo (mai persistito in chiaro). */
+export function hashIpForAudit(ip: string | null | undefined): string | undefined {
+  if (!ip) return undefined;
+  return createHash('sha256').update(`domusafe-audit:${ip}`).digest('hex').slice(0, 16);
 }
 
 /** Helper smoke/test: svuota directory dati. */

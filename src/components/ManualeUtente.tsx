@@ -48,6 +48,22 @@ const SECTIONS = [
     body: 'Con Premium (o prova) colleghi un altro telefono o computer con un QR, in modo cifrato. Free e Basic salvano sull’account senza questa funzione tra dispositivi.',
   },
   {
+    title: 'Registro accessi (scan)',
+    body: 'Con Premium, nella sezione Premium trovi il registro di chi ha inquadrato il QR di monitoraggio per gli ospiti e quando. Puoi anche annotare accessi a mano. Non mostra dati sanitari né cassaforte.',
+  },
+  {
+    title: 'Avvisi SOS',
+    body: 'Premium può inviare SMS o WhatsApp ai contatti ICE. Sull’installazione l’host configura un provider semplice (registro locale, webhook o Twilio via variabili d’ambiente — senza SDK obbligatori). Usa «Prova» prima di un invio reale.',
+  },
+  {
+    title: 'Marchio host',
+    body: 'Premium permette un marchio personalizzato (nome struttura, colore, logo piccolo) su stampa e sulla pagina di conferma QR per gli ospiti.',
+  },
+  {
+    title: 'Kit eredità',
+    body: 'Nella Cassaforte, con Premium, puoi stampare o salvare come PDF il kit eredità: checklist successione della Famiglia in formato A4 da archiviare o consegnare al professionista di fiducia.',
+  },
+  {
     title: 'Piani e prova Premium',
     body: 'In Piano vedi Free, Basic, Advanced e Premium con i relativi limiti. Ogni account può avviare una prova Premium di 30 giorni una sola volta. Alla scadenza torni al piano base (di solito Free).',
   },

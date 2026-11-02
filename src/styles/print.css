@@ -53,8 +53,33 @@
   }
 }
 
+/* Kit eredità: stampa solo con body.print-inheritance-only (pulsante kit) */
+@media print {
+  .inheritance-kit {
+    display: none !important;
+  }
+
+  body.print-inheritance-only .inheritance-kit {
+    display: block !important;
+    page-break-before: auto;
+  }
+
+  body.print-inheritance-only .print-runbook {
+    display: none !important;
+  }
+
+  body.print-runbook-only .inheritance-kit {
+    display: none !important;
+  }
+}
+
 @media screen {
   .print-only {
     display: none;
+  }
+
+  /* Kit visibile in anteprima a schermo sotto la checklist */
+  .inheritance-kit {
+    display: block;
   }
 }
