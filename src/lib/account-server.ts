@@ -7,7 +7,13 @@
 import { mkdir, readFile, writeFile, rename, readdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
-import type { AccountLicenseState, DomuFamily, FamilyInvite, FamilyMember } from '@/types/account';
+import type {
+  AccountLicenseState,
+  DomuFamily,
+  FamilyInvite,
+  FamilyMember,
+  SealedKeyBlob,
+} from '@/types/account';
 import type { AuditLogDocument, AuditLogEntry, FamilyBranding } from '@/types/premium';
 import { createInitialLicense } from '@/lib/trial';
 import { resolveConfiguredTier } from '@/lib/licensing';
@@ -327,20 +333,40 @@ export async function createFamilyOnServer(input: {
 export async function createInviteOnServer(input: {
   familyId: string;
   createdByAccountId: string;
+  /** Seal client della family-key (obbligatorio per workspace condiviso). */
+  sealedFamilyKey: SealedKeyBlob;
+  /**
+   * Token scelto dal client (così può suggellare la family-key prima del POST).
+   * Deve essere opaco e abbastanza lungo (≥16 char).
+   */
+  clientToken: string;
 }): Promise<{ family: DomuFamily; invite: FamilyInvite; inviteCode: string }> {
   const family = await getFamily(input.familyId);
   if (!family) throw new Error('Famiglia non trovata');
   if (!family.members.some((m) => m.accountId === input.createdByAccountId)) {
     throw new Error('Solo i membri possono invitare');
   }
+  if (
+    !input.sealedFamilyKey?.ivBase64 ||
+    !input.sealedFamilyKey?.ciphertextBase64
+  ) {
+    throw new Error('Chiave Famiglia mancante sull’invito');
+  }
+  const token = input.clientToken.trim();
+  if (token.length < 16 || token.includes('.')) {
+    throw new Error('Token invito non valido');
+  }
   const now = Date.now();
-  const token = randomBytes(16).toString('base64url');
   const invite: FamilyInvite = {
     inviteId: createId(),
     token,
     createdAt: new Date(now).toISOString(),
     expiresAt: new Date(now + INVITE_TTL_MS).toISOString(),
     createdByAccountId: input.createdByAccountId,
+    sealedFamilyKey: {
+      ivBase64: input.sealedFamilyKey.ivBase64,
+      ciphertextBase64: input.sealedFamilyKey.ciphertextBase64,
+    },
   };
   const next: DomuFamily = {
     ...family,
@@ -353,6 +379,51 @@ export async function createInviteOnServer(input: {
     invite,
     inviteCode: `df1.${family.familyId}.${token}`,
   };
+}
+
+/**
+ * Registra/aggiorna il wrap della family-key per un membro.
+ * Il server non apre il blob — solo persistenza opaca.
+ */
+export async function putMemberKeyWrapOnServer(input: {
+  familyId: string;
+  accountId: string;
+  wrap: SealedKeyBlob;
+}): Promise<DomuFamily> {
+  const family = await getFamily(input.familyId);
+  if (!family) throw new Error('Famiglia non trovata');
+  if (!family.members.some((m) => m.accountId === input.accountId)) {
+    throw new Error('Non sei membro di questa Famiglia');
+  }
+  if (!input.wrap?.ivBase64 || !input.wrap?.ciphertextBase64) {
+    throw new Error('Wrap chiave non valido');
+  }
+  const next: DomuFamily = {
+    ...family,
+    memberKeyWraps: {
+      ...(family.memberKeyWraps ?? {}),
+      [input.accountId]: {
+        ivBase64: input.wrap.ivBase64,
+        ciphertextBase64: input.wrap.ciphertextBase64,
+      },
+    },
+    updatedAt: new Date().toISOString(),
+  };
+  await saveFamily(next);
+  return next;
+}
+
+/** Restituisce il seal family-key di un invito ancora valido (per il join client). */
+export function findOpenInviteSeal(
+  family: DomuFamily,
+  token: string
+): SealedKeyBlob | null {
+  const invite = family.invites.find(
+    (i) => i.token === token && !i.acceptedByAccountId
+  );
+  if (!invite?.sealedFamilyKey) return null;
+  if (Date.parse(invite.expiresAt) <= Date.now()) return null;
+  return invite.sealedFamilyKey;
 }
 
 export async function acceptInviteOnServer(input: {
