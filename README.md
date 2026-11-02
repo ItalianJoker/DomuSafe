@@ -58,10 +58,14 @@ Apri [http://localhost:3000](http://localhost:3000).
 Altri comandi:
 
 ```bash
-pnpm build   # build di produzione
-pnpm start   # avvia la build
-pnpm lint    # ESLint
+pnpm build     # build di produzione
+pnpm start     # avvia la build
+pnpm lint      # ESLint
+pnpm typecheck # TypeScript
+pnpm smoke     # smoke critici (licensing, IndexedDB, vault PIN, print CSS)
+pnpm verify    # lint + typecheck + smoke + build
 ```
+
 
 ## Stack
 
