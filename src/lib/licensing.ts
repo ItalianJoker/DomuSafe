@@ -1,4 +1,6 @@
+import type { AccountLicenseState } from '@/types/account';
 import type { LicenseConfig, LicenseTier } from '@/types/domus';
+import { effectiveTierFromLicense } from '@/lib/trial';
 
 /**
  * Limiti funzionali per piano. Il Feature Gate Engine legge solo questa mappa:
@@ -123,3 +125,21 @@ export function createLocalLicense(
     features: { ...TIER_LIMITS[tier] },
   };
 }
+
+/**
+ * Piano effettivo per Feature Gate: trial Premium attivo → PREMIUM,
+ * altrimenti `baseTier` (dopo scadenza torna BASIC o piano pagato precedente).
+ */
+export function resolveEffectiveTier(
+  license: AccountLicenseState,
+  nowMs?: number
+): LicenseTier {
+  return effectiveTierFromLicense(license, nowMs);
+}
+
+/** Etichette italiane brevi per UI licenze. */
+export const TIER_LABELS: Record<LicenseTier, string> = {
+  BASIC: 'Basic',
+  ADVANCED: 'Advanced',
+  PREMIUM: 'Premium',
+};

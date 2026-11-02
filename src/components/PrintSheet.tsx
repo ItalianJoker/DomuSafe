@@ -6,6 +6,7 @@
 import type { DomusRunbookDocument } from '@/types/domus';
 import { BLOOD_GROUP_LABELS, MOBILITY_LABELS } from '@/lib/labels';
 import { shouldShowPrintWatermark } from '@/lib/licensing';
+import { DomuSafeLogo } from '@/components/DomuSafeLogo';
 
 interface PrintSheetProps {
   document: DomusRunbookDocument;
@@ -19,15 +20,20 @@ export function PrintSheet({ document, qrSvg }: PrintSheetProps) {
   return (
     <article className="print-page print-only mx-auto max-w-[194mm] border border-zinc-300 bg-white p-4 text-black">
       <header className="mb-3 flex items-start justify-between gap-4 border-b-2 border-black pb-2">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest">DomuSafe</p>
-          <h1 className="text-xl font-black">
-            {house.houseName || 'Manuale casa'}
-          </h1>
-          <p className="text-xs">
-            Piano {document.tier} · Aggiornato{' '}
-            {new Date(document.updatedAt).toLocaleString('it-IT')}
-          </p>
+        <div className="flex items-start gap-2">
+          <DomuSafeLogo size={36} className="shrink-0" />
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest">
+              DomuSafe
+            </p>
+            <h1 className="text-xl font-black">
+              {house.houseName || 'Manuale casa'}
+            </h1>
+            <p className="text-xs">
+              Piano {document.tier} · Aggiornato{' '}
+              {new Date(document.updatedAt).toLocaleString('it-IT')}
+            </p>
+          </div>
         </div>
         {qrSvg ? (
           <div
@@ -78,9 +84,10 @@ export function PrintSheet({ document, qrSvg }: PrintSheetProps) {
           </p>
         ) : null}
         {shouldShowPrintWatermark(document.tier) ? (
-          <p className="mt-2 text-[9px] font-semibold text-zinc-600">
-            Stampato con DomuSafe · piano BASIC
-          </p>
+          <div className="mt-2 flex items-center gap-2 text-[9px] font-semibold text-zinc-600">
+            <DomuSafeLogo size={16} />
+            <span>Watermark DomuSafe · piano BASIC</span>
+          </div>
         ) : null}
       </section>
 

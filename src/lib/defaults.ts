@@ -1,4 +1,5 @@
 import { resolveConfiguredTier } from '@/lib/licensing';
+import { createEmptyResidentTaxBlock } from '@/lib/checklist-defaults';
 import type {
   DomusRunbookDocument,
   EncryptedVaultPayload,
@@ -43,6 +44,7 @@ export function createEmptyResident(): ResidentHealthRecord {
     mobilityStatus: 'FULLY_AUTONOMOUS',
     sleepingRoom: '',
     iceContacts: [],
+    taxChecklist: createEmptyResidentTaxBlock(),
   };
 }
 
