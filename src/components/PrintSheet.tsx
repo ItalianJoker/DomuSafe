@@ -5,6 +5,7 @@
 
 import type { DomusRunbookDocument } from '@/types/domus';
 import { BLOOD_GROUP_LABELS, MOBILITY_LABELS } from '@/lib/labels';
+import { shouldShowPrintWatermark } from '@/lib/licensing';
 
 interface PrintSheetProps {
   document: DomusRunbookDocument;
@@ -76,7 +77,7 @@ export function PrintSheet({ document, qrSvg }: PrintSheetProps) {
               .join(' · ')}
           </p>
         ) : null}
-        {document.tier === 'BASIC' ? (
+        {shouldShowPrintWatermark(document.tier) ? (
           <p className="mt-2 text-[9px] font-semibold text-zinc-600">
             Stampato con DomuSafe · piano BASIC
           </p>

@@ -1,8 +1,9 @@
 'use client';
 
 /**
- * Shell principale DomuSafe — MVP offline BASIC.
- * Persiste su IndexedDB; Livello 3 (cassaforte) resta gated dal Feature Gate.
+ * Shell principale DomuSafe — offline con Feature Gate per piano.
+ * BASIC: L1+L2 (max 2 ICE), 1 casa, watermark stampa.
+ * ADVANCED+: multi-casa, ICE illimitati, Livello 3 cassaforte E2EE.
  */
 
 import {
@@ -21,14 +22,24 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import type { DomusRunbookDocument } from '@/types/domus';
-import { canAccessFeature } from '@/lib/licensing';
-import { loadRunbook, saveRunbook } from '@/lib/storage';
+import {
+  addHouse,
+  getActiveHouse,
+  loadHouseCollection,
+  removeHouse,
+  saveRunbook,
+  switchActiveHouse,
+  type DomusHouseCollection,
+} from '@/lib/storage';
+import { FeatureGate } from '@/components/FeatureGate';
+import { HouseSwitcher } from '@/components/HouseSwitcher';
 import { Level1PublicPanel } from '@/components/Level1PublicPanel';
 import { Level2IcePanel } from '@/components/Level2IcePanel';
+import { Level3VaultPanel } from '@/components/Level3VaultPanel';
 import { PrintSheet } from '@/components/PrintSheet';
 import { QrPanel } from '@/components/QrPanel';
 
-type Tab = 'casa' | 'ice' | 'stampa';
+type Tab = 'casa' | 'ice' | 'cassaforte' | 'stampa';
 
 /** URL client-only senza hydration mismatch (snapshot server stabile). */
 function useClientUrl(): string {
@@ -40,7 +51,9 @@ function useClientUrl(): string {
 }
 
 export function DomuSafeApp() {
-  const [document, setDocument] = useState<DomusRunbookDocument | null>(null);
+  const [collection, setCollection] = useState<DomusHouseCollection | null>(
+    null
+  );
   const [tab, setTab] = useState<Tab>('casa');
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -49,9 +62,9 @@ export function DomuSafeApp() {
 
   useEffect(() => {
     let active = true;
-    loadRunbook()
-      .then((doc) => {
-        if (active) setDocument(doc);
+    loadHouseCollection()
+      .then((col) => {
+        if (active) setCollection(col);
       })
       .catch(() => {
         if (active) {
@@ -67,12 +80,36 @@ export function DomuSafeApp() {
     setQrSvg(svg);
   }, []);
 
+  const setDocument = (next: DomusRunbookDocument) => {
+    setCollection((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        activeDocumentId: next.documentId,
+        houses: prev.houses.map((h) =>
+          h.documentId === next.documentId ? next : h
+        ),
+      };
+    });
+  };
+
   const persist = async (next: DomusRunbookDocument) => {
     setSaving(true);
     setStatus(null);
     try {
       const saved = await saveRunbook(next);
-      setDocument(saved);
+      setCollection((prev) => {
+        if (!prev) return prev;
+        const houses = prev.houses.map((h) =>
+          h.documentId === saved.documentId ? saved : h
+        );
+        const has = houses.some((h) => h.documentId === saved.documentId);
+        return {
+          version: '1.0.0',
+          activeDocumentId: saved.documentId,
+          houses: has ? houses : [...houses, saved],
+        };
+      });
       setStatus('Salvato sul dispositivo.');
     } catch {
       setStatus('Salvataggio non riuscito. Riprova.');
@@ -81,7 +118,7 @@ export function DomuSafeApp() {
     }
   };
 
-  if (!document) {
+  if (!collection) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-100 text-zinc-950">
         <p className="inline-flex items-center gap-2 text-lg font-semibold">
@@ -92,7 +129,24 @@ export function DomuSafeApp() {
     );
   }
 
-  const vaultAllowed = canAccessFeature(document.tier, 'allowLevel3Vault');
+  const document = getActiveHouse(collection);
+  const vaultFallback = (
+    <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
+      <h3 className="text-lg font-bold">Livello 3 — Cassaforte</h3>
+      <p className="mt-2 text-zinc-700">
+        La cassaforte patrimoniale cifrata (AES-256-GCM) è disponibile dai
+        piani <strong>ADVANCED</strong> e <strong>PREMIUM</strong>. Il piano
+        attuale è <strong>{document.tier}</strong>.
+      </p>
+      <p className="mt-2 text-sm text-zinc-600">
+        Per test self-host imposta{' '}
+        <code className="rounded bg-zinc-200 px-1">
+          NEXT_PUBLIC_DOMUSAFE_TIER=ADVANCED
+        </code>{' '}
+        e riavvia l&apos;app.
+      </p>
+    </aside>
+  );
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f4f7f2_0%,#e8eef5_45%,#f7f3ea_100%)] text-zinc-950">
@@ -143,6 +197,12 @@ export function DomuSafeApp() {
             label="ICE"
           />
           <TabButton
+            active={tab === 'cassaforte'}
+            onClick={() => setTab('cassaforte')}
+            icon={<ShieldCheck className="size-5" aria-hidden />}
+            label="Cassaforte"
+          />
+          <TabButton
             active={tab === 'stampa'}
             onClick={() => setTab('stampa')}
             icon={<Printer className="size-5" aria-hidden />}
@@ -151,15 +211,49 @@ export function DomuSafeApp() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-5xl space-y-6 px-4 py-6">
         {status ? (
           <p
-            className="no-print mb-4 rounded-md border-2 border-emerald-800 bg-emerald-50 px-4 py-3 font-semibold text-emerald-950"
+            className="no-print rounded-md border-2 border-emerald-800 bg-emerald-50 px-4 py-3 font-semibold text-emerald-950"
             role="status"
           >
             {status}
           </p>
         ) : null}
+
+        <HouseSwitcher
+          tier={document.tier}
+          houses={collection.houses}
+          activeDocumentId={collection.activeDocumentId}
+          onSwitch={async (id) => {
+            const next = await switchActiveHouse(id);
+            if (next) {
+              setCollection(next);
+              setStatus(null);
+            }
+          }}
+          onAdd={async () => {
+            const next = await addHouse(document.tier);
+            if (next) {
+              setCollection(next);
+              setStatus('Nuova abitazione creata.');
+              setTab('casa');
+            } else {
+              setStatus(
+                `Limite abitazioni raggiunto per il piano ${document.tier}.`
+              );
+            }
+          }}
+          onRemove={async (id) => {
+            const next = await removeHouse(id);
+            if (next) {
+              setCollection(next);
+              setStatus('Abitazione rimossa.');
+            } else {
+              setStatus('Impossibile rimuovere: serve almeno una casa.');
+            }
+          }}
+        />
 
         {tab === 'casa' ? (
           <Level1PublicPanel
@@ -171,35 +265,41 @@ export function DomuSafeApp() {
         ) : null}
 
         {tab === 'ice' ? (
-          <div className="space-y-8">
-            <Level2IcePanel
-              tier={document.tier}
-              residents={document.level2_ice.residents}
-              pets={document.level2_ice.pets}
-              onResidentsChange={(residents) =>
-                setDocument({
-                  ...document,
-                  level2_ice: { ...document.level2_ice, residents },
-                })
-              }
-              onPetsChange={(pets) =>
-                setDocument({
-                  ...document,
-                  level2_ice: { ...document.level2_ice, pets },
-                })
-              }
+          <Level2IcePanel
+            tier={document.tier}
+            residents={document.level2_ice.residents}
+            pets={document.level2_ice.pets}
+            onResidentsChange={(residents) =>
+              setDocument({
+                ...document,
+                level2_ice: { ...document.level2_ice, residents },
+              })
+            }
+            onPetsChange={(pets) =>
+              setDocument({
+                ...document,
+                level2_ice: { ...document.level2_ice, pets },
+              })
+            }
+          />
+        ) : null}
+
+        {tab === 'cassaforte' ? (
+          <FeatureGate
+            tier={document.tier}
+            feature="allowLevel3Vault"
+            fallback={vaultFallback}
+          >
+            <Level3VaultPanel
+              key={`${document.documentId}:${document.level3_vault?.ciphertextBase64 ?? 'empty'}`}
+              vault={document.level3_vault}
+              onVaultChange={(level3_vault) => {
+                const next = { ...document, level3_vault };
+                setDocument(next);
+                void persist(next);
+              }}
             />
-            {!vaultAllowed ? (
-              <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
-                <h3 className="text-lg font-bold">Livello 3 — Cassaforte</h3>
-                <p className="mt-2 text-zinc-700">
-                  La cassaforte patrimoniale cifrata (AES-256-GCM) è disponibile
-                  dai piani ADVANCED e PREMIUM. Il motore crittografico è già
-                  incluso nell&apos;app per aggiornamenti futuri.
-                </p>
-              </aside>
-            ) : null}
-          </div>
+          </FeatureGate>
         ) : null}
 
         {tab === 'stampa' ? (
@@ -226,6 +326,9 @@ export function DomuSafeApp() {
             <p className="text-sm text-zinc-700">
               In stampa, i dati ICE restano sotto la linguetta da piegare o
               sigillare. Aprire solo per soccorso sanitario 118 / 112.
+              {document.tier === 'BASIC'
+                ? ' Piano BASIC: watermark DomuSafe sulla scheda.'
+                : ' Piano ADVANCED/PREMIUM: stampa senza watermark.'}
             </p>
           </div>
         ) : null}

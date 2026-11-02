@@ -1,6 +1,6 @@
 /**
- * Smoke critico DomuSafe MVP (Node 22 + fake-indexeddb).
- * Esegue: licensing BASIC, IndexedDB save/load, vault PIN errato IT, print CSS.
+ * Smoke critico DomuSafe (Node 22 + fake-indexeddb).
+ * Esegue: licensing BASIC/ADVANCED, multi-casa, IndexedDB, vault PIN IT, print CSS.
  */
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
@@ -10,8 +10,12 @@ import 'fake-indexeddb/auto';
 import {
   DEFAULT_TIER,
   canAccessFeature,
+  canAddHouse,
   canAddResident,
+  getMaxHouses,
   getMaxResidents,
+  resolveConfiguredTier,
+  shouldShowPrintWatermark,
 } from '../src/lib/licensing';
 import {
   VAULT_PIN_ERROR_MESSAGE,
@@ -19,7 +23,15 @@ import {
   encryptVault,
   isVaultPinError,
 } from '../src/lib/crypto-vault';
-import { clearRunbook, loadRunbook, saveRunbook } from '../src/lib/storage';
+import {
+  addHouse,
+  clearRunbook,
+  getActiveHouse,
+  loadHouseCollection,
+  loadRunbook,
+  removeHouse,
+  saveRunbook,
+} from '../src/lib/storage';
 import type { EncryptedVaultPayload } from '../src/types/domus';
 
 const results: Array<{ name: string; ok: boolean; detail?: string }> = [];
@@ -40,6 +52,11 @@ function record(name: string, fn: () => void | Promise<void>) {
 
 await record('licensing: default tier is BASIC', () => {
   assert.equal(DEFAULT_TIER, 'BASIC');
+  assert.equal(resolveConfiguredTier(undefined), 'BASIC');
+  assert.equal(resolveConfiguredTier(''), 'BASIC');
+  assert.equal(resolveConfiguredTier('nope'), 'BASIC');
+  assert.equal(resolveConfiguredTier('advanced'), 'ADVANCED');
+  assert.equal(resolveConfiguredTier('PREMIUM'), 'PREMIUM');
 });
 
 await record('licensing: BASIC max 2 residents + gate flags', () => {
@@ -50,6 +67,19 @@ await record('licensing: BASIC max 2 residents + gate flags', () => {
   assert.equal(canAccessFeature('BASIC', 'allowLevel3Vault'), false);
   assert.equal(canAccessFeature('BASIC', 'allowCloudSync'), false);
   assert.equal(canAccessFeature('ADVANCED', 'allowLevel3Vault'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowLevel3Vault'), true);
+});
+
+await record('licensing: ADVANCED houses ≤3 + unlimited ICE + no watermark', () => {
+  assert.equal(getMaxHouses('BASIC'), 1);
+  assert.equal(getMaxHouses('ADVANCED'), 3);
+  assert.equal(canAddHouse('ADVANCED', 2), true);
+  assert.equal(canAddHouse('ADVANCED', 3), false);
+  assert.equal(canAddResident('ADVANCED', 99), true);
+  assert.equal(Number.isFinite(getMaxResidents('ADVANCED')), false);
+  assert.equal(shouldShowPrintWatermark('BASIC'), true);
+  assert.equal(shouldShowPrintWatermark('ADVANCED'), false);
+  assert.equal(shouldShowPrintWatermark('PREMIUM'), false);
 });
 
 await record('storage: IndexedDB save/load round-trip', async () => {
@@ -65,6 +95,32 @@ await record('storage: IndexedDB save/load round-trip', async () => {
   assert.equal(reloaded.documentId, saved.documentId);
   assert.equal(reloaded.level1_public.houseName, 'Casa Smoke Test');
   assert.equal(reloaded.level1_public.wifi.ssid, 'DomuSafe-WiFi');
+  await clearRunbook();
+});
+
+await record('storage: multi-house ADVANCED limit + remove', async () => {
+  await clearRunbook();
+  let collection = await loadHouseCollection();
+  assert.equal(collection.houses.length, 1);
+
+  const second = await addHouse('ADVANCED');
+  assert.ok(second);
+  assert.equal(second!.houses.length, 2);
+
+  const third = await addHouse('ADVANCED');
+  assert.ok(third);
+  assert.equal(third!.houses.length, 3);
+
+  const blocked = await addHouse('ADVANCED');
+  assert.equal(blocked, null);
+
+  const basicBlocked = await addHouse('BASIC');
+  assert.equal(basicBlocked, null);
+
+  collection = (await removeHouse(third!.houses[2]!.documentId))!;
+  assert.equal(collection.houses.length, 2);
+  assert.ok(getActiveHouse(collection));
+
   await clearRunbook();
 });
 
@@ -122,6 +178,19 @@ await record('print CSS: A4 + ice-privacy-flap present', () => {
 
   const globals = readFileSync(resolve('src/app/globals.css'), 'utf8');
   assert.match(globals, /print\.css/);
+});
+
+await record('ui modules: FeatureGate + Level3VaultPanel present', () => {
+  assert.equal(existsSync(resolve('src/components/FeatureGate.tsx')), true);
+  assert.equal(existsSync(resolve('src/components/Level3VaultPanel.tsx')), true);
+  assert.equal(existsSync(resolve('src/components/HouseSwitcher.tsx')), true);
+  const vaultUi = readFileSync(
+    resolve('src/components/Level3VaultPanel.tsx'),
+    'utf8'
+  );
+  assert.match(vaultUi, /PIN errato|VAULT_PIN_ERROR_MESSAGE/);
+  assert.match(vaultUi, /encryptVault/);
+  assert.match(vaultUi, /decryptVault/);
 });
 
 const failed = results.filter((r) => !r.ok);
