@@ -25,10 +25,12 @@ import {
   ShieldAlert,
   ShieldCheck,
   BadgeCheck,
+  Sparkles,
   Users,
 } from 'lucide-react';
 import type { DomusRunbookDocument } from '@/types/domus';
 import type { SuccessionChecklist } from '@/types/checklists';
+import type { FamilyBranding } from '@/types/premium';
 import {
   addHouse,
   getActiveHouse,
@@ -61,6 +63,10 @@ import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { ManualeUtente } from '@/components/ManualeUtente';
 import { LicensePanel } from '@/components/LicensePanel';
 import { FamilyInvitePanel } from '@/components/FamilyInvitePanel';
+import { AuditLogPanel } from '@/components/AuditLogPanel';
+import { SosAlertsPanel } from '@/components/SosAlertsPanel';
+import { BrandingPanel } from '@/components/BrandingPanel';
+import { InheritanceKitPanel } from '@/components/InheritanceKitPanel';
 
 type Tab =
   | 'casa'
@@ -68,10 +74,10 @@ type Tab =
   | 'cassaforte'
   | 'sync'
   | 'stampa'
+  | 'premium'
   | 'famiglia'
   | 'licenze'
   | 'manuale';
-
 function useClientUrl(): string {
   return useSyncExternalStore(
     () => () => {},
@@ -126,8 +132,8 @@ function AuthenticatedApp() {
     completeTutorial,
     startTrial,
     createInvite,
+    refreshAccount,
   } = useSession();
-
   const storageCtx: StorageContext | null = useMemo(() => {
     if (!family || !dataKey) return null;
     return {
@@ -148,6 +154,14 @@ function AuthenticatedApp() {
   const [status, setStatus] = useState<string | null>(null);
   const [qrSvg, setQrSvg] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  /** Override locale dopo salvataggio branding; altrimenti da Famiglia. */
+  const [brandingOverride, setBrandingOverride] = useState<
+    FamilyBranding | null | undefined
+  >(undefined);
+  const branding =
+    brandingOverride !== undefined
+      ? brandingOverride
+      : (family?.branding ?? null);
   const qrPayload = useClientUrl();
 
   useEffect(() => {
@@ -283,6 +297,30 @@ function AuthenticatedApp() {
       </p>
     </aside>
   );
+
+  const premiumFallback = (
+    <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
+      <h3 className="text-lg font-bold">Pacchetto Premium</h3>
+      <p className="mt-2 text-zinc-700">
+        Registro accessi, SOS SMS/WhatsApp e marchio host richiedono{' '}
+        <strong>Premium</strong> (o prova). Piano attuale:{' '}
+        <strong>{effectiveTier}</strong>.
+      </p>
+      <p className="mt-2 text-sm text-zinc-600">
+        Apri <strong>Piano</strong> per avviare la prova di 30 giorni.
+      </p>
+    </aside>
+  );
+
+  const printRunbook = () => {
+    const body = window.document.body;
+    body.classList.add('print-runbook-only');
+    body.classList.remove('print-inheritance-only');
+    window.print();
+    window.setTimeout(() => {
+      body.classList.remove('print-runbook-only');
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#e8f2ec_0%,#eef3f0_40%,#f7f3ea_100%)] text-zinc-950">
@@ -456,18 +494,24 @@ function AuthenticatedApp() {
                 fallback={successionFallback}
               >
                 {succession ? (
-                  <SuccessionChecklistPanel
-                    tier={effectiveTier}
-                    checklist={succession}
-                    familyName={family.name}
-                    onChange={(next) => void persistSuccession(next)}
-                  />
+                  <>
+                    <SuccessionChecklistPanel
+                      tier={effectiveTier}
+                      checklist={succession}
+                      familyName={family.name}
+                      onChange={(next) => void persistSuccession(next)}
+                    />
+                    <InheritanceKitPanel
+                      checklist={succession}
+                      familyName={family.name}
+                      branding={branding}
+                    />
+                  </>
                 ) : null}
               </FeatureGate>
             </div>
           </FeatureGate>
         ) : null}
-
         {tab === 'sync' ? (
           <FeatureGate
             tier={effectiveTier}
@@ -497,7 +541,7 @@ function AuthenticatedApp() {
               <button
                 type="button"
                 className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-zinc-950 px-5 font-bold text-white hover:bg-zinc-800"
-                onClick={() => window.print()}
+                onClick={printRunbook}
               >
                 <Printer className="size-5" aria-hidden />
                 Stampa scheda A4
@@ -515,15 +559,52 @@ function AuthenticatedApp() {
               In stampa, i dati ICE restano sotto la linguetta da piegare.
               {effectiveTier === 'FREE' || effectiveTier === 'BASIC'
                 ? ' Piano Free/Basic: watermark DomuSafe.'
-                : ' Piano ADVANCED/PREMIUM: senza watermark.'}
+                : ' Piano Advanced/Premium: senza watermark.'}
+              {branding?.hostDisplayName
+                ? ` Marchio host: ${branding.hostDisplayName}.`
+                : ''}
             </p>
+          </div>
+        ) : null}
+
+        {tab === 'premium' ? (
+          <div className="no-print space-y-6">
+            <FeatureGate
+              tier={effectiveTier}
+              feature="auditLog"
+              fallback={premiumFallback}
+            >
+              <AuditLogPanel
+                familyId={family.familyId}
+                houseName={liveDoc.level1_public.houseName}
+                onStatus={setStatus}
+              />
+            </FeatureGate>
+            <FeatureGate tier={effectiveTier} feature="allowSmsAlerts">
+              <SosAlertsPanel
+                familyId={family.familyId}
+                houseName={liveDoc.level1_public.houseName}
+                residents={liveDoc.level2_ice.residents}
+                onStatus={setStatus}
+              />
+            </FeatureGate>
+            <FeatureGate tier={effectiveTier} feature="customBranding">
+              <BrandingPanel
+                familyId={family.familyId}
+                initial={branding}
+                onSaved={(next) => {
+                  setBrandingOverride(next);
+                  void refreshAccount();
+                }}
+                onStatus={setStatus}
+              />
+            </FeatureGate>
           </div>
         ) : null}
 
         {tab === 'famiglia' ? (
           <FamilyInvitePanel family={family} onCreateInvite={createInvite} />
         ) : null}
-
         {tab === 'licenze' ? (
           <LicensePanel
             account={account}
@@ -535,7 +616,7 @@ function AuthenticatedApp() {
 
         {tab === 'manuale' ? <ManualeUtente /> : null}
 
-        <PrintSheet document={liveDoc} qrSvg={qrSvg} />
+        <PrintSheet document={liveDoc} qrSvg={qrSvg} branding={branding} />
       </main>
 
       <footer className="no-print mb-[calc(4.75rem+var(--safe-bottom))] border-t-2 border-zinc-900 bg-white px-4 py-6 text-center text-sm text-zinc-600 md:mb-0">
@@ -565,6 +646,7 @@ const TAB_ITEMS: Array<{
   { id: 'cassaforte', label: 'Cassaforte', short: 'Cassa', icon: <ShieldCheck className="size-5" aria-hidden /> },
   { id: 'sync', label: 'Altri telefoni', short: 'Sync', icon: <Cloud className="size-5" aria-hidden /> },
   { id: 'stampa', label: 'Stampa / QR', short: 'Stampa', icon: <Printer className="size-5" aria-hidden /> },
+  { id: 'premium', label: 'Premium', short: 'Premium', icon: <Sparkles className="size-5" aria-hidden /> },
   { id: 'famiglia', label: 'Famiglia', short: 'Famiglia', icon: <Users className="size-5" aria-hidden /> },
   { id: 'licenze', label: 'Piano', short: 'Piano', icon: <BadgeCheck className="size-5" aria-hidden /> },
   { id: 'manuale', label: 'Guida', short: 'Guida', icon: <BookOpen className="size-5" aria-hidden /> },

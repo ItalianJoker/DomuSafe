@@ -1,7 +1,7 @@
 # DomuSafe
 
 ![License](https://img.shields.io/badge/license-BSL%201.1-blue)
-![Version](https://img.shields.io/badge/version-0.5.0-green)
+![Version](https://img.shields.io/badge/version-0.6.0-green)
 ![Devices](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 
 **Your home handbook and emergency hub — private, family-ready, works on phone, tablet, and computer.**
@@ -29,8 +29,9 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 | :--- | :--- |
 | **Casa** | Dove chiudere acqua, gas e luce; Wi‑Fi; rifiuti; artigiani |
 | **Emergenza (ICE)** | Schede per il 118 / 112: allergie, farmaci, contatti |
-| **Cassaforte** | Documenti riservati protetti da PIN (da Advanced in su) |
+| **Cassaforte** | Documenti riservati protetti da PIN (da Advanced in su) · kit eredità (Premium) |
 | **Stampa / QR** | Foglio A4 da appendere e codice da scansionare |
+| **Premium** | Registro scan, SOS SMS/WhatsApp, marchio host |
 | **Famiglia** | Inviti e QR per aggiungere i membri |
 | **Piano** | Free, Basic, Advanced, Premium e prova Premium 30 giorni |
 | **Altri telefoni** | Collegare un altro dispositivo in modo cifrato (Premium o prova) |
@@ -48,9 +49,16 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 | **Free** | Livelli 1 e 2 | 1 | Marchio DomuSafe in stampa · campi standard |
 | **Basic** | Livelli 1 e 2 | Illimitati | Marchio in stampa · campi standard |
 | **Advanced** | + Cassaforte (documenti di Famiglia) | Illimitati | Stampa senza marchio |
-| **Premium** | Tutto | Illimitati | Tasse IT, successione, sync tra dispositivi, **campi personalizzati** |
+| **Premium** | Tutto | Illimitati | Tasse IT, successione, sync, campi personalizzati, **registro accessi**, **SOS**, **white-label**, **kit eredità PDF** |
 
 Ogni account può attivare **una sola volta** la prova **Premium di 30 giorni**, dalla sezione **Piano**.
+
+## Funzioni Premium in breve
+
+- **Registro accessi** — QR di monitoraggio per ospiti; vedi chi ha scansionato e quando (senza esporre dati sanitari).
+- **SOS** — messaggio ai contatti ICE via SMS e/o WhatsApp (provider configurabile sull’installazione).
+- **Marchio host** — nome, colore e logo piccolo su stampa e pagina di conferma QR.
+- **Kit eredità** — stampa / «Salva come PDF» della checklist successione Famiglia.
 
 ## Su telefono, tablet e computer
 
@@ -62,6 +70,24 @@ Ogni account può attivare **una sola volta** la prova **Premium di 30 giorni**,
 
 DomuSafe protegge i contenuti sensibili **sul tuo dispositivo** prima del salvataggio.
 Sul server restano solo dati già protetti e le informazioni necessarie all’accesso. Non c’è una copia “in chiaro” nel browser come fonte ufficiale dei tuoi dati.
+
+Il registro accessi memorizza solo metadati (quando, etichetta dispositivo/hash), non schede ICE né cassaforte.
+
+## Avvisi SOS — variabili d’ambiente (host)
+
+Nessun SDK a pagamento obbligatorio. Scegli il provider:
+
+| Variabile | Valori / uso |
+| :--- | :--- |
+| `DOMUSAFE_SOS_PROVIDER` | `log` (predefinito, solo registro), `webhook`, `twilio` |
+| `DOMUSAFE_SOS_WEBHOOK_URL` | URL che riceve il JSON SOS (se provider = webhook) |
+| `DOMUSAFE_SOS_WEBHOOK_TOKEN` | Bearer opzionale per il webhook |
+| `DOMUSAFE_TWILIO_ACCOUNT_SID` | Account Twilio (se provider = twilio) |
+| `DOMUSAFE_TWILIO_AUTH_TOKEN` | Token Twilio |
+| `DOMUSAFE_TWILIO_FROM_NUMBER` | Numero mittente SMS (es. `+39…`) |
+| `DOMUSAFE_TWILIO_WHATSAPP_FROM` | Mittente WhatsApp (es. `whatsapp:+14155238886`) |
+
+Altre variabili già usate dall’app: `DOMUSAFE_DATA_DIR`, `DOMUSAFE_SYNC_DIR`, `NEXT_PUBLIC_DOMUSAFE_TIER` (self-host / test).
 
 ## Licenza — Business Source License 1.1 (BSL 1.1)
 

@@ -1,4 +1,5 @@
 import type { LicenseTier } from '@/types/domus';
+import type { FamilyBranding } from '@/types/premium';
 
 /** Ruolo membro nella Famiglia (workspace condiviso). */
 export type FamilyRole = 'OWNER' | 'MEMBER';
@@ -52,6 +53,7 @@ export interface FamilyInvite {
 
 /**
  * Famiglia = workspace. Runbook/successione su account→Famiglia (blob cifrati).
+ * `scanToken` / `branding`: metadati Premium (non cifrati — non contengono vault/ICE).
  */
 export interface DomuFamily {
   version: '1.0.0';
@@ -60,6 +62,10 @@ export interface DomuFamily {
   ownerAccountId: string;
   members: FamilyMember[];
   invites: FamilyInvite[];
+  /** Token pubblico per QR di monitoraggio scan (Premium audit log). */
+  scanToken?: string;
+  /** White-label host (Premium customBranding). */
+  branding?: FamilyBranding;
   createdAt: string;
   updatedAt: string;
 }

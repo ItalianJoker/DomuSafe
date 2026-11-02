@@ -1,9 +1,11 @@
 /**
  * Foglio A4 stampabile: Livello 1 in chiaro + Livello 2 sotto linguetta privacy.
  * Classe `.ice-privacy-flap` attiva il messaggio di piega solo in @media print.
+ * Premium customBranding: nome/logo host al posto del wordmark DomuSafe.
  */
 
 import type { DomusRunbookDocument } from '@/types/domus';
+import type { FamilyBranding } from '@/types/premium';
 import { BLOOD_GROUP_LABELS, MOBILITY_LABELS } from '@/lib/labels';
 import { shouldShowPrintWatermark } from '@/lib/licensing';
 import { DomuSafeLogo } from '@/components/DomuSafeLogo';
@@ -11,20 +13,38 @@ import { DomuSafeLogo } from '@/components/DomuSafeLogo';
 interface PrintSheetProps {
   document: DomusRunbookDocument;
   qrSvg?: string | null;
+  branding?: FamilyBranding | null;
 }
 
-export function PrintSheet({ document, qrSvg }: PrintSheetProps) {
+export function PrintSheet({ document, qrSvg, branding }: PrintSheetProps) {
   const house = document.level1_public;
   const ice = document.level2_ice;
+  const brandName = branding?.hostDisplayName?.trim() || 'DomuSafe';
 
   return (
-    <article className="print-page print-only mx-auto max-w-[194mm] border border-zinc-300 bg-white p-4 text-black">
+    <article className="print-page print-only print-runbook mx-auto max-w-[194mm] border border-zinc-300 bg-white p-4 text-black">
       <header className="mb-3 flex items-start justify-between gap-4 border-b-2 border-black pb-2">
         <div className="flex items-start gap-2">
-          <DomuSafeLogo size={36} className="shrink-0" />
+          {branding?.logoDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={branding.logoDataUrl}
+              alt=""
+              className="size-9 shrink-0 object-contain"
+            />
+          ) : (
+            <DomuSafeLogo size={36} className="shrink-0" />
+          )}
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest">
-              DomuSafe
+            <p
+              className="text-xs font-bold uppercase tracking-widest"
+              style={
+                branding?.accentColor
+                  ? { color: branding.accentColor }
+                  : undefined
+              }
+            >
+              {brandName}
             </p>
             <h1 className="text-xl font-black">
               {house.houseName || 'Manuale casa'}
@@ -33,6 +53,9 @@ export function PrintSheet({ document, qrSvg }: PrintSheetProps) {
               Piano {document.tier} · Aggiornato{' '}
               {new Date(document.updatedAt).toLocaleString('it-IT')}
             </p>
+            {branding?.tagline ? (
+              <p className="text-xs text-zinc-600">{branding.tagline}</p>
+            ) : null}
           </div>
         </div>
         {qrSvg ? (

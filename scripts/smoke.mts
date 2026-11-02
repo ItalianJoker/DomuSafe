@@ -1,7 +1,8 @@
 /**
  * Smoke critico DomuSafe (Node 22).
  * Account filesystem (no IndexedDB), licensing Free→Premium + trial,
- * vault, sync E2EE family-scoped, custom fields Premium, checklists.
+ * vault, sync E2EE family-scoped, custom fields Premium, checklists,
+ * Premium pack: audit log, SOS provider, branding, inheritance kit.
  */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
@@ -52,7 +53,18 @@ import {
   readHousesBlob,
   writeSuccessionBlob,
   readSuccessionBlob,
+  appendAuditEntry,
+  readAuditLog,
+  updateFamilyBranding,
+  ensureFamilyScanToken,
+  findFamilyByScanToken,
+  hashIpForAudit,
 } from '../src/lib/account-server';
+import {
+  dispatchSos,
+  resolveSosProviderId,
+} from '../src/lib/sos-provider';
+import { accountCanAccess } from '../src/lib/premium-gate';
 import {
   prepareRegistrationCrypto,
   encryptJsonAtRest,
@@ -110,11 +122,17 @@ await record('licensing: Free/Basic/Advanced/Premium gates', () => {
   assert.equal(canAccessFeature('ADVANCED', 'allowCustomFields'), false);
   assert.equal(canAccessFeature('ADVANCED', 'allowPersonalPatrimonio'), false);
   assert.equal(canAccessFeature('ADVANCED', 'allowResidentTax'), false);
+  assert.equal(canAccessFeature('ADVANCED', 'auditLog'), false);
+  assert.equal(canAccessFeature('ADVANCED', 'allowSmsAlerts'), false);
+  assert.equal(canAccessFeature('ADVANCED', 'customBranding'), false);
   assert.equal(canAccessFeature('PREMIUM', 'allowCloudSync'), true);
   assert.equal(canAccessFeature('PREMIUM', 'allowCustomFields'), true);
   assert.equal(canAccessFeature('PREMIUM', 'allowResidentTax'), true);
   assert.equal(canAccessFeature('PREMIUM', 'allowSuccessionChecklist'), true);
   assert.equal(canAccessFeature('PREMIUM', 'allowPersonalPatrimonio'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'auditLog'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowSmsAlerts'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'customBranding'), true);
   assert.equal(canAddHouse('ADVANCED', 3), false);
   assert.equal(canAddResident('FREE', 1), false);
   assert.equal(canAddResident('BASIC', 2), true);
@@ -125,8 +143,18 @@ await record('licensing: Free/Basic/Advanced/Premium gates', () => {
   assert.equal(shouldShowPrintWatermark('BASIC'), true);
   assert.equal(shouldShowPrintWatermark('ADVANCED'), false);
   assert.equal(shouldShowPrintWatermark('PREMIUM'), false);
+  assert.equal(
+    accountCanAccess(createInitialLicense('FREE'), 'auditLog'),
+    false
+  );
+  assert.equal(
+    accountCanAccess(
+      { baseTier: 'PREMIUM', trialUsed: false },
+      'customBranding'
+    ),
+    true
+  );
 });
-
 await record('trial: 30-day Premium once per account', () => {
   let license = createInitialLicense('FREE');
   assert.equal(effectiveTierFromLicense(license), 'FREE');
@@ -206,6 +234,9 @@ await record('account server: register/login/family/invite (filesystem)', async 
     displayName: member.displayName,
   });
   assert.equal(joined.members.length, 2);
+  assert.ok(family.scanToken);
+  const byToken = await findFamilyByScanToken(family.scanToken!);
+  assert.equal(byToken?.familyId, family.familyId);
 
   const dataKey = await unlockDataKeyFromAccount('password-ok-12', {
     dataKeySaltBase64: account.dataKeySaltBase64,
@@ -361,6 +392,10 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   assert.match(app, /allowLevel3Vault/);
   assert.match(app, /allowCloudSync/);
   assert.match(app, /allowCustomFields|allowSuccessionChecklist/);
+  assert.match(app, /auditLog/);
+  assert.match(app, /allowSmsAlerts/);
+  assert.match(app, /customBranding/);
+  assert.match(app, /InheritanceKitPanel/);
   assert.match(app, /md:hidden/);
   assert.match(app, /AppTabs/);
   assert.equal(
@@ -376,6 +411,8 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   assert.match(readme, /telefono/i);
   assert.match(readme, /BSL 1\.1|Business Source License/i);
   assert.match(readme, /Use Limitation|Non consentito/i);
+  assert.match(readme, /DOMUSAFE_SOS_PROVIDER/);
+  assert.match(readme, /registro accessi|Registro accessi/i);
   assert.equal(readme.toLowerCase().includes('docker run'), false);
   assert.equal(readme.toLowerCase().includes('pnpm'), false);
   const license = readFileSync(resolve('LICENSE.md'), 'utf8');
@@ -383,6 +420,87 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   assert.match(license, /Use Limitation/);
   assert.match(license, /36 months/);
   assert.equal(existsSync(resolve('LICENSE')), true);
+});
+
+await record('premium pack: audit + SOS provider + branding + kit assets', async () => {
+  await resetAppDataForTests();
+  assert.equal(resolveSosProviderId(undefined), 'log');
+  assert.equal(resolveSosProviderId('webhook'), 'webhook');
+  assert.equal(resolveSosProviderId('twilio'), 'twilio');
+
+  const sos = await dispatchSos({
+    familyId: 'fam-sos',
+    message: 'Prova SOS DomuSafe',
+    channels: ['sms', 'whatsapp'],
+    recipients: [
+      { name: 'Mario', phoneNumber: '+39 333 1112233', relationship: 'Figlio' },
+    ],
+    dryRun: true,
+  });
+  assert.equal(sos.provider, 'log');
+  assert.equal(sos.dryRun, true);
+  assert.ok(sos.details.length >= 2);
+
+  const cryptoMaterial = await prepareRegistrationCrypto('premium-pack-12');
+  const account = await registerAccount({
+    email: 'premium@example.it',
+    password: 'premium-pack-12',
+    displayName: 'Host',
+    dataKeySaltBase64: cryptoMaterial.dataKeySaltBase64,
+    wrappedDataKeyBase64: cryptoMaterial.wrappedDataKeyBase64,
+    wrappedDataKeyIvBase64: cryptoMaterial.wrappedDataKeyIvBase64,
+  });
+  const family = await createFamilyOnServer({
+    name: 'Famiglia Premium',
+    ownerAccountId: account.accountId,
+    ownerEmail: account.email,
+    ownerDisplayName: account.displayName,
+  });
+  assert.ok(family.scanToken);
+  const ensured = await ensureFamilyScanToken(family.familyId);
+  assert.equal(ensured.scanToken, family.scanToken);
+
+  const log1 = await appendAuditEntry(family.familyId, {
+    kind: 'SCAN',
+    actorLabel: 'Ospite · TestUA',
+    houseName: 'Casa Rosa',
+    ipHash: hashIpForAudit('203.0.113.10'),
+  });
+  assert.equal(log1.entries.length, 1);
+  assert.equal(log1.entries[0]?.kind, 'SCAN');
+  const log2 = await readAuditLog(family.familyId);
+  assert.equal(log2.entries[0]?.houseName, 'Casa Rosa');
+
+  const branded = await updateFamilyBranding(family.familyId, {
+    hostDisplayName: 'Casa Rosa Host',
+    accentColor: '#1a5c3a',
+    tagline: 'Benvenuti',
+  });
+  assert.equal(branded.branding?.hostDisplayName, 'Casa Rosa Host');
+  const cleared = await updateFamilyBranding(family.familyId, null);
+  assert.equal(cleared.branding, undefined);
+
+  assert.equal(existsSync(resolve('src/components/AuditLogPanel.tsx')), true);
+  assert.equal(existsSync(resolve('src/components/SosAlertsPanel.tsx')), true);
+  assert.equal(existsSync(resolve('src/components/BrandingPanel.tsx')), true);
+  assert.equal(
+    existsSync(resolve('src/components/InheritanceKitPanel.tsx')),
+    true
+  );
+  assert.equal(existsSync(resolve('src/lib/sos-provider.ts')), true);
+  assert.equal(existsSync(resolve('src/app/api/sos/route.ts')), true);
+  assert.equal(
+    existsSync(resolve('src/app/api/family/[familyId]/audit/route.ts')),
+    true
+  );
+  assert.equal(
+    existsSync(resolve('src/app/api/family/[familyId]/branding/route.ts')),
+    true
+  );
+  assert.equal(existsSync(resolve('src/app/s/[token]/page.tsx')), true);
+  const printCss = readFileSync(resolve('src/styles/print.css'), 'utf8');
+  assert.match(printCss, /inheritance-kit/);
+  assert.match(printCss, /print-inheritance-only/);
 });
 
 await record('sync: E2EE family-scoped envelope + QR pairing', async () => {
