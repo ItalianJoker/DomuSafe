@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Source_Sans_3, Source_Serif_4 } from 'next/font/google';
+import { PwaRegister } from '@/components/PwaRegister';
 import './globals.css';
 
 const sourceSans = Source_Sans_3({
@@ -15,12 +16,25 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: 'DomuSafe — Manuale casa & hub emergenza',
+  title: 'DomuSafe — Manuale casa e hub emergenza',
   description:
-    'Runbook domestico cifrato: Famiglia, utenze, schede ICE, cassaforte e stampa A4.',
+    'Manuale digitale della casa per la Famiglia: utenze, schede ICE, cassaforte e stampa A4. Dati protetti sull’account.',
   applicationName: 'DomuSafe',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'DomuSafe',
+  },
   icons: {
-    icon: '/domusafe-logo.svg',
+    icon: [
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/domusafe-logo.svg', type: 'image/svg+xml' },
+    ],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }],
+  },
+  formatDetection: {
+    telephone: false,
   },
 };
 
@@ -42,7 +56,10 @@ export default function RootLayout({
       lang="it"
       className={`${sourceSans.variable} ${sourceSerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }

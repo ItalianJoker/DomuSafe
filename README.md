@@ -1,19 +1,15 @@
 # DomuSafe
 
-![License](https://img.shields.io/badge/license-BSL%201.1-blue)
-![Version](https://img.shields.io/badge/version-0.6.0-green)
-![Devices](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
+![Licenza](https://img.shields.io/badge/licenza-BSL%201.1-blue)
+![Versione](https://img.shields.io/badge/versione-0.7.0-green)
+![Dispositivi](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
+![PWA](https://img.shields.io/badge/PWA-installabile-teal)
 
-**Your home handbook and emergency hub — private, family-ready, works on phone, tablet, and computer.**
+**DomuSafe** è il manuale digitale della casa e il punto di riferimento in caso di emergenza.
 
-## Che cos’è
+Lo usi dal telefono, dal tablet o dal computer: stessi contenuti, pulsanti ampi, linguaggio semplice. Ti registri, crei la **Famiglia**, invitì chi vive con te (anche con un QR), annoti dove chiudere acqua e gas, prepari le schede per il soccorso e — se vuoi — i documenti più riservati dietro un PIN.
 
-**DomuSafe** è il manuale digitale della casa e un punto di riferimento in caso di emergenza.
-
-Lo apri dal telefono, dal tablet o dal computer: stessi contenuti, pulsanti grandi, parole semplici.
-Ti registri, crei la tua **Famiglia**, invitì chi vive con te (anche inquadrando un QR), salvi dove chiudere acqua e gas, le schede per il soccorso e — se vuoi — i documenti più riservati dietro un PIN.
-
-I dati appartengono al tuo **account** (per **Famiglia** o per **Residente**) e vengono protetti sul dispositivo prima di essere salvati. Non dipendono dalla sola memoria del browser.
+I dati appartengono al tuo **account** (per **Famiglia** o per **Residente**) e vengono protetti sul dispositivo prima del salvataggio. Non dipendono dalla sola memoria del browser.
 
 ## Come iniziare
 
@@ -21,7 +17,7 @@ I dati appartengono al tuo **account** (per **Famiglia** o per **Residente**) e 
 2. **Crea la Famiglia**, oppure entra con l’invito / QR che ti hanno mandato.
 3. Compila **Casa** (utenze, Wi‑Fi) e **Emergenza** (schede sanitarie ICE).
 
-Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSafe** (Manuale Utente) dal menu.
+Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSafe** (Manuale Utente) dal menu. Su molti telefoni puoi anche aggiungere DomuSafe alla schermata Home come app.
 
 ## Cosa trovi nell’app
 
@@ -35,36 +31,43 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 | **Famiglia** | Inviti e QR per aggiungere i membri |
 | **Piano** | Free, Basic, Advanced, Premium e prova Premium 30 giorni |
 | **Altri telefoni** | Collegare un altro dispositivo in modo cifrato (Premium o prova) |
+| **Guida** | Manuale Utente / Guida DomuSafe |
 
 ### Tre livelli di protezione
 
 1. **Pubblico** — sicuro da lasciare agli ospiti  
-2. **ICE** — per il soccorso; in stampa resta sotto la linguetta pieghevole  
+2. **ICE** — per il soccorso; in stampa resta sotto la linguetta Privacy pieghevole  
 3. **Cassaforte** — protetta da PIN (PIN sbagliato → *«PIN errato o dati non validi»*)
 
-## Piani
+## I piani, spiegati con chiarezza
 
-| Piano | Cosa include | Residenti | In più |
-| :--- | :--- | :--- | :--- |
-| **Free** | Livelli 1 e 2 | 1 | Marchio DomuSafe in stampa · campi standard |
-| **Basic** | Livelli 1 e 2 | Illimitati | Marchio in stampa · campi standard |
-| **Advanced** | + Cassaforte (documenti di Famiglia) | Illimitati | Stampa senza marchio |
-| **Premium** | Tutto | Illimitati | Tasse IT, successione, sync, campi personalizzati, **registro accessi**, **SOS**, **white-label**, **kit eredità PDF** |
+Quattro piani. I nomi restano **Free**, **Basic**, **Advanced** e **Premium**.
 
-Ogni account può attivare **una sola volta** la prova **Premium di 30 giorni**, dalla sezione **Piano**.
+| Piano | In sintesi | Residenti | Cosa include | Cosa non include |
+| :--- | :--- | :--- | :--- | :--- |
+| **Free** | Per iniziare da soli | 1 | Casa + Emergenza; stampa/QR con **Watermark** DomuSafe; solo **campi standard** | Cassaforte, tasse, successione, sync, campi personalizzati |
+| **Basic** | Per più schede Emergenza in famiglia | Illimitati | Come Free, con residenti (e animali) senza limite numerico; Watermark; campi standard | Come Free: niente Cassaforte né funzioni Premium |
+| **Advanced** | Per i documenti riservati di Famiglia | Illimitati | Come Basic **più** Cassaforte (PIN) con documenti di **Famiglia**; stampa **senza Watermark** (resta la linguetta Privacy); fino a 3 abitazioni; campi standard | Documenti patrimoniali **personali**; checklist tasse/ISEE; successione Famiglia; sync tra dispositivi; campi personalizzati |
+| **Premium** | Tutto DomuSafe | Illimitati | Tasse IT sulle schede residenti; patrimonio personale; successione Famiglia; sync cifrato; campi personalizzati; registro accessi; SOS; marchio host; kit eredità; senza Watermark | — |
+
+Ogni account può attivare **una sola volta** la prova **Premium di 30 giorni**, dalla sezione **Piano**. Durante la prova usi tutte le funzioni Premium (compresi campi personalizzati e sync). Alla scadenza torni al piano base (di solito Free).
 
 ## Funzioni Premium in breve
 
 - **Registro accessi** — QR di monitoraggio per ospiti; vedi chi ha scansionato e quando (senza esporre dati sanitari).
-- **SOS** — messaggio ai contatti ICE via SMS e/o WhatsApp (provider configurabile sull’installazione).
+- **SOS** — messaggio ai contatti ICE via SMS e/o WhatsApp (il gestore dell’installazione sceglie il canale).
 - **Marchio host** — nome, colore e logo piccolo su stampa e pagina di conferma QR.
 - **Kit eredità** — stampa / «Salva come PDF» della checklist successione Famiglia.
+- **Tasse italiane** — checklist annuale (CU, 730, ISEE, IMU, TARI…) su ogni scheda residente.
+- **Campi personalizzati** — etichette libere oltre ai campi standard, nelle varie sezioni.
+- **Altri telefoni** — collega un altro dispositivo con un QR, in modo già protetto.
 
 ## Su telefono, tablet e computer
 
 - Interfaccia pensata per le dita: pulsanti ampi, testo leggibile, niente gergo.
 - Sul **telefono** il menu delle sezioni sta in basso; su **tablet** e **computer** in alto.
-- Con Premium (o durante la prova) puoi collegare un altro dispositivo da **Altri telefoni** con un QR: i contenuti partono già protetti.
+- Con Premium (o durante la prova) puoi collegare un altro dispositivo da **Altri telefoni**.
+- Come **PWA** puoi installare DomuSafe sulla Home: senza rete resta la shell; per l’account serve di nuovo la connessione.
 
 ## Privacy, in breve
 
@@ -72,22 +75,6 @@ DomuSafe protegge i contenuti sensibili **sul tuo dispositivo** prima del salvat
 Sul server restano solo dati già protetti e le informazioni necessarie all’accesso. Non c’è una copia “in chiaro” nel browser come fonte ufficiale dei tuoi dati.
 
 Il registro accessi memorizza solo metadati (quando, etichetta dispositivo/hash), non schede ICE né cassaforte.
-
-## Avvisi SOS — variabili d’ambiente (host)
-
-Nessun SDK a pagamento obbligatorio. Scegli il provider:
-
-| Variabile | Valori / uso |
-| :--- | :--- |
-| `DOMUSAFE_SOS_PROVIDER` | `log` (predefinito, solo registro), `webhook`, `twilio` |
-| `DOMUSAFE_SOS_WEBHOOK_URL` | URL che riceve il JSON SOS (se provider = webhook) |
-| `DOMUSAFE_SOS_WEBHOOK_TOKEN` | Bearer opzionale per il webhook |
-| `DOMUSAFE_TWILIO_ACCOUNT_SID` | Account Twilio (se provider = twilio) |
-| `DOMUSAFE_TWILIO_AUTH_TOKEN` | Token Twilio |
-| `DOMUSAFE_TWILIO_FROM_NUMBER` | Numero mittente SMS (es. `+39…`) |
-| `DOMUSAFE_TWILIO_WHATSAPP_FROM` | Mittente WhatsApp (es. `whatsapp:+14155238886`) |
-
-Altre variabili già usate dall’app: `DOMUSAFE_DATA_DIR`, `DOMUSAFE_SYNC_DIR`, `NEXT_PUBLIC_DOMUSAFE_TIER` (self-host / test).
 
 ## Licenza — Business Source License 1.1 (BSL 1.1)
 
@@ -99,6 +86,10 @@ DomuSafe è rilasciato sotto **BSL 1.1**. Dopo **36 mesi** da ogni versione pubb
 | **Non consentito** | Offrire DomuSafe ad altri come servizio cloud / SaaS a pagamento (riservato all’autore — *Use Limitation*) |
 
 Testo completo della licenza: [`LICENSE.md`](./LICENSE.md) (copia anche in [`LICENSE`](./LICENSE)).
+
+## Per chi gestisce l’installazione
+
+Se sei tu a mettere in funzione DomuSafe per la famiglia o in sede, le istruzioni operative (immagine Docker, variabili, pubblicazione su GHCR) sono in [`SELF-HOST.md`](./SELF-HOST.md). Questo README resta incentrato sull’uso del prodotto.
 
 ---
 

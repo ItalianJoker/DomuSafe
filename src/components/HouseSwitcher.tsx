@@ -95,10 +95,10 @@ export function HouseSwitcher({
         })}
       </ul>
 
-      {!canAdd && tier === 'BASIC' ? (
+      {!canAdd && (tier === 'FREE' || tier === 'BASIC') ? (
         <p className="mt-3 text-sm font-semibold text-zinc-700">
-          Piano BASIC: una sola abitazione. Passa ad ADVANCED (fino a 3) o
-          PREMIUM per multi-casa.
+          Con Free e Basic puoi gestire una sola abitazione. Advanced ne
+          consente fino a tre; Premium non ha questo limite.
         </p>
       ) : null}
     </section>

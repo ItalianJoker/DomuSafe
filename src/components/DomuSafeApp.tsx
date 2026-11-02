@@ -42,6 +42,7 @@ import {
   type DomusHouseCollection,
   type StorageContext,
 } from '@/lib/storage';
+import { TIER_LABELS } from '@/lib/licensing';
 import {
   loadSuccessionChecklist,
   saveSuccessionChecklist,
@@ -263,27 +264,29 @@ function AuthenticatedApp() {
 
   const vaultFallback = (
     <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
-      <h3 className="text-lg font-bold">Livello 3 — Cassaforte</h3>
+      <h3 className="text-lg font-bold">Cassaforte (Livello 3)</h3>
       <p className="mt-2 text-zinc-700">
-        La cassaforte (documenti Famiglia) è nel piano <strong>Advanced</strong>.
-        Patrimonio personale, successione, campi personalizzati e sync richiedono{' '}
-        <strong>Premium</strong> (o prova). Piano attuale:{' '}
-        <strong>{effectiveTier}</strong>.
+        Con <strong>Advanced</strong> proteggi i documenti di Famiglia dietro un
+        PIN. Con <strong>Premium</strong> (o durante la prova) aggiungi anche
+        patrimonio personale, successione e campi personalizzati. Piano attuale:{' '}
+        <strong>{TIER_LABELS[effectiveTier]}</strong>.
       </p>
       <p className="mt-2 text-sm text-zinc-600">
-        Apri <strong>Licenze</strong> per avviare la prova Premium di 30 giorni.
+        Apri <strong>Piano</strong> per confrontare i piani o avviare la prova
+        Premium di 30 giorni.
       </p>
     </aside>
   );
 
   const syncFallback = (
     <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
-      <h3 className="text-lg font-bold">Sync cloud</h3>
+      <h3 className="text-lg font-bold">Altri telefoni</h3>
       <p className="mt-2 text-zinc-700">
-        Sync E2EE family-scoped e QR multi-device: piano{' '}
-        <strong>Premium</strong> (o prova). Free/Basic restano solo
-        salvataggio account locale. Piano attuale:{' '}
-        <strong>{effectiveTier}</strong>.
+        Collegare un altro dispositivo in modo cifrato è incluso in{' '}
+        <strong>Premium</strong> (o nella prova). Con Free, Basic e Advanced i
+        dati restano salvati sull’account, senza questo passaggio tra
+        dispositivi. Piano attuale: <strong>{TIER_LABELS[effectiveTier]}</strong>
+        .
       </p>
     </aside>
   );
@@ -292,22 +295,23 @@ function AuthenticatedApp() {
     <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
       <h3 className="text-lg font-bold">Checklist successione</h3>
       <p className="mt-2 text-zinc-700">
-        Disponibile con <strong>Premium</strong> (o prova). Piano attuale:{' '}
-        <strong>{effectiveTier}</strong>.
+        Elenco attività per l’intera Famiglia (documenti, banche, polizze,
+        eredità digitale). Inclusa in <strong>Premium</strong> o durante la
+        prova. Piano attuale: <strong>{TIER_LABELS[effectiveTier]}</strong>.
       </p>
     </aside>
   );
 
   const premiumFallback = (
     <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
-      <h3 className="text-lg font-bold">Pacchetto Premium</h3>
+      <h3 className="text-lg font-bold">Funzioni Premium</h3>
       <p className="mt-2 text-zinc-700">
-        Registro accessi, SOS SMS/WhatsApp e marchio host richiedono{' '}
-        <strong>Premium</strong> (o prova). Piano attuale:{' '}
-        <strong>{effectiveTier}</strong>.
+        Registro accessi (scan), avvisi SOS e marchio host personalizzato
+        richiedono <strong>Premium</strong> (o la prova di 30 giorni). Piano
+        attuale: <strong>{TIER_LABELS[effectiveTier]}</strong>.
       </p>
       <p className="mt-2 text-sm text-zinc-600">
-        Apri <strong>Piano</strong> per avviare la prova di 30 giorni.
+        Apri <strong>Piano</strong> per i dettagli o per avviare la prova.
       </p>
     </aside>
   );
@@ -447,10 +451,13 @@ function AuthenticatedApp() {
 
         {tab === 'ice' ? (
           <div className="space-y-4">
-            <p className="no-print inline-flex items-center gap-2 text-sm font-semibold text-amber-950">
-              <Receipt className="size-4" aria-hidden />
-              Checklist tasse IT sulle schede residenti: piano Premium (o prova).
-            </p>
+            {effectiveTier !== 'PREMIUM' ? (
+              <p className="no-print inline-flex items-center gap-2 text-sm font-semibold text-amber-950">
+                <Receipt className="size-4" aria-hidden />
+                Checklist tasse italiane su ogni scheda residente: inclusa in
+                Premium (o durante la prova). Apri Piano per i dettagli.
+              </p>
+            ) : null}
             <Level2IcePanel
               tier={effectiveTier}
               residents={liveDoc.level2_ice.residents}

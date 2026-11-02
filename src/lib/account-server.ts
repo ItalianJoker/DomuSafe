@@ -54,8 +54,11 @@ interface SessionRecord {
 
 export function getAppDataDir(): string {
   const fromEnv = process.env.DOMUSAFE_DATA_DIR?.trim();
-  if (fromEnv) return path.resolve(fromEnv);
-  return path.resolve(process.cwd(), 'data', 'app');
+  if (fromEnv) {
+    // Path runtime (volumi Docker / test tmp): non tracciare l’intero progetto.
+    return path.resolve(/* turbopackIgnore: true */ fromEnv);
+  }
+  return path.join(process.cwd(), 'data', 'app');
 }
 
 function accountsDir(): string {
@@ -542,13 +545,19 @@ export function hashIpForAudit(ip: string | null | undefined): string | undefine
 /** Helper smoke/test: svuota directory dati. */
 export async function resetAppDataForTests(): Promise<void> {
   const dir = getAppDataDir();
-  await mkdir(dir, { recursive: true });
-  for (const sub of ['accounts', 'families', 'sessions', 'blobs']) {
-    const p = path.join(dir, sub);
-    await mkdir(p, { recursive: true });
-    const files = await readdir(p).catch(() => [] as string[]);
+  await mkdir(/* turbopackIgnore: true */ dir, { recursive: true });
+  for (const sub of ['accounts', 'families', 'sessions', 'blobs'] as const) {
+    const p = path.join(/* turbopackIgnore: true */ dir, sub);
+    await mkdir(/* turbopackIgnore: true */ p, { recursive: true });
+    const files = await readdir(/* turbopackIgnore: true */ p).catch(
+      () => [] as string[]
+    );
     await Promise.all(
-      files.map((f) => unlink(path.join(p, f)).catch(() => undefined))
+      files.map((f) =>
+        unlink(path.join(/* turbopackIgnore: true */ p, f)).catch(
+          () => undefined
+        )
+      )
     );
   }
 }

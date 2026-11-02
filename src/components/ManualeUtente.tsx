@@ -53,7 +53,7 @@ const SECTIONS = [
   },
   {
     title: 'Avvisi SOS',
-    body: 'Premium può inviare SMS o WhatsApp ai contatti ICE. Sull’installazione l’host configura un provider semplice (registro locale, webhook o Twilio via variabili d’ambiente — senza SDK obbligatori). Usa «Prova» prima di un invio reale.',
+    body: 'Premium può inviare SMS o WhatsApp ai contatti ICE. Chi gestisce l’installazione sceglie come far partire i messaggi. Usa «Prova» nell’app prima di un invio reale.',
   },
   {
     title: 'Marchio host',
@@ -64,8 +64,16 @@ const SECTIONS = [
     body: 'Nella Cassaforte, con Premium, puoi stampare o salvare come PDF il kit eredità: checklist successione della Famiglia in formato A4 da archiviare o consegnare al professionista di fiducia.',
   },
   {
-    title: 'Piani e prova Premium',
-    body: 'In Piano vedi Free, Basic, Advanced e Premium con i relativi limiti. Ogni account può avviare una prova Premium di 30 giorni una sola volta. Alla scadenza torni al piano base (di solito Free).',
+    title: 'Piani: Free, Basic, Advanced, Premium',
+    body: 'Free: Casa + Emergenza, una scheda residente, Watermark in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN) e stampa senza Watermark; niente tasse, patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse sulle schede residenti, patrimonio personale, successione Famiglia, sync, campi personalizzati, registro accessi, SOS, marchio host).',
+  },
+  {
+    title: 'Prova Premium',
+    body: 'Ogni account può avviare una prova Premium di 30 giorni una sola volta, dalla sezione Piano. Durante la prova usi tutte le funzioni Premium. Alla scadenza torni al piano base (di solito Free).',
+  },
+  {
+    title: 'Installare DomuSafe sul telefono',
+    body: 'Su molti telefoni puoi «aggiungere alla schermata Home» DomuSafe come app. Se sei senza rete vedi la shell offline; per entrare nell’account e nei dati Famiglia serve di nuovo la connessione.',
   },
 ] as const;
 

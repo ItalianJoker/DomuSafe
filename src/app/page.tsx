@@ -1,8 +1,8 @@
 import { DomuSafeApp } from '@/components/DomuSafeApp';
 
 /**
- * Entry App Router: shell client-side per IndexedDB + Web Crypto.
- * Nessun server store obbligatorio per il piano BASIC offline.
+ * Entry App Router: shell client DomuSafe (account → Famiglia → Web Crypto).
+ * Fonte di verità: account Residente/Famiglia, non IndexedDB/localStorage.
  */
 export default function HomePage() {
   return <DomuSafeApp />;
