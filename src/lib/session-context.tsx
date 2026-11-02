@@ -30,6 +30,7 @@ import {
   logoutAccount,
   markTutorialCompletedApi,
   registerAccount,
+  applySaasLicenseApi,
   startPremiumTrialApi,
   unlockWithPassword,
 } from '@/lib/auth-client';
@@ -73,6 +74,7 @@ interface SessionContextValue {
   createInvite: () => Promise<{ inviteCode: string } | null>;
   completeTutorial: () => Promise<void>;
   startTrial: () => Promise<void>;
+  applySaasLicense: (saasToken: string) => Promise<void>;
   refreshAccount: () => Promise<void>;
   peekInviteFromHash: () => string | null;
 }
@@ -289,6 +291,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [account]);
 
+  const applySaasLicense = useCallback(async (saasToken: string) => {
+    setError(null);
+    try {
+      const next = await applySaasLicenseApi(saasToken);
+      setAccount(next);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Chiave licenza non valida');
+      throw e;
+    }
+  }, []);
+
   const refreshAccount = useCallback(async () => {
     const sess = await fetchSession();
     if (sess) {
@@ -326,6 +339,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     createInvite,
     completeTutorial,
     startTrial,
+    applySaasLicense,
     refreshAccount,
     peekInviteFromHash,
   };

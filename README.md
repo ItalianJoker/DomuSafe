@@ -1,7 +1,7 @@
 # DomuSafe
 
 ![Licenza](https://img.shields.io/badge/licenza-BSL%201.1-blue)
-![Versione](https://img.shields.io/badge/versione-0.7.1-green)
+![Versione](https://img.shields.io/badge/versione-0.8.0-green)
 ![Dispositivi](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 ![PWA](https://img.shields.io/badge/PWA-installabile-teal)
 
@@ -60,7 +60,8 @@ Ogni account può attivare **una sola volta** la prova **Premium di 30 giorni**,
 - **Kit eredità** — stampa / «Salva come PDF» della checklist successione Famiglia.
 - **Tasse italiane** — checklist annuale (CU, 730, ISEE, IMU, TARI…) su ogni scheda residente.
 - **Campi personalizzati** — etichette libere oltre ai campi standard, nelle varie sezioni.
-- **Altri telefoni** — collega un altro dispositivo con un QR, in modo già protetto.
+- **Altri telefoni** — collega un altro dispositivo con un QR, in modo già protetto; tieni e ripristina le versioni precedenti.
+- **Chiave di licenza** — in Piano puoi attivare una chiave firmata (se te l’ha data chi gestisce il servizio).
 
 ## Su telefono, tablet e computer
 

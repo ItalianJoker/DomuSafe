@@ -319,3 +319,17 @@ export async function updateLicenseApi(): Promise<DomuAccount> {
 }
 
 export { parseInvitePayload };
+
+/** Applica chiave JWT/Ed25519 SaaS verificata sul server. */
+export async function applySaasLicenseApi(
+  saasToken: string
+): Promise<DomuAccount> {
+  const res = await fetch('/api/account/license', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'apply_saas', saasToken }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  const data = (await res.json()) as { account: DomuAccount };
+  return data.account;
+}

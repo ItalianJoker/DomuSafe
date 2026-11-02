@@ -25,9 +25,21 @@ export function isTrialActive(
   return ends > nowMs;
 }
 
+/** True se il JWT SaaS è presente e non scaduto. */
+export function isSaasLicenseActive(
+  license: AccountLicenseState,
+  nowMs: number = Date.now()
+): boolean {
+  if (!license.saasTier || !license.saasToken) return false;
+  if (!license.saasExpiresAt) return true;
+  const ends = Date.parse(license.saasExpiresAt);
+  if (Number.isNaN(ends)) return false;
+  return ends > nowMs;
+}
+
 /**
- * Piano effettivo: PREMIUM durante trial attivo, altrimenti `baseTier`.
- * Trial scaduto → non Premium (torna a baseTier, tipicamente FREE).
+ * Piano effettivo: trial → SaaS JWT valido → `baseTier`.
+ * Trial/SaaS scaduti non restano Premium: tornano al piano base.
  */
 export function effectiveTierFromLicense(
   license: AccountLicenseState,
@@ -35,6 +47,9 @@ export function effectiveTierFromLicense(
 ): LicenseTier {
   if (isTrialActive(license, nowMs)) {
     return 'PREMIUM';
+  }
+  if (isSaasLicenseActive(license, nowMs) && license.saasTier) {
+    return license.saasTier;
   }
   return license.baseTier;
 }

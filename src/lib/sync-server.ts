@@ -3,13 +3,22 @@
  * Persiste envelope JSON opachi su filesystem — zero plaintext, zero DB.
  *
  * Directory: `DOMUSAFE_SYNC_DIR` oppure `./data/sync` (montare volume in Docker).
+ * PREMIUM: ogni overwrite archivia la revisione precedente in `history/<syncId>/`.
  */
 
-import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rename, readdir, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import type { SyncEnvelope } from '@/lib/crypto-sync';
 
 const SYNC_ID_RE = /^[a-f0-9]{64}$/u;
+
+/** Quante revisioni storiche tenere per syncId (Premium backup storico). */
+export const SYNC_HISTORY_MAX = 20;
+
+export interface SyncHistoryEntry {
+  revision: number;
+  updatedAt: string;
+}
 
 export function getSyncDataDir(): string {
   const fromEnv = process.env.DOMUSAFE_SYNC_DIR?.trim();
@@ -25,6 +34,14 @@ export function isValidSyncId(syncId: string): boolean {
 
 function envelopePath(syncId: string): string {
   return path.join(getSyncDataDir(), `${syncId}.json`);
+}
+
+function historyDir(syncId: string): string {
+  return path.join(getSyncDataDir(), 'history', syncId);
+}
+
+function historyRevisionPath(syncId: string, revision: number): string {
+  return path.join(historyDir(syncId), `${revision}.json`);
 }
 
 export async function ensureSyncDir(): Promise<void> {
@@ -57,8 +74,113 @@ export async function readEnvelope(
 }
 
 /**
- * Scrive envelope cifrato. Rifiuta se `!force` e revisione server > client
- * (hook versioning economico; history completa = step PREMIUM).
+ * Archivia l'envelope corrente prima di un overwrite (versioning storico Premium).
+ * Cap a SYNC_HISTORY_MAX revisioni per stanza.
+ */
+async function archiveEnvelopeRevision(
+  syncId: string,
+  envelope: SyncEnvelope
+): Promise<void> {
+  if (
+    typeof envelope.revision !== 'number' ||
+    !Number.isFinite(envelope.revision)
+  ) {
+    return;
+  }
+  const dir = historyDir(syncId);
+  await mkdir(dir, { recursive: true });
+  const target = historyRevisionPath(syncId, envelope.revision);
+  const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
+  await writeFile(tmp, JSON.stringify(envelope, null, 0), 'utf8');
+  await rename(tmp, target);
+
+  const files = await readdir(dir);
+  const revisions = files
+    .map((name) => {
+      const m = /^(\d+)\.json$/u.exec(name);
+      return m ? Number(m[1]) : NaN;
+    })
+    .filter((n) => Number.isFinite(n))
+    .sort((a, b) => b - a);
+
+  for (const oldRev of revisions.slice(SYNC_HISTORY_MAX)) {
+    await unlink(historyRevisionPath(syncId, oldRev)).catch(() => undefined);
+  }
+}
+
+/**
+ * Elenco revisioni storiche (più recenti prima). Solo metadati — ciphertext
+ * resta nel file per-revision scaricabile a parte.
+ */
+export async function listEnvelopeHistory(
+  syncId: string
+): Promise<SyncHistoryEntry[]> {
+  if (!isValidSyncId(syncId)) {
+    return [];
+  }
+  const dir = historyDir(syncId);
+  let files: string[] = [];
+  try {
+    files = await readdir(dir);
+  } catch (error) {
+    const code =
+      error && typeof error === 'object' && 'code' in error
+        ? (error as { code?: string }).code
+        : undefined;
+    if (code === 'ENOENT') return [];
+    throw error;
+  }
+
+  const entries: SyncHistoryEntry[] = [];
+  for (const name of files) {
+    const m = /^(\d+)\.json$/u.exec(name);
+    if (!m) continue;
+    const revision = Number(m[1]);
+    try {
+      const raw = await readFile(path.join(dir, name), 'utf8');
+      const parsed = JSON.parse(raw) as SyncEnvelope;
+      if (parsed?.format !== 'domusync-1') continue;
+      entries.push({
+        revision,
+        updatedAt:
+          typeof parsed.updatedAt === 'string'
+            ? parsed.updatedAt
+            : new Date(0).toISOString(),
+      });
+    } catch {
+      // skip corrupt history files
+    }
+  }
+  entries.sort((a, b) => b.revision - a.revision);
+  return entries;
+}
+
+/** Legge una revisione storica archiviata (non la current). */
+export async function readEnvelopeRevision(
+  syncId: string,
+  revision: number
+): Promise<SyncEnvelope | null> {
+  if (!isValidSyncId(syncId) || !Number.isFinite(revision) || revision < 1) {
+    return null;
+  }
+  try {
+    const raw = await readFile(historyRevisionPath(syncId, revision), 'utf8');
+    const parsed = JSON.parse(raw) as SyncEnvelope;
+    if (parsed?.format !== 'domusync-1') return null;
+    return parsed;
+  } catch (error) {
+    const code =
+      error && typeof error === 'object' && 'code' in error
+        ? (error as { code?: string }).code
+        : undefined;
+    if (code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+/**
+ * Scrive envelope cifrato. Rifiuta se `!force` e revisione server > client.
+ * Prima di sovrascrivere, archivia la revisione corrente (backup storico Premium).
  */
 export async function writeEnvelope(
   syncId: string,
@@ -83,6 +205,10 @@ export async function writeEnvelope(
   const current = await readEnvelope(syncId);
   if (current && !force && current.revision > envelope.revision) {
     return { ok: false, status: 409, current };
+  }
+
+  if (current && current.revision !== envelope.revision) {
+    await archiveEnvelopeRevision(syncId, current);
   }
 
   const target = envelopePath(syncId);

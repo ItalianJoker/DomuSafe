@@ -11,38 +11,9 @@ import {
   writeEnvelope,
 } from '@/lib/sync-server';
 import type { SyncEnvelope } from '@/lib/crypto-sync';
-import {
-  assertFamilyMember,
-  getAccountById,
-  getSession,
-} from '@/lib/account-server';
-import { readSessionToken } from '@/lib/session-cookie';
-import { canAccessFeature, resolveEffectiveTier } from '@/lib/licensing';
+import { errorStatus, requireCloudSyncMember } from '@/lib/sync-auth';
 
 type RouteContext = { params: Promise<{ syncId: string }> };
-
-async function requireCloudSyncMember(familyId: string) {
-  const token = await readSessionToken();
-  const session = await getSession(token);
-  if (!session) {
-    throw Object.assign(new Error('Non autenticato'), { status: 401 });
-  }
-  const account = await getAccountById(session.accountId);
-  if (!account) {
-    throw Object.assign(new Error('Non autenticato'), { status: 401 });
-  }
-  await assertFamilyMember(familyId, account.accountId);
-  const tier = resolveEffectiveTier(account.license);
-  if (!canAccessFeature(tier, 'allowCloudSync')) {
-    throw Object.assign(
-      new Error(
-        'Sync cloud riservata al piano Premium (o prova Premium attiva)'
-      ),
-      { status: 403 }
-    );
-  }
-  return account;
-}
 
 export async function GET(
   _request: Request,
@@ -65,12 +36,8 @@ export async function GET(
     }
     await requireCloudSyncMember(envelope.familyId);
   } catch (error) {
-    const status =
-      error && typeof error === 'object' && 'status' in error
-        ? Number((error as { status: number }).status)
-        : 401;
     const message = error instanceof Error ? error.message : 'Accesso negato';
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: message }, { status: errorStatus(error) });
   }
   return NextResponse.json(envelope);
 }
@@ -111,12 +78,8 @@ export async function PUT(
   try {
     await requireCloudSyncMember(envelope.familyId);
   } catch (error) {
-    const status =
-      error && typeof error === 'object' && 'status' in error
-        ? Number((error as { status: number }).status)
-        : 401;
     const message = error instanceof Error ? error.message : 'Accesso negato';
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: message }, { status: errorStatus(error) });
   }
 
   // Difesa in profondità: rifiuta payload che sembrano plaintext JSON di runbook.

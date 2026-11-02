@@ -1,9 +1,8 @@
 /**
  * Smoke critico DomuSafe (Node 22).
  * Account filesystem (no IndexedDB), licensing Free→Premium + trial,
- * vault, sync E2EE family-scoped, custom fields Premium, checklists,
- * Premium pack: audit log, SOS provider, branding, inheritance kit,
- * PWA shell, Docker/self-host docs, copy piani IT.
+ * SaaS JWT/Ed25519, vault, sync E2EE + history Premium, custom fields,
+ * checklists, Premium pack, PWA shell, Docker/self-host docs, copy piani IT.
  */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
@@ -41,7 +40,20 @@ import {
   envelopeLooksEncrypted,
   writeEnvelope,
   readEnvelope,
+  listEnvelopeHistory,
+  readEnvelopeRevision,
 } from '../src/lib/sync-server';
+import {
+  applySaasLicenseToken,
+  generateLicenseKeyPair,
+  loadLicensePrivateKey,
+  loadLicensePublicKey,
+  signLicenseToken,
+  verifyLicenseToken,
+  LICENSE_TOKEN_EXPIRED_MESSAGE,
+  LICENSE_TOKEN_INVALID_MESSAGE,
+} from '../src/lib/license-jwt';
+import { createPrivateKey, createPublicKey } from 'node:crypto';
 import {
   authenticateAccount,
   createFamilyOnServer,
@@ -83,6 +95,7 @@ import {
   createInitialLicense,
   startPremiumTrial,
   isTrialActive,
+  isSaasLicenseActive,
   effectiveTierFromLicense,
   PREMIUM_TRIAL_MS,
   TRIAL_ALREADY_USED_MESSAGE,
@@ -357,12 +370,14 @@ await record('account server: register/login/family/invite (filesystem)', async 
   assert.match(sealedInvite, new RegExp(`^df1\\.${family.familyId}\\.`));
 });
 
-await record('license API: only start_premium_trial (anti-spoof)', () => {
+await record('license API: start_premium_trial + apply_saas (anti-spoof)', () => {
   const route = readFileSync(
     resolve('src/app/api/account/license/route.ts'),
     'utf8'
   );
   assert.match(route, /start_premium_trial/);
+  assert.match(route, /apply_saas/);
+  assert.match(route, /applySaasLicenseToken/);
   assert.match(route, /startPremiumTrial\(account\.license\)/);
   assert.equal(route.includes('body.license'), false);
   assert.match(route, /Azione licenza non consentita/);
@@ -541,7 +556,97 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   );
   assert.match(manuale, /Piani: Free, Basic, Advanced, Premium/);
   assert.match(manuale, /Prova Premium/);
+  assert.match(manuale, /Chiave di licenza/);
+  assert.match(manuale, /versioni precedenti|backup storico/i);
   assert.match(manuale, /Installare DomuSafe sul telefono/);
+  assert.match(selfHost, /DOMUSAFE_LICENSE_PUBLIC_KEY/);
+  assert.equal(existsSync(resolve('src/lib/license-jwt.ts')), true);
+  assert.equal(
+    existsSync(resolve('src/app/api/sync/[syncId]/history/route.ts')),
+    true
+  );
+});
+
+await record('saas license: JWT Ed25519 sign/verify + expiry + email bind', () => {
+  const { publicKeyPem, privateKeyPem } = generateLicenseKeyPair();
+  const pub = createPublicKey(publicKeyPem);
+  const priv = createPrivateKey(privateKeyPem);
+  assert.ok(loadLicensePublicKey(publicKeyPem));
+  assert.ok(loadLicensePrivateKey(privateKeyPem));
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  const token = signLicenseToken(
+    {
+      tier: 'PREMIUM',
+      issuedTo: 'Famiglia Demo',
+      iat: nowSec,
+      exp: nowSec + 3600,
+      sub: 'owner@example.it',
+    },
+    priv
+  );
+  assert.match(token, /^eyJ/);
+  const claims = verifyLicenseToken(token, pub, nowSec);
+  assert.equal(claims.tier, 'PREMIUM');
+  assert.equal(claims.issuedTo, 'Famiglia Demo');
+
+  const applied = applySaasLicenseToken({
+    token,
+    accountEmail: 'owner@example.it',
+    publicKey: pub,
+  });
+  assert.equal(applied.claims.tier, 'PREMIUM');
+
+  let emailFail: unknown;
+  try {
+    applySaasLicenseToken({
+      token,
+      accountEmail: 'altro@example.it',
+      publicKey: pub,
+    });
+  } catch (e) {
+    emailFail = e;
+  }
+  assert.ok(emailFail instanceof Error);
+
+  const expired = signLicenseToken(
+    {
+      tier: 'ADVANCED',
+      issuedTo: 'Scaduta',
+      iat: nowSec - 100,
+      exp: nowSec - 10,
+    },
+    priv
+  );
+  let expFail: unknown;
+  try {
+    verifyLicenseToken(expired, pub, nowSec);
+  } catch (e) {
+    expFail = e;
+  }
+  assert.equal((expFail as Error).message, LICENSE_TOKEN_EXPIRED_MESSAGE);
+
+  let badSig: unknown;
+  try {
+    verifyLicenseToken(token.slice(0, -4) + 'aaaa', pub, nowSec);
+  } catch (e) {
+    badSig = e;
+  }
+  assert.equal((badSig as Error).message, LICENSE_TOKEN_INVALID_MESSAGE);
+
+  const license = {
+    ...createInitialLicense('FREE'),
+    saasTier: 'PREMIUM' as const,
+    saasToken: token,
+    saasIssuedTo: 'Famiglia Demo',
+    saasExpiresAt: new Date((nowSec + 3600) * 1000).toISOString(),
+  };
+  assert.equal(isSaasLicenseActive(license, nowSec * 1000), true);
+  assert.equal(effectiveTierFromLicense(license, nowSec * 1000), 'PREMIUM');
+  assert.equal(
+    effectiveTierFromLicense(license, (nowSec + 7200) * 1000),
+    'FREE'
+  );
 });
 
 await record('tier copy: Free→Premium IT clarity', () => {
@@ -567,6 +672,7 @@ await record('tier copy: Free→Premium IT clarity', () => {
   );
   assert.match(panel, /TIER_COPY/);
   assert.match(panel, /Confronta i piani/);
+  assert.match(panel, /Chiave di licenza|saas-license|Attiva chiave/i);
 });
 
 await record('pwa: manifest + icons + offline shell + register', () => {
@@ -760,6 +866,28 @@ await record('sync: E2EE family-scoped envelope + QR pairing', async () => {
     buildPairingUrl('http://localhost:3000', syncId, keyBytes),
     /#ds1\./
   );
+
+  // Premium historical versioning: overwrite archives prior revision.
+  const rev2 = await encryptHouseCollection(collection, {
+    revision: 2,
+    familyId,
+    keyBytes: usedKey,
+  });
+  const written2 = await writeEnvelope(syncId, rev2.envelope);
+  assert.equal(written2.ok, true);
+  const hist = await listEnvelopeHistory(syncId);
+  assert.ok(hist.some((h) => h.revision === 1));
+  const archived = await readEnvelopeRevision(syncId, 1);
+  assert.ok(archived);
+  assert.equal(archived!.revision, 1);
+  const restored = await decryptHouseCollection(archived!, {
+    keyBytes: usedKey,
+  });
+  assert.equal(
+    restored.houses[0]?.level1_public.houseName,
+    'Villa Segreta Sync'
+  );
+
   rmSync(tmp, { recursive: true, force: true });
   delete process.env.DOMUSAFE_SYNC_DIR;
 });

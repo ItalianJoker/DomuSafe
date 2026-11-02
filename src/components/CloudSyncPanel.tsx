@@ -10,11 +10,13 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   CloudUpload,
   Download,
+  History,
   KeyRound,
   Link2,
   Loader2,
   QrCode,
   RefreshCw,
+  RotateCcw,
   Unplug,
 } from 'lucide-react';
 import type { DomusHouseCollection } from '@/lib/storage';
@@ -39,6 +41,8 @@ import {
 } from '@/lib/sync-session';
 import {
   fetchSyncEnvelope,
+  fetchSyncHistory,
+  fetchSyncHistoryRevision,
   SyncHttpError,
   uploadSyncEnvelope,
 } from '@/lib/sync-client';
@@ -81,6 +85,9 @@ export function CloudSyncPanel({
   // Hash pairing letto una volta all'init (evita setState sincrono in effect).
   const [importText, setImportText] = useState(readInitialPairingImport);
   const [pin, setPin] = useState('');
+  const [versionHistory, setVersionHistory] = useState<
+    Array<{ revision: number; updatedAt: string }>
+  >([]);
 
   const refreshPairingQr = useCallback(async (url: string) => {
     try {
@@ -88,6 +95,15 @@ export function CloudSyncPanel({
       setPairingSvg(svg);
     } catch {
       setPairingSvg(null);
+    }
+  }, []);
+
+  const refreshHistory = useCallback(async (syncId: string) => {
+    try {
+      const list = await fetchSyncHistory(syncId);
+      setVersionHistory(list.history);
+    } catch {
+      setVersionHistory([]);
     }
   }, []);
 
@@ -104,12 +120,13 @@ export function CloudSyncPanel({
       );
       setPairingUrl(url);
       void refreshPairingQr(url);
+      void refreshHistory(stored.syncId);
     });
 
     return () => {
       active = false;
     };
-  }, [refreshPairingQr, familyId, dataKey]);
+  }, [refreshPairingQr, refreshHistory, familyId, dataKey]);
 
   const createRoom = async () => {
     setBusy(true);
@@ -133,6 +150,7 @@ export function CloudSyncPanel({
       );
       await saveSyncSession(familyId, dataKey, next);
       setSession(next);
+      setVersionHistory([]);
       const url = buildPairingUrl(window.location.origin, syncId, keyBytes);
       setPairingUrl(url);
       await refreshPairingQr(url);
@@ -186,6 +204,7 @@ export function CloudSyncPanel({
       );
       setPairingUrl(url);
       await refreshPairingQr(url);
+      await refreshHistory(next.syncId);
       onStatus(`Sync caricata (revisione ${uploaded.revision}).`);
     } catch (err) {
       if (err instanceof SyncHttpError && err.status === 409) {
@@ -260,7 +279,7 @@ export function CloudSyncPanel({
       await refreshPairingQr(url);
       // Pulisci hash pairing dopo import riuscito.
       if (window.location.hash.startsWith('#ds1.')) {
-        history.replaceState(
+        window.history.replaceState(
           null,
           '',
           `${window.location.pathname}${window.location.search}`
@@ -280,12 +299,57 @@ export function CloudSyncPanel({
     }
   };
 
+  const restoreRevision = async (revision: number) => {
+    if (!session) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const envelope = await fetchSyncHistoryRevision(
+        session.syncId,
+        revision
+      );
+      const keyBytes = keyBytesFromSession(session);
+      const decrypted = await decryptHouseCollection(envelope, {
+        keyBytes,
+        pin: pin.trim() || undefined,
+      });
+      const nextKey = await resolveSyncKeyBytes(envelope, {
+        keyBytes,
+        pin: pin.trim() || undefined,
+      });
+      const next = sessionFromIdentity(
+        session.syncId,
+        nextKey,
+        envelope.revision,
+        envelope.updatedAt,
+        familyId
+      );
+      await saveSyncSession(familyId, dataKey, next);
+      setSession(next);
+      await onCollectionImported(decrypted);
+      onStatus(
+        `Ripristinata revisione storica ${revision}. I dati sono di nuovo sul dispositivo.`
+      );
+    } catch (err) {
+      if (isSyncCredentialsError(err)) {
+        setError(SYNC_CREDENTIALS_ERROR_MESSAGE);
+      } else {
+        setError(
+          err instanceof Error ? err.message : 'Ripristino non riuscito'
+        );
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const disconnect = async () => {
     await clearSyncSession(familyId);
     setSession(null);
     setPairingUrl(null);
     setPairingSvg(null);
     setImportText('');
+    setVersionHistory([]);
     onStatus('Sessione sync rimossa dall’account Famiglia.');
   };
 
@@ -421,6 +485,42 @@ export function CloudSyncPanel({
           </p>
         </div>
       </div>
+
+      {session && versionHistory.length > 0 ? (
+        <div className="border-t-2 border-zinc-200 pt-4">
+          <h3 className="mb-2 flex items-center gap-2 font-bold">
+            <History className="size-5" aria-hidden />
+            Versioni precedenti
+          </h3>
+          <p className="mb-3 text-sm text-zinc-700">
+            Ogni caricamento conserva la copia protetta precedente (fino a 20).
+            Puoi ripristinare una versione sul dispositivo senza cambiare la
+            corrente sul server finché non ricarichi.
+          </p>
+          <ul className="space-y-2">
+            {versionHistory.map((entry) => (
+              <li
+                key={entry.revision}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border-2 border-zinc-300 bg-zinc-50 px-3 py-2"
+              >
+                <span className="text-sm font-semibold text-zinc-900">
+                  Revisione {entry.revision} ·{' '}
+                  {new Date(entry.updatedAt).toLocaleString('it-IT')}
+                </span>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void restoreRevision(entry.revision)}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-3 font-bold hover:bg-zinc-100 disabled:opacity-60"
+                >
+                  <RotateCcw className="size-4" aria-hidden />
+                  Ripristina
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {pairingUrl ? (
         <div className="border-t-2 border-zinc-200 pt-4">

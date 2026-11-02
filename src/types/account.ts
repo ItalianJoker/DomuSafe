@@ -6,13 +6,23 @@ export type FamilyRole = 'OWNER' | 'MEMBER';
 
 /**
  * Stato licenza per account.
- * `baseTier` = piano permanente; trial Premium lo sovrascrive via resolveEffectiveTier.
+ * Precedenza Feature Gate: trial attivo → saasTier valido → baseTier.
+ * `saasToken` = JWT Ed25519 verificato dal server (PRD Feature Gate SaaS).
  */
 export interface AccountLicenseState {
+  /** Piano permanente (env self-host / default FREE). */
   baseTier: LicenseTier;
   trialUsed: boolean;
   trialStartedAt?: string;
   trialEndsAt?: string;
+  /** Piano da JWT SaaS verificato (se presente e non scaduto). */
+  saasTier?: LicenseTier;
+  /** JWT Ed25519 opaco già validato in scrittura. */
+  saasToken?: string;
+  /** Intestatario dal claim `issuedTo`. */
+  saasIssuedTo?: string;
+  /** Scadenza ISO del JWT (`exp`); assente = senza scadenza. */
+  saasExpiresAt?: string;
 }
 
 /**

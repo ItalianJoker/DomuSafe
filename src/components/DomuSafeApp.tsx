@@ -133,6 +133,7 @@ function AuthenticatedApp() {
     logout,
     completeTutorial,
     startTrial,
+    applySaasLicense,
     createInvite,
     refreshAccount,
   } = useSession();
@@ -640,6 +641,7 @@ function AuthenticatedApp() {
             effectiveTier={effectiveTier}
             familyName={family.name}
             onStartTrial={startTrial}
+            onApplySaasLicense={applySaasLicense}
           />
         ) : null}
 
