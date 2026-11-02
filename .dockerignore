@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+!README.md
+!LICENSE.md
+.dockerignore
+Dockerfile
+pnpm-debug.log*
