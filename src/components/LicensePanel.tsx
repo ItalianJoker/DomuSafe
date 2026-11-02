@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * Gestione piano per account/Famiglia + avvio prova Premium 30 giorni.
+ * Gestione piano per account/Famiglia + prova Premium + chiave SaaS JWT.
  * Copy allineata a license-tiers.md (italiano chiaro).
  */
 
 import { useState } from 'react';
-import { BadgeCheck, Loader2, Sparkles } from 'lucide-react';
+import { BadgeCheck, KeyRound, Loader2, Sparkles } from 'lucide-react';
 import type { DomuAccount } from '@/types/account';
 import { TIER_LABELS } from '@/lib/licensing';
 import {
@@ -14,8 +14,13 @@ import {
   TIER_SUMMARY,
   PREMIUM_TRIAL_COPY,
 } from '@/lib/tier-copy';
-import { isTrialActive, trialDaysRemaining } from '@/lib/trial';
+import {
+  isSaasLicenseActive,
+  isTrialActive,
+  trialDaysRemaining,
+} from '@/lib/trial';
 import type { LicenseTier } from '@/types/domus';
+import { FieldLabel, TouchTextarea } from '@/components/TouchField';
 
 const PLAN_ORDER: LicenseTier[] = ['FREE', 'BASIC', 'ADVANCED', 'PREMIUM'];
 
@@ -24,6 +29,7 @@ interface LicensePanelProps {
   effectiveTier: LicenseTier;
   familyName?: string | null;
   onStartTrial: () => Promise<void>;
+  onApplySaasLicense: (saasToken: string) => Promise<void>;
 }
 
 export function LicensePanel({
@@ -31,11 +37,14 @@ export function LicensePanel({
   effectiveTier,
   familyName,
   onStartTrial,
+  onApplySaasLicense,
 }: LicensePanelProps) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saasToken, setSaasToken] = useState('');
   const trialOn = isTrialActive(account.license);
+  const saasOn = isSaasLicenseActive(account.license);
   const days = trialDaysRemaining(account.license);
   const active = TIER_COPY[effectiveTier];
 
@@ -48,6 +57,26 @@ export function LicensePanel({
       setMessage('Prova Premium attiva per 30 giorni.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Prova non disponibile');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const applyKey = async () => {
+    const token = saasToken.trim();
+    if (!token) {
+      setError('Incolla la chiave di licenza ricevuta.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await onApplySaasLicense(token);
+      setMessage('Chiave di licenza attivata.');
+      setSaasToken('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Chiave non valida');
     } finally {
       setBusy(false);
     }
@@ -78,6 +107,9 @@ export function LicensePanel({
           Piano base permanente:{' '}
           <strong>{TIER_LABELS[account.license.baseTier]}</strong>
           {trialOn ? ' · in questo momento stai usando la prova Premium' : ''}
+          {saasOn && account.license.saasIssuedTo
+            ? ` · chiave SaaS per «${account.license.saasIssuedTo}»`
+            : ''}
         </p>
 
         <h3 className="mt-4 text-sm font-bold uppercase tracking-wide text-zinc-600">
@@ -124,6 +156,39 @@ export function LicensePanel({
             {PREMIUM_TRIAL_COPY.button}
           </button>
         )}
+
+        <div className="mt-5 border-t-2 border-zinc-200 pt-4">
+          <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-zinc-600">
+            <KeyRound className="size-4" aria-hidden />
+            Chiave di licenza (SaaS)
+          </h3>
+          <p className="mt-2 text-sm text-zinc-700">
+            Se hai ricevuto una chiave firmata dall’autore, incollala qui. Vale
+            sul piano indicato nella chiave (verifica Ed25519 sul server).
+          </p>
+          <FieldLabel htmlFor="saas-license-token">Chiave JWT</FieldLabel>
+          <TouchTextarea
+            id="saas-license-token"
+            rows={3}
+            value={saasToken}
+            onChange={(e) => setSaasToken(e.target.value)}
+            placeholder="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9…"
+            autoComplete="off"
+          />
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void applyKey()}
+            className="mt-3 inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-zinc-950 px-4 font-bold text-white hover:bg-zinc-800 disabled:opacity-60"
+          >
+            {busy ? (
+              <Loader2 className="size-5 animate-spin" aria-hidden />
+            ) : (
+              <KeyRound className="size-5" aria-hidden />
+            )}
+            Attiva chiave
+          </button>
+        </div>
 
         {message ? (
           <p className="mt-3 font-semibold text-emerald-900" role="status">

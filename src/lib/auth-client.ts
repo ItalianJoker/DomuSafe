@@ -3,7 +3,6 @@
  * La data-key sbloccata vive solo in memoria di processo.
  */
 import type { DomuAccount, DomuFamily } from '@/types/account';
-import type { AccountLicenseState } from '@/types/account';
 import {
   prepareRegistrationCrypto,
   unlockDataKeyFromAccount,
@@ -147,15 +146,29 @@ export async function markTutorialCompletedApi(): Promise<DomuAccount> {
   return data.account;
 }
 
-export async function updateLicenseApi(
-  license: AccountLicenseState
-): Promise<DomuAccount> {
+/** Avvia prova Premium 30 giorni (logica trial solo sul server). */
+export async function startTrialApi(): Promise<DomuAccount> {
   const res = await fetch('/api/account/license', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ license }),
+    body: JSON.stringify({ action: 'start_trial' }),
   });
   if (!res.ok) throw new Error(await parseError(res));
   const data = (await res.json()) as { account: DomuAccount };
   return data.account;
 }
+
+/** Applica chiave JWT/Ed25519 SaaS verificata sul server. */
+export async function applySaasLicenseApi(
+  saasToken: string
+): Promise<DomuAccount> {
+  const res = await fetch('/api/account/license', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'apply_saas', saasToken }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  const data = (await res.json()) as { account: DomuAccount };
+  return data.account;
+}
+

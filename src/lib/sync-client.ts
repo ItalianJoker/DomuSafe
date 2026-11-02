@@ -104,3 +104,66 @@ export async function uploadSyncEnvelope(
 
   return (await res.json()) as SyncEnvelope;
 }
+
+export interface SyncHistoryListResponse {
+  syncId: string;
+  currentRevision: number;
+  currentUpdatedAt: string;
+  history: Array<{ revision: number; updatedAt: string }>;
+}
+
+/** Elenco revisioni storiche (Premium). */
+export async function fetchSyncHistory(
+  syncId: string,
+  baseUrl = apiBase()
+): Promise<SyncHistoryListResponse> {
+  const res = await fetch(
+    `${baseUrl}/api/sync/${encodeURIComponent(syncId)}/history`,
+    {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      credentials: 'include',
+      cache: 'no-store',
+    }
+  );
+  if (res.status === 401 || res.status === 403) {
+    throw new SyncHttpError(
+      'Accesso cronologia sync negato: serve Premium (o prova)',
+      res.status
+    );
+  }
+  if (!res.ok) {
+    throw new SyncHttpError('Cronologia sync non disponibile', res.status);
+  }
+  return (await res.json()) as SyncHistoryListResponse;
+}
+
+/** Scarica un envelope storico cifrato. */
+export async function fetchSyncHistoryRevision(
+  syncId: string,
+  revision: number,
+  baseUrl = apiBase()
+): Promise<SyncEnvelope> {
+  const res = await fetch(
+    `${baseUrl}/api/sync/${encodeURIComponent(syncId)}/history/${revision}`,
+    {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      credentials: 'include',
+      cache: 'no-store',
+    }
+  );
+  if (res.status === 404) {
+    throw new SyncHttpError('Revisione storica non trovata', 404);
+  }
+  if (res.status === 401 || res.status === 403) {
+    throw new SyncHttpError(
+      'Accesso cronologia sync negato: serve Premium (o prova)',
+      res.status
+    );
+  }
+  if (!res.ok) {
+    throw new SyncHttpError('Download revisione non riuscito', res.status);
+  }
+  return (await res.json()) as SyncEnvelope;
+}

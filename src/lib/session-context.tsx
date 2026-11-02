@@ -18,6 +18,7 @@ import type { DomuAccount, DomuFamily } from '@/types/account';
 import {
   clearUnlockedDataKey,
   createFamilyApi,
+  applySaasLicenseApi,
   createInviteApi,
   fetchSession,
   getUnlockedDataKey,
@@ -26,17 +27,14 @@ import {
   logoutAccount,
   markTutorialCompletedApi,
   registerAccount,
+  startTrialApi,
   unlockWithPassword,
-  updateLicenseApi,
 } from '@/lib/auth-client';
 import {
   inviteCodeFromPayload,
   parseInvitePayload,
 } from '@/lib/family';
-import {
-  effectiveTierFromLicense,
-  startPremiumTrial,
-} from '@/lib/trial';
+import { effectiveTierFromLicense } from '@/lib/trial';
 import type { LicenseTier } from '@/types/domus';
 
 type SessionStatus =
@@ -66,6 +64,7 @@ interface SessionContextValue {
   createInvite: () => Promise<{ inviteCode: string } | null>;
   completeTutorial: () => Promise<void>;
   startTrial: () => Promise<void>;
+  applySaasLicense: (saasToken: string) => Promise<void>;
   refreshAccount: () => Promise<void>;
   peekInviteFromHash: () => string | null;
 }
@@ -225,14 +224,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (!account) return;
     setError(null);
     try {
-      const license = startPremiumTrial(account.license);
-      const next = await updateLicenseApi(license);
+      const next = await startTrialApi();
       setAccount(next);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Prova non disponibile');
       throw e;
     }
   }, [account]);
+
+  const applySaasLicense = useCallback(async (saasToken: string) => {
+    setError(null);
+    try {
+      const next = await applySaasLicenseApi(saasToken);
+      setAccount(next);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Chiave licenza non valida');
+      throw e;
+    }
+  }, []);
 
   const refreshAccount = useCallback(async () => {
     const sess = await fetchSession();
@@ -266,6 +275,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     createInvite,
     completeTutorial,
     startTrial,
+    applySaasLicense,
     refreshAccount,
     peekInviteFromHash,
   };

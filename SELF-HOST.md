@@ -38,6 +38,8 @@ Il default self-host è **Free**. In app ogni account può comunque avviare la p
 | `DOMUSAFE_DATA_DIR` | Directory account/Famiglia (default in container: `/app/data/app`) |
 | `DOMUSAFE_SYNC_DIR` | Directory envelope sync E2EE (default: `/app/data/sync`) |
 | `NEXT_PUBLIC_DOMUSAFE_TIER` | Piano self-host di default (`FREE` consigliato) |
+| `DOMUSAFE_LICENSE_PUBLIC_KEY` | Chiave pubblica Ed25519 (PEM SPKI o Base64 DER) per verificare JWT SaaS |
+| `DOMUSAFE_LICENSE_PRIVATE_KEY` | Solo tooling di emissione (non serve al runtime dell’app) |
 | `DOMUSAFE_SOS_PROVIDER` | `log` (predefinito), `webhook`, `twilio` |
 | `DOMUSAFE_SOS_WEBHOOK_URL` | URL webhook SOS |
 | `DOMUSAFE_SOS_WEBHOOK_TOKEN` | Bearer opzionale per il webhook |
@@ -47,6 +49,10 @@ Il default self-host è **Free**. In app ogni account può comunque avviare la p
 | `DOMUSAFE_TWILIO_WHATSAPP_FROM` | Mittente WhatsApp (es. `whatsapp:+14155238886`) |
 
 Nessun SDK a pagamento obbligatorio: il provider SOS usa solo `fetch`.
+
+### Chiavi licenza SaaS (JWT / Ed25519)
+
+Se imposti `DOMUSAFE_LICENSE_PUBLIC_KEY`, gli utenti possono attivare una chiave JWT firmata EdDSA dalla sezione **Piano**. Claim minimi: `tier`, `issuedTo`, `iat`; opzionali `exp` e `sub` (email account). Senza chiave pubblica il server rifiuta le chiavi SaaS (self-host resta su env + prova Premium).
 
 ## Pubblicazione su GHCR
 

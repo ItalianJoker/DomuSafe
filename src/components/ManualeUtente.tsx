@@ -45,7 +45,11 @@ const SECTIONS = [
   },
   {
     title: 'Altri telefoni',
-    body: 'Con Premium (o prova) colleghi un altro telefono o computer con un QR, in modo cifrato. Free e Basic salvano sull’account senza questa funzione tra dispositivi.',
+    body: 'Con Premium (o prova) colleghi un altro telefono o computer con un QR, in modo cifrato. Ogni caricamento tiene anche le versioni precedenti (backup storico): puoi ripristinare una revisione sul dispositivo. Free e Basic salvano sull’account senza questa funzione tra dispositivi.',
+  },
+  {
+    title: 'Chiave di licenza (SaaS)',
+    body: 'Nella sezione Piano puoi incollare una chiave firmata ricevuta dall’autore. DomuSafe verifica la firma sul server e attiva il piano indicato. Senza chiave restano piano base, prova Premium e l’eventuale piano impostato da chi gestisce l’installazione.',
   },
   {
     title: 'Registro accessi (scan)',
