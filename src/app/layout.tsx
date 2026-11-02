@@ -17,12 +17,15 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: 'DomuSafe — Manuale casa & hub emergenza',
   description:
-    'Runbook domestico offline: utenze, Wi‑Fi, schede ICE e stampa A4 con privacy flap.',
+    'Runbook domestico cifrato: Famiglia, utenze, schede ICE, cassaforte e stampa A4.',
   applicationName: 'DomuSafe',
+  icons: {
+    icon: '/domusafe-logo.svg',
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0f1a14',
+  themeColor: '#0b1f17',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

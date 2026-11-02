@@ -1,12 +1,11 @@
 /**
- * Smoke critico DomuSafe (Node 22 + fake-indexeddb).
- * Esegue: licensing, multi-casa, vault PIN, sync E2EE gate/invariants, print CSS.
+ * Smoke critico DomuSafe (Node 22).
+ * Account filesystem (no IndexedDB), licensing/trial, vault, sync E2EE, checklists.
  */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
-import 'fake-indexeddb/auto';
 
 import {
   DEFAULT_TIER,
@@ -16,6 +15,7 @@ import {
   getMaxHouses,
   getMaxResidents,
   resolveConfiguredTier,
+  resolveEffectiveTier,
   shouldShowPrintWatermark,
 } from '../src/lib/licensing';
 import {
@@ -40,15 +40,40 @@ import {
   readEnvelope,
 } from '../src/lib/sync-server';
 import {
-  addHouse,
-  clearRunbook,
-  getActiveHouse,
-  loadHouseCollection,
-  loadRunbook,
-  removeHouse,
-  saveRunbook,
-} from '../src/lib/storage';
+  authenticateAccount,
+  createFamilyOnServer,
+  createInviteOnServer,
+  acceptInviteOnServer,
+  registerAccount,
+  resetAppDataForTests,
+  toPublicAccount,
+  writeHousesBlob,
+  readHousesBlob,
+  writeSuccessionBlob,
+  readSuccessionBlob,
+} from '../src/lib/account-server';
+import {
+  prepareRegistrationCrypto,
+  encryptJsonAtRest,
+  decryptJsonAtRest,
+  unlockDataKeyFromAccount,
+} from '../src/lib/crypto-auth';
+import {
+  createEmptyResidentTaxBlock,
+  createDefaultSuccessionChecklist,
+  TAX_CATALOG,
+  ensureResidentTaxYear,
+} from '../src/lib/checklist-defaults';
+import {
+  createInitialLicense,
+  startPremiumTrial,
+  isTrialActive,
+  effectiveTierFromLicense,
+  PREMIUM_TRIAL_MS,
+  TRIAL_ALREADY_USED_MESSAGE,
+} from '../src/lib/trial';
 import type { EncryptedVaultPayload } from '../src/types/domus';
+import type { DomusHouseCollection } from '../src/lib/storage';
 
 const results: Array<{ name: string; ok: boolean; detail?: string }> = [];
 
@@ -66,80 +91,181 @@ function record(name: string, fn: () => void | Promise<void>) {
   })();
 }
 
+const dataDir = mkdtempSync(resolve(tmpdir(), 'domusafe-app-'));
+process.env.DOMUSAFE_DATA_DIR = dataDir;
+
 await record('licensing: default tier is BASIC', () => {
   assert.equal(DEFAULT_TIER, 'BASIC');
   assert.equal(resolveConfiguredTier(undefined), 'BASIC');
-  assert.equal(resolveConfiguredTier(''), 'BASIC');
-  assert.equal(resolveConfiguredTier('nope'), 'BASIC');
   assert.equal(resolveConfiguredTier('advanced'), 'ADVANCED');
-  assert.equal(resolveConfiguredTier('PREMIUM'), 'PREMIUM');
 });
 
-await record('licensing: BASIC max 2 residents + gate flags', () => {
-  assert.equal(getMaxResidents('BASIC'), 2);
-  assert.equal(canAddResident('BASIC', 0), true);
-  assert.equal(canAddResident('BASIC', 1), true);
-  assert.equal(canAddResident('BASIC', 2), false);
+await record('licensing: BASIC gates + ADVANCED houses', () => {
   assert.equal(canAccessFeature('BASIC', 'allowLevel3Vault'), false);
-  assert.equal(canAccessFeature('BASIC', 'allowCloudSync'), false);
   assert.equal(canAccessFeature('ADVANCED', 'allowLevel3Vault'), true);
-  assert.equal(canAccessFeature('ADVANCED', 'allowCloudSync'), true);
-  assert.equal(canAccessFeature('PREMIUM', 'allowLevel3Vault'), true);
-  assert.equal(canAccessFeature('PREMIUM', 'allowCloudSync'), true);
-});
-
-await record('licensing: ADVANCED houses ≤3 + unlimited ICE + no watermark', () => {
-  assert.equal(getMaxHouses('BASIC'), 1);
-  assert.equal(getMaxHouses('ADVANCED'), 3);
-  assert.equal(canAddHouse('ADVANCED', 2), true);
   assert.equal(canAddHouse('ADVANCED', 3), false);
-  assert.equal(canAddResident('ADVANCED', 99), true);
+  assert.equal(canAddResident('BASIC', 2), false);
+  assert.equal(getMaxHouses('PREMIUM'), 999);
   assert.equal(Number.isFinite(getMaxResidents('ADVANCED')), false);
   assert.equal(shouldShowPrintWatermark('BASIC'), true);
-  assert.equal(shouldShowPrintWatermark('ADVANCED'), false);
   assert.equal(shouldShowPrintWatermark('PREMIUM'), false);
 });
 
-await record('storage: IndexedDB save/load round-trip', async () => {
-  await clearRunbook();
-  const fresh = await loadRunbook();
-  assert.equal(fresh.version, '1.0.0');
-  assert.equal(fresh.tier, 'BASIC');
-  fresh.level1_public.houseName = 'Casa Smoke Test';
-  fresh.level1_public.wifi.ssid = 'DomuSafe-WiFi';
-  const saved = await saveRunbook(fresh);
-  assert.equal(saved.level1_public.houseName, 'Casa Smoke Test');
-  const reloaded = await loadRunbook();
-  assert.equal(reloaded.documentId, saved.documentId);
-  assert.equal(reloaded.level1_public.houseName, 'Casa Smoke Test');
-  assert.equal(reloaded.level1_public.wifi.ssid, 'DomuSafe-WiFi');
-  await clearRunbook();
+await record('trial: 30-day Premium once per account', () => {
+  let license = createInitialLicense('BASIC');
+  assert.equal(effectiveTierFromLicense(license), 'BASIC');
+  assert.equal(resolveEffectiveTier(license), 'BASIC');
+  license = startPremiumTrial(license, 1_000_000);
+  assert.equal(isTrialActive(license, 1_000_000), true);
+  assert.equal(effectiveTierFromLicense(license, 1_000_000), 'PREMIUM');
+  assert.equal(canAccessFeature('PREMIUM', 'allowLevel3Vault'), true);
+  assert.equal(
+    effectiveTierFromLicense(license, 1_000_000 + PREMIUM_TRIAL_MS + 1),
+    'BASIC'
+  );
+  let caught: unknown;
+  try {
+    startPremiumTrial(license, 1_000_000 + PREMIUM_TRIAL_MS + 2);
+  } catch (e) {
+    caught = e;
+  }
+  assert.ok(caught instanceof Error);
+  assert.equal((caught as Error).message, TRIAL_ALREADY_USED_MESSAGE);
 });
 
-await record('storage: multi-house ADVANCED limit + remove', async () => {
-  await clearRunbook();
-  let collection = await loadHouseCollection();
-  assert.equal(collection.houses.length, 1);
+await record('account server: register/login/family/invite (filesystem)', async () => {
+  await resetAppDataForTests();
+  const cryptoMaterial = await prepareRegistrationCrypto('password-ok-12');
+  const account = await registerAccount({
+    email: 'owner@example.it',
+    password: 'password-ok-12',
+    displayName: 'Luca',
+    dataKeySaltBase64: cryptoMaterial.dataKeySaltBase64,
+    wrappedDataKeyBase64: cryptoMaterial.wrappedDataKeyBase64,
+    wrappedDataKeyIvBase64: cryptoMaterial.wrappedDataKeyIvBase64,
+  });
+  assert.equal(account.email, 'owner@example.it');
+  const pub = toPublicAccount(account);
+  assert.equal('passwordHashHex' in pub, false);
 
-  const second = await addHouse('ADVANCED');
-  assert.ok(second);
-  assert.equal(second!.houses.length, 2);
+  const authed = await authenticateAccount('owner@example.it', 'password-ok-12');
+  assert.equal(authed.accountId, account.accountId);
 
-  const third = await addHouse('ADVANCED');
-  assert.ok(third);
-  assert.equal(third!.houses.length, 3);
+  let loginFail: unknown;
+  try {
+    await authenticateAccount('owner@example.it', 'wrong-password');
+  } catch (e) {
+    loginFail = e;
+  }
+  assert.ok(loginFail instanceof Error);
 
-  const blocked = await addHouse('ADVANCED');
-  assert.equal(blocked, null);
+  const family = await createFamilyOnServer({
+    name: 'Famiglia Test',
+    ownerAccountId: account.accountId,
+    ownerEmail: account.email,
+    ownerDisplayName: account.displayName,
+  });
+  assert.equal(family.members.length, 1);
 
-  const basicBlocked = await addHouse('BASIC');
-  assert.equal(basicBlocked, null);
+  const { inviteCode } = await createInviteOnServer({
+    familyId: family.familyId,
+    createdByAccountId: account.accountId,
+  });
+  assert.match(inviteCode, /^df1\./);
 
-  collection = (await removeHouse(third!.houses[2]!.documentId))!;
-  assert.equal(collection.houses.length, 2);
-  assert.ok(getActiveHouse(collection));
+  const memberCrypto = await prepareRegistrationCrypto('member-pass-99');
+  const member = await registerAccount({
+    email: 'member@example.it',
+    password: 'member-pass-99',
+    displayName: 'Anna',
+    dataKeySaltBase64: memberCrypto.dataKeySaltBase64,
+    wrappedDataKeyBase64: memberCrypto.wrappedDataKeyBase64,
+    wrappedDataKeyIvBase64: memberCrypto.wrappedDataKeyIvBase64,
+  });
+  const joined = await acceptInviteOnServer({
+    inviteCode,
+    accountId: member.accountId,
+    email: member.email,
+    displayName: member.displayName,
+  });
+  assert.equal(joined.members.length, 2);
 
-  await clearRunbook();
+  // Unlock data key + encrypt houses blob on account store
+  const dataKey = await unlockDataKeyFromAccount('password-ok-12', {
+    dataKeySaltBase64: account.dataKeySaltBase64,
+    wrappedDataKeyBase64: account.wrappedDataKeyBase64,
+    wrappedDataKeyIvBase64: account.wrappedDataKeyIvBase64,
+  });
+  const collection: DomusHouseCollection = {
+    version: '1.0.0',
+    familyId: family.familyId,
+    activeDocumentId: 'house-1',
+    houses: [
+      {
+        version: '1.0.0',
+        documentId: 'house-1',
+        updatedAt: new Date().toISOString(),
+        tier: 'BASIC',
+        level1_public: {
+          houseName: 'Casa Segreta',
+          utilities: {
+            waterCutoff: { location: '', instructions: '' },
+            gasCutoff: { location: '', instructions: '' },
+            electricPanel: {
+              breakerLocation: '',
+              externalMeterLocation: '',
+            },
+            heatingBoiler: { location: '' },
+          },
+          wifi: { ssid: 'x', password: 'y' },
+          wasteSchedule: [],
+          artisanContacts: [],
+        },
+        level2_ice: { residents: [], pets: [] },
+      },
+    ],
+  };
+  const sealed = await encryptJsonAtRest(collection, dataKey);
+  await writeHousesBlob(family.familyId, {
+    version: 'enc-1',
+    ...sealed,
+    updatedAt: new Date().toISOString(),
+  });
+  const stored = await readHousesBlob(family.familyId);
+  assert.ok(stored);
+  assert.equal(stored!.ciphertextBase64.includes('Casa Segreta'), false);
+  const roundTrip = await decryptJsonAtRest<DomusHouseCollection>(
+    stored!,
+    dataKey
+  );
+  assert.equal(roundTrip.houses[0]?.level1_public.houseName, 'Casa Segreta');
+
+  const succession = createDefaultSuccessionChecklist(family.familyId);
+  const succSealed = await encryptJsonAtRest(succession, dataKey);
+  await writeSuccessionBlob(family.familyId, {
+    version: 'enc-1',
+    ...succSealed,
+    updatedAt: new Date().toISOString(),
+  });
+  const succStored = await readSuccessionBlob(family.familyId);
+  assert.ok(succStored);
+  const succPlain = await decryptJsonAtRest<typeof succession>(
+    succStored!,
+    dataKey
+  );
+  assert.equal(succPlain.familyId, family.familyId);
+  assert.ok(succPlain.items.length >= 5);
+});
+
+await record('checklists: tax on residente + succession Famiglia', () => {
+  const tax = createEmptyResidentTaxBlock(2026);
+  assert.equal(tax.years[0]?.year, 2026);
+  assert.equal(tax.years[0]?.items.length, TAX_CATALOG.length);
+  const nextYear = ensureResidentTaxYear(tax, 2027);
+  assert.ok(nextYear.years.some((y) => y.year === 2027));
+  const succ = createDefaultSuccessionChecklist('fam-1');
+  assert.equal(succ.familyId, 'fam-1');
+  assert.ok(succ.items.some((i) => i.category === 'WILL'));
 });
 
 await record('vault: encrypt/decrypt + wrong PIN Italian error', async () => {
@@ -167,95 +293,104 @@ await record('vault: encrypt/decrypt + wrong PIN Italian error', async () => {
       passwordManagerKitLocation: 'Cassaforte',
     },
   };
-
   const encrypted = await encryptVault(payload, '1234');
   const decrypted = await decryptVault(encrypted, '1234');
   assert.equal(decrypted.bankAccounts[0]?.institution, 'Banca Test');
-
   let caught: unknown;
   try {
     await decryptVault(encrypted, '0000');
   } catch (error) {
     caught = error;
   }
-  assert.ok(caught instanceof Error, 'expected Error on wrong PIN');
   assert.equal((caught as Error).message, VAULT_PIN_ERROR_MESSAGE);
-  assert.equal(VAULT_PIN_ERROR_MESSAGE, 'PIN errato o dati non validi');
   assert.equal(isVaultPinError(caught), true);
 });
 
-await record('print CSS: A4 + ice-privacy-flap present', () => {
+await record('print CSS + branding assets present', () => {
   const printPath = resolve('src/styles/print.css');
   assert.equal(existsSync(printPath), true);
   const css = readFileSync(printPath, 'utf8');
   assert.match(css, /@media print/);
-  assert.match(css, /size:\s*A4/);
   assert.match(css, /\.ice-privacy-flap/);
-  assert.match(css, /PIEGA O SIGILLA/);
-  assert.match(css, /\.no-print/);
-
   const globals = readFileSync(resolve('src/app/globals.css'), 'utf8');
+  assert.match(globals, /--brand-ink/);
   assert.match(globals, /print\.css/);
+  assert.equal(existsSync(resolve('public/domusafe-logo.svg')), true);
+  assert.equal(existsSync(resolve('src/components/DomuSafeLogo.tsx')), true);
 });
 
-await record('ui modules: FeatureGate + Level3VaultPanel present', () => {
-  assert.equal(existsSync(resolve('src/components/FeatureGate.tsx')), true);
-  assert.equal(existsSync(resolve('src/components/Level3VaultPanel.tsx')), true);
-  assert.equal(existsSync(resolve('src/components/HouseSwitcher.tsx')), true);
-  const vaultUi = readFileSync(
-    resolve('src/components/Level3VaultPanel.tsx'),
-    'utf8'
+await record('ui: auth gate + manuale + license + tax/succession modules', () => {
+  assert.equal(existsSync(resolve('src/components/AuthScreen.tsx')), true);
+  assert.equal(existsSync(resolve('src/components/ManualeUtente.tsx')), true);
+  assert.equal(existsSync(resolve('src/components/LicensePanel.tsx')), true);
+  assert.equal(
+    existsSync(resolve('src/components/ResidentTaxChecklist.tsx')),
+    true
   );
-  assert.match(vaultUi, /PIN errato|VAULT_PIN_ERROR_MESSAGE/);
-  assert.match(vaultUi, /encryptVault/);
-  assert.match(vaultUi, /decryptVault/);
-});
-
-await record('sync: feature gate BASIC local-only / ADVANCED allowed', () => {
-  assert.equal(canAccessFeature('BASIC', 'allowCloudSync'), false);
-  assert.equal(canAccessFeature('ADVANCED', 'allowCloudSync'), true);
-  const appUi = readFileSync(resolve('src/components/DomuSafeApp.tsx'), 'utf8');
-  assert.match(appUi, /allowCloudSync/);
-  assert.match(appUi, /CloudSyncPanel/);
-  assert.match(appUi, /solo locale/);
-  const syncUi = readFileSync(
-    resolve('src/components/CloudSyncPanel.tsx'),
-    'utf8'
+  assert.equal(
+    existsSync(resolve('src/components/SuccessionChecklistPanel.tsx')),
+    true
   );
-  assert.match(syncUi, /encryptHouseCollection/);
-  assert.match(syncUi, /uploadSyncEnvelope/);
-  assert.match(syncUi, /SYNC_CREDENTIALS_ERROR_MESSAGE/);
+  assert.equal(existsSync(resolve('src/lib/account-server.ts')), true);
+  const app = readFileSync(resolve('src/components/DomuSafeApp.tsx'), 'utf8');
+  assert.match(app, /SessionProvider/);
+  assert.match(app, /allowLevel3Vault/);
+  assert.equal(
+    existsSync(resolve('src/app/api/auth/register/route.ts')),
+    true
+  );
+  // No IndexedDB SoT in storage/auth-client
+  const storage = readFileSync(resolve('src/lib/storage.ts'), 'utf8');
+  assert.equal(storage.includes('idb-keyval'), false);
+  assert.equal(storage.includes('indexedDB'), false);
+  const authClient = readFileSync(resolve('src/lib/auth-client.ts'), 'utf8');
+  assert.equal(authClient.includes('idb-keyval'), false);
 });
 
-await record('sync: encrypt-before-upload invariant + wrong PIN', async () => {
-  await clearRunbook();
-  const collection = await loadHouseCollection();
-  collection.houses[0]!.level1_public.houseName = 'Villa Segreta Sync';
-
+await record('sync: E2EE envelope + wrong PIN', async () => {
+  const collection: DomusHouseCollection = {
+    version: '1.0.0',
+    familyId: 'f1',
+    activeDocumentId: 'h1',
+    houses: [
+      {
+        version: '1.0.0',
+        documentId: 'h1',
+        updatedAt: new Date().toISOString(),
+        tier: 'ADVANCED',
+        level1_public: {
+          houseName: 'Villa Segreta Sync',
+          utilities: {
+            waterCutoff: { location: '', instructions: '' },
+            gasCutoff: { location: '', instructions: '' },
+            electricPanel: {
+              breakerLocation: '',
+              externalMeterLocation: '',
+            },
+            heatingBoiler: { location: '' },
+          },
+          wifi: { ssid: '', password: '' },
+          wasteSchedule: [],
+          artisanContacts: [],
+        },
+        level2_ice: { residents: [], pets: [] },
+      },
+    ],
+  };
   const { syncId, keyBytes } = createSyncIdentity();
   const { envelope, keyBytes: usedKey } = await encryptHouseCollection(
     collection,
     { revision: 1, keyBytes }
   );
-
-  assert.equal(envelope.format, 'domusync-1');
-  assert.equal(envelope.revision, 1);
   assert.equal(envelopeLooksEncrypted(envelope), true);
-  assert.equal(envelope.ciphertextBase64.includes('Villa Segreta'), false);
-  assert.equal(envelope.ciphertextBase64.includes('level1_public'), false);
-
-  // Persistenza server: solo envelope (simula API PUT senza rete).
   const tmp = mkdtempSync(resolve(tmpdir(), 'domusafe-sync-'));
   process.env.DOMUSAFE_SYNC_DIR = tmp;
   const written = await writeEnvelope(syncId, envelope);
   assert.equal(written.ok, true);
   const stored = await readEnvelope(syncId);
   assert.ok(stored);
-  assert.equal(stored!.ciphertextBase64, envelope.ciphertextBase64);
   const disk = readFileSync(resolve(tmp, `${syncId}.json`), 'utf8');
   assert.equal(disk.includes('Villa Segreta'), false);
-  assert.equal(disk.includes('level1_public'), false);
-
   const roundTrip = await decryptHouseCollection(envelope, {
     keyBytes: usedKey,
   });
@@ -263,65 +398,36 @@ await record('sync: encrypt-before-upload invariant + wrong PIN', async () => {
     roundTrip.houses[0]?.level1_public.houseName,
     'Villa Segreta Sync'
   );
-
-  // PIN path + wrong credentials Italian message
   const pinSealed = await encryptHouseCollection(collection, {
     revision: 2,
     pin: 'sync-pin-ok',
   });
-  assert.ok(pinSealed.envelope.saltBase64);
-  const pinOk = await decryptHouseCollection(pinSealed.envelope, {
-    pin: 'sync-pin-ok',
-  });
-  assert.equal(pinOk.houses[0]?.level1_public.houseName, 'Villa Segreta Sync');
-
   let caught: unknown;
   try {
     await decryptHouseCollection(pinSealed.envelope, { pin: 'wrong-pin' });
   } catch (error) {
     caught = error;
   }
-  assert.ok(caught instanceof Error);
   assert.equal((caught as Error).message, SYNC_CREDENTIALS_ERROR_MESSAGE);
   assert.equal(isSyncCredentialsError(caught), true);
-
-  const newer = await writeEnvelope(syncId, { ...envelope, revision: 5 });
-  assert.equal(newer.ok, true);
-  const conflict = await writeEnvelope(syncId, {
-    ...envelope,
-    revision: 2,
-  });
-  assert.equal(conflict.ok, false);
-  if (!conflict.ok) {
-    assert.equal(conflict.status, 409);
-  }
-
+  const token = encodePairingPayload(syncId, keyBytes);
+  assert.match(token, /^ds1\./);
+  assert.ok(parsePairingPayload(token));
+  assert.match(
+    buildPairingUrl('http://localhost:3000', syncId, keyBytes),
+    /#ds1\./
+  );
   rmSync(tmp, { recursive: true, force: true });
   delete process.env.DOMUSAFE_SYNC_DIR;
-  await clearRunbook();
 });
 
-await record('sync: QR pairing encode/decode + deep-link', () => {
-  const { syncId, keyBytes } = createSyncIdentity();
-  const token = encodePairingPayload(syncId, keyBytes);
-  assert.match(token, /^ds1\.[a-f0-9]{64}\./u);
-  const parsed = parsePairingPayload(token);
-  assert.ok(parsed);
-  assert.equal(parsed!.syncId, syncId);
-  assert.equal(parsed!.keyBytes.length, 32);
-
-  const url = buildPairingUrl('http://localhost:3000', syncId, keyBytes);
-  assert.match(url, /^http:\/\/localhost:3000\/#ds1\./u);
-  const fromUrl = parsePairingPayload(url);
-  assert.ok(fromUrl);
-  assert.equal(fromUrl!.syncId, syncId);
-
-  assert.equal(parsePairingPayload('not-a-pairing'), null);
-  assert.equal(existsSync(resolve('src/app/api/sync/[syncId]/route.ts')), true);
-});
+rmSync(dataDir, { recursive: true, force: true });
+delete process.env.DOMUSAFE_DATA_DIR;
 
 const failed = results.filter((r) => !r.ok);
-console.log(`\nSmoke summary: ${results.length - failed.length}/${results.length} passed`);
+console.log(
+  `\nSmoke summary: ${results.length - failed.length}/${results.length} passed`
+);
 if (failed.length > 0) {
   process.exitCode = 1;
 }

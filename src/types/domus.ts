@@ -48,6 +48,23 @@ export interface LifesavingMedicine {
   physicalLocationInHouse: string;
 }
 
+/** Checklist tasse IT annuale sulla scheda residente (cifrata a riposo col runbook). */
+export interface ResidentTaxYearItem {
+  catalogId: string;
+  done: boolean;
+  doneAt?: string;
+  note?: string;
+}
+
+export interface ResidentTaxBlock {
+  version: '1.0.0';
+  years: Array<{
+    year: number;
+    items: ResidentTaxYearItem[];
+  }>;
+  updatedAt: string;
+}
+
 export interface ResidentHealthRecord {
   id: string;
   fullName: string;
@@ -60,6 +77,8 @@ export interface ResidentHealthRecord {
   mobilityStatus: EvacuationMobility;
   sleepingRoom: string;
   iceContacts: EmergencyContact[];
+  /** Adempimenti fiscali IT per questo residente (730, ISEE, IMU…). */
+  taxChecklist?: ResidentTaxBlock;
 }
 
 export interface PetRecord {

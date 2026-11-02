@@ -39,16 +39,56 @@ export function TouchSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
 export function FieldLabel({
   children,
   htmlFor,
+  className = '',
 }: {
   children: ReactNode;
   htmlFor?: string;
+  className?: string;
 }) {
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1 block text-sm font-bold uppercase tracking-wide text-zinc-900"
+      className={`mb-1 block text-sm font-bold uppercase tracking-wide text-zinc-900 ${className}`}
     >
       {children}
     </label>
+  );
+}
+
+/** Campo etichettato controllato — auth / famiglia / licenze. */
+export function TouchField({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  placeholder,
+  autoComplete,
+  id,
+  labelClassName,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  placeholder?: string;
+  autoComplete?: string;
+  id?: string;
+  labelClassName?: string;
+}) {
+  const fieldId = id ?? label.toLowerCase().replace(/\s+/g, '-');
+  return (
+    <div>
+      <FieldLabel htmlFor={fieldId} className={labelClassName}>
+        {label}
+      </FieldLabel>
+      <TouchInput
+        id={fieldId}
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
   );
 }

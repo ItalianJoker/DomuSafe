@@ -16,6 +16,7 @@ import { canAddResident, getMaxResidents } from '@/lib/licensing';
 import { createEmptyPet, createEmptyResident } from '@/lib/defaults';
 import { BLOOD_GROUP_LABELS, MOBILITY_LABELS } from '@/lib/labels';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
+import { ResidentTaxChecklist } from '@/components/ResidentTaxChecklist';
 import type { LicenseTier } from '@/types/domus';
 
 interface Level2IcePanelProps {
@@ -239,6 +240,18 @@ export function Level2IcePanel({
                       residents,
                       resident.id,
                       { iceContacts },
+                      onResidentsChange
+                    )
+                  }
+                />
+
+                <ResidentTaxChecklist
+                  taxChecklist={resident.taxChecklist}
+                  onChange={(taxChecklist) =>
+                    patchResident(
+                      residents,
+                      resident.id,
+                      { taxChecklist },
                       onResidentsChange
                     )
                   }

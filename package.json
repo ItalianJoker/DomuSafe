@@ -1,6 +1,6 @@
 {
   "name": "domusafe",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
   "scripts": {
@@ -13,7 +13,6 @@
     "verify": "pnpm lint && pnpm typecheck && pnpm smoke && pnpm build"
   },
   "dependencies": {
-    "idb-keyval": "^6.3.0",
     "lucide-react": "^1.66.0",
     "next": "16.4.4",
     "qrcode": "^1.5.4",
@@ -28,7 +27,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.4",
-    "fake-indexeddb": "^6.2.7",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"

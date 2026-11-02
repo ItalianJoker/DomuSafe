@@ -47,7 +47,9 @@ import { FieldLabel, TouchInput, TouchTextarea } from '@/components/TouchField';
 
 interface CloudSyncPanelProps {
   collection: DomusHouseCollection;
-  /** Sostituisce la collezione locale dopo download/merge. */
+  familyId: string;
+  dataKey: CryptoKey;
+  /** Sostituisce la collezione Famiglia dopo download/merge. */
   onCollectionImported: (collection: DomusHouseCollection) => Promise<void>;
   onStatus: (message: string) => void;
 }
@@ -66,6 +68,8 @@ function readInitialPairingImport(): string {
 
 export function CloudSyncPanel({
   collection,
+  familyId,
+  dataKey,
   onCollectionImported,
   onStatus,
 }: CloudSyncPanelProps) {
@@ -89,7 +93,7 @@ export function CloudSyncPanel({
 
   useEffect(() => {
     let active = true;
-    loadSyncSession().then((stored) => {
+    loadSyncSession(familyId, dataKey).then((stored) => {
       if (!active || !stored) return;
       setSession(stored);
       const keyBytes = keyBytesFromSession(stored);
@@ -105,7 +109,7 @@ export function CloudSyncPanel({
     return () => {
       active = false;
     };
-  }, [refreshPairingQr]);
+  }, [refreshPairingQr, familyId, dataKey]);
 
   const createRoom = async () => {
     setBusy(true);
@@ -125,7 +129,7 @@ export function CloudSyncPanel({
         envelope.revision,
         envelope.updatedAt
       );
-      await saveSyncSession(next);
+      await saveSyncSession(familyId, dataKey, next);
       setSession(next);
       const url = buildPairingUrl(window.location.origin, syncId, keyBytes);
       setPairingUrl(url);
@@ -168,7 +172,7 @@ export function CloudSyncPanel({
         uploaded.revision,
         uploaded.updatedAt
       );
-      await saveSyncSession(next);
+      await saveSyncSession(familyId, dataKey, next);
       setSession(next);
       const url = buildPairingUrl(
         window.location.origin,
@@ -237,7 +241,7 @@ export function CloudSyncPanel({
         envelope.revision,
         envelope.updatedAt
       );
-      await saveSyncSession(next);
+      await saveSyncSession(familyId, dataKey, next);
       setSession(next);
       await onCollectionImported(decrypted);
       const url = buildPairingUrl(window.location.origin, syncId, nextKey);
@@ -266,12 +270,12 @@ export function CloudSyncPanel({
   };
 
   const disconnect = async () => {
-    await clearSyncSession();
+    await clearSyncSession(familyId);
     setSession(null);
     setPairingUrl(null);
     setPairingSvg(null);
     setImportText('');
-    onStatus('Sessione sync rimossa da questo dispositivo.');
+    onStatus('Sessione sync rimossa dall’account Famiglia.');
   };
 
   return (

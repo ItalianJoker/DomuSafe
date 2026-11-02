@@ -43,3 +43,7 @@ next-env.d.ts
 # sync E2EE self-host blobs (ciphertext only; never commit)
 /data/sync/*
 !/data/sync/.gitkeep
+
+# account / Famiglia store (ciphertext + sessions; never commit)
+/data/app/**
+!/data/app/.gitkeep

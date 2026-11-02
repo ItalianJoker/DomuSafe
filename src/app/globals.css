@@ -2,11 +2,17 @@
 @import "../styles/print.css";
 
 :root {
-  --background: #f4f7f2;
+  /* Brand DomuSafe — emergenza ad alto contrasto, niente viola/crema generici AI */
+  --brand-ink: #0b1f17;
+  --brand-forest: #1a5c3a;
+  --brand-gold: #f0b429;
+  --brand-cream: #e8f2ec;
+  --brand-danger: #9f1239;
+  --background: #eef3f0;
   --foreground: #0a0a0a;
-  --brand: #0f1a14;
-  --accent: #047857;
-  --danger: #991b1b;
+  --brand: var(--brand-ink);
+  --accent: var(--brand-forest);
+  --danger: var(--brand-danger);
 }
 
 @theme inline {
@@ -24,7 +30,8 @@ body {
 
 h1,
 h2,
-h3 {
+h3,
+.font-display {
   font-family: var(--font-source-serif), Georgia, serif;
 }
 
