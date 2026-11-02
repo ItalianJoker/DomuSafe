@@ -20,9 +20,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+# Directory envelope sync E2EE (solo ciphertext). Montare un volume in produzione.
+ENV DOMUSAFE_SYNC_DIR=/app/data/sync
 
 RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs
+  && adduser --system --uid 1001 nextjs \
+  && mkdir -p /app/data/sync \
+  && chown -R nextjs:nodejs /app/data
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -30,4 +34,5 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
+VOLUME ["/app/data/sync"]
 CMD ["node", "server.js"]

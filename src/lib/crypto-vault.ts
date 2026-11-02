@@ -1,4 +1,5 @@
 import type { EncryptedVaultPayload } from '@/types/domus';
+import { base64ToBytes, bytesToBase64 } from '@/lib/crypto-bytes';
 
 /**
  * 100.000 iterazioni standard raccomandate da OWASP per PBKDF2 con SHA-256.
@@ -13,25 +14,6 @@ export interface EncryptedVaultBlob {
   saltBase64: string;
   ivBase64: string;
   ciphertextBase64: string;
-}
-
-/** Converte Uint8Array → Base64 senza dipendenze Node (browser + edge). */
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += 1) {
-    binary += String.fromCharCode(bytes[i]!);
-  }
-  return btoa(binary);
-}
-
-/** Converte Base64 → Uint8Array. */
-function base64ToBytes(base64: string): Uint8Array {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
 }
 
 /**

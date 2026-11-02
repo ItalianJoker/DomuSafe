@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sync E2EE self-host blobs (ciphertext only; never commit)
+/data/sync/*
+!/data/sync/.gitkeep
