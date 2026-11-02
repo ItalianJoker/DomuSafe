@@ -5,8 +5,9 @@ import {
   getSession,
 } from '@/lib/account-server';
 import { readSessionToken } from '@/lib/session-cookie';
+import type { SealedKeyBlob } from '@/types/account';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const token = await readSessionToken();
     const session = await getSession(token);
@@ -20,9 +21,21 @@ export async function POST() {
         { status: 400 }
       );
     }
+    const body = (await request.json()) as {
+      sealedFamilyKey?: SealedKeyBlob;
+      clientToken?: string;
+    };
+    if (!body.sealedFamilyKey || !body.clientToken) {
+      return NextResponse.json(
+        { error: 'Chiave Famiglia o token invito mancanti' },
+        { status: 400 }
+      );
+    }
     const result = await createInviteOnServer({
       familyId: account.familyId,
       createdByAccountId: account.accountId,
+      sealedFamilyKey: body.sealedFamilyKey,
+      clientToken: body.clientToken,
     });
     return NextResponse.json(result);
   } catch (error) {

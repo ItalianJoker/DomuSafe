@@ -9,7 +9,7 @@ const SECTIONS = [
   },
   {
     title: 'Famiglia',
-    body: 'Il primo utente crea la Famiglia. Gli altri entrano con un invito (link o QR). Case, residenti e checklist appartengono alla Famiglia o al singolo Residente, secondo il tipo di dato.',
+    body: 'Il primo utente crea la Famiglia. Gli altri entrano con un invito (link o QR): l’invito porta anche la chiave protetta del workspace, così tutti i membri vedono le stesse case e checklist. Case, residenti e successione appartengono alla Famiglia; le tasse restano sulla scheda Residente.',
   },
   {
     title: 'Casa (livello 1)',

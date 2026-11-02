@@ -22,6 +22,7 @@ import {
 } from '@/lib/crypto-vault';
 import { canAccessFeature } from '@/lib/licensing';
 import { createEmptyVaultPayload } from '@/lib/defaults';
+import { enforceVaultPayloadForTier } from '@/lib/vault-policy';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
 import { FeatureGate } from '@/components/FeatureGate';
@@ -61,7 +62,12 @@ export function Level3VaultPanel({
     setStatus(null);
     try {
       const decrypted = await decryptVault(vault, pin);
-      setPayload(decrypted);
+      setPayload(
+        enforceVaultPayloadForTier(decrypted, {
+          allowPersonal,
+          allowCustomFields: canAccessFeature(tier, 'allowCustomFields'),
+        })
+      );
       setView('unlocked');
       setPin('');
       setStatus('Cassaforte sbloccata su questo dispositivo.');
@@ -101,7 +107,11 @@ export function Level3VaultPanel({
         setError('I PIN non coincidono.');
         return;
       }
-      const encrypted = await encryptVault(payload, pin);
+      const toEncrypt = enforceVaultPayloadForTier(payload, {
+        allowPersonal,
+        allowCustomFields: canAccessFeature(tier, 'allowCustomFields'),
+      });
+      const encrypted = await encryptVault(toEncrypt, pin);
       onVaultChange(encrypted);
       setView('locked');
       setPayload(createEmptyVaultPayload());

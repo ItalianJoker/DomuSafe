@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Contesto sessione: cookie httpOnly + data-key solo in memoria.
- * Gate: auth → Famiglia → runbook account-scoped.
+ * Contesto sessione: cookie httpOnly + data-key / family-key solo in memoria.
+ * Gate: auth → Famiglia → runbook family-scoped (chiave condivisa).
  */
 
 import {
@@ -16,18 +16,22 @@ import {
 } from 'react';
 import type { DomuAccount, DomuFamily } from '@/types/account';
 import {
+  clearFamilyKeyMemory,
   clearUnlockedDataKey,
   createFamilyApi,
-  applySaasLicenseApi,
   createInviteApi,
+  ensureFamilyKeyForSession,
   fetchSession,
+  getFamilyKeyRaw,
   getUnlockedDataKey,
+  getUnlockedFamilyKey,
   joinFamilyApi,
   loginAccount,
   logoutAccount,
   markTutorialCompletedApi,
   registerAccount,
-  startTrialApi,
+  applySaasLicenseApi,
+  startPremiumTrialApi,
   unlockWithPassword,
 } from '@/lib/auth-client';
 import {
@@ -48,7 +52,13 @@ interface SessionContextValue {
   status: SessionStatus;
   account: DomuAccount | null;
   family: DomuFamily | null;
+  /** Account data-key (wrap / unwrap family-key). */
   dataKey: CryptoKey | null;
+  /**
+   * Family-key: cifra case/successione (condivisa tra membri).
+   * Null finché non c’è Famiglia sbloccata.
+   */
+  familyKey: CryptoKey | null;
   effectiveTier: LicenseTier;
   error: string | null;
   register: (input: {
@@ -82,18 +92,42 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<DomuAccount | null>(null);
   const [family, setFamily] = useState<DomuFamily | null>(null);
   const [dataKey, setDataKey] = useState<CryptoKey | null>(null);
+  const [familyKey, setFamilyKey] = useState<CryptoKey | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const applyReady = useCallback(
-    (acc: DomuAccount, fam: DomuFamily | null, key: CryptoKey) => {
+    async (
+      acc: DomuAccount,
+      fam: DomuFamily | null,
+      accountKey: CryptoKey
+    ) => {
       setAccount(acc);
-      setFamily(fam);
-      setDataKey(key);
+      setDataKey(accountKey);
       if (!acc.familyId || !fam) {
+        setFamily(null);
+        setFamilyKey(null);
         setStatus('needs_family');
         return;
       }
-      setStatus('ready');
+      try {
+        const ensured = await ensureFamilyKeyForSession({
+          family: fam,
+          accountId: acc.accountId,
+          accountDataKey: accountKey,
+        });
+        setFamily(ensured.family);
+        setFamilyKey(ensured.familyKey);
+        setStatus('ready');
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? e.message
+            : 'Impossibile sbloccare la chiave Famiglia'
+        );
+        setFamily(fam);
+        setFamilyKey(null);
+        setStatus('needs_family');
+      }
     },
     []
   );
@@ -110,7 +144,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         }
         const key = getUnlockedDataKey(sess.account.accountId);
         if (key) {
-          applyReady(sess.account, sess.family, key);
+          await applyReady(sess.account, sess.family, key);
         } else {
           setAccount(sess.account);
           setFamily(sess.family);
@@ -130,15 +164,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       const invite = peekInviteFromHash();
       if (!invite || acc.familyId) {
         const sess = await fetchSession();
-        applyReady(acc, sess?.family ?? null, key);
+        await applyReady(acc, sess?.family ?? null, key);
         return;
       }
       try {
-        const joined = await joinFamilyApi(invite);
-        applyReady(joined.account, joined.family, key);
+        const joined = await joinFamilyApi(invite, key);
+        await applyReady(joined.account, joined.family, key);
+        setFamilyKey(joined.familyKey);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Invito non valido');
-        applyReady(acc, null, key);
+        await applyReady(acc, null, key);
       }
     },
     [applyReady]
@@ -175,7 +210,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
       const key = await unlockWithPassword(account, password);
       const sess = await fetchSession();
-      applyReady(sess?.account ?? account, sess?.family ?? family, key);
+      await applyReady(sess?.account ?? account, sess?.family ?? family, key);
     },
     [account, family, applyReady]
   );
@@ -183,37 +218,61 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await logoutAccount();
     clearUnlockedDataKey();
+    clearFamilyKeyMemory();
     setAccount(null);
     setFamily(null);
     setDataKey(null);
+    setFamilyKey(null);
     setStatus('unauthenticated');
   }, []);
 
   const createOwnedFamily = useCallback(
     async (name: string) => {
-      if (!dataKey) return;
+      if (!dataKey || !account) return;
       setError(null);
-      const result = await createFamilyApi(name);
-      applyReady(result.account, result.family, dataKey);
+      const result = await createFamilyApi(
+        name,
+        dataKey,
+        account.accountId
+      );
+      setFamilyKey(result.familyKey);
+      await applyReady(result.account, result.family, dataKey);
     },
-    [dataKey, applyReady]
+    [dataKey, account, applyReady]
   );
 
   const joinFamily = useCallback(
     async (inviteCode: string) => {
       if (!dataKey) return;
       setError(null);
-      const result = await joinFamilyApi(inviteCode);
-      applyReady(result.account, result.family, dataKey);
+      const result = await joinFamilyApi(inviteCode, dataKey);
+      setFamilyKey(result.familyKey);
+      await applyReady(result.account, result.family, dataKey);
     },
     [dataKey, applyReady]
   );
 
   const createInvite = useCallback(async () => {
-    const result = await createInviteApi();
+    if (!family) return null;
+    let familyKeyRaw = getFamilyKeyRaw(family.familyId);
+    if (!familyKeyRaw && dataKey && account) {
+      const ensured = await ensureFamilyKeyForSession({
+        family,
+        accountId: account.accountId,
+        accountDataKey: dataKey,
+      });
+      setFamily(ensured.family);
+      setFamilyKey(ensured.familyKey);
+      familyKeyRaw = ensured.familyKeyRaw;
+    }
+    if (!familyKeyRaw) {
+      setError('Chiave Famiglia non disponibile: sblocca di nuovo la sessione');
+      return null;
+    }
+    const result = await createInviteApi(family.familyId, familyKeyRaw);
     setFamily(result.family);
     return { inviteCode: result.inviteCode };
-  }, []);
+  }, [family, dataKey, account]);
 
   const completeTutorial = useCallback(async () => {
     const next = await markTutorialCompletedApi();
@@ -224,7 +283,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (!account) return;
     setError(null);
     try {
-      const next = await startTrialApi();
+      const next = await startPremiumTrialApi();
       setAccount(next);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Prova non disponibile');
@@ -248,6 +307,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (sess) {
       setAccount(sess.account);
       setFamily(sess.family);
+      if (sess.family) {
+        const fk = getUnlockedFamilyKey(sess.family.familyId);
+        if (fk) setFamilyKey(fk);
+      }
     }
   }, []);
 
@@ -264,6 +327,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     account,
     family,
     dataKey,
+    familyKey,
     effectiveTier,
     error,
     register,
@@ -287,6 +351,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
 export function useSession(): SessionContextValue {
   const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error('useSession richiede SessionProvider');
+  if (!ctx) {
+    throw new Error('useSession fuori da SessionProvider');
+  }
   return ctx;
 }

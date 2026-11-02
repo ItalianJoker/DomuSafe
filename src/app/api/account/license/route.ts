@@ -1,6 +1,6 @@
 /**
  * Licenza account: prova Premium (server-side) oppure chiave SaaS JWT/Ed25519.
- * Non accetta un `baseTier` arbitrario dal client (anti-escalation).
+ * Non accetta `baseTier` / campi trial arbitrari dal client (anti-spoof).
  */
 
 import { NextResponse } from 'next/server';
@@ -14,6 +14,11 @@ import { readSessionToken } from '@/lib/session-cookie';
 import { startPremiumTrial } from '@/lib/trial';
 import { applySaasLicenseToken } from '@/lib/license-jwt';
 
+/**
+ * Mutazioni licenza consentite:
+ * - `start_premium_trial` — avvio prova Premium (una sola volta)
+ * - `apply_saas` + `saasToken` — JWT Ed25519 verificato con DOMUSAFE_LICENSE_PUBLIC_KEY
+ */
 export async function PUT(request: Request) {
   try {
     const token = await readSessionToken();
@@ -31,7 +36,7 @@ export async function PUT(request: Request) {
       saasToken?: string;
     };
 
-    if (body.action === 'start_trial') {
+    if (body.action === 'start_premium_trial') {
       const license = startPremiumTrial(account.license);
       const next = {
         ...account,
@@ -42,13 +47,15 @@ export async function PUT(request: Request) {
       return NextResponse.json({ account: toPublicAccount(next) });
     }
 
-    const saasToken =
-      typeof body.saasToken === 'string' ? body.saasToken.trim() : '';
-
-    if (
-      (body.action === 'apply_saas' || body.action === undefined) &&
-      saasToken
-    ) {
+    if (body.action === 'apply_saas') {
+      const saasToken =
+        typeof body.saasToken === 'string' ? body.saasToken.trim() : '';
+      if (!saasToken) {
+        return NextResponse.json(
+          { error: 'saasToken obbligatorio' },
+          { status: 400 }
+        );
+      }
       const verified = applySaasLicenseToken({
         token: saasToken,
         accountEmail: account.email,
@@ -69,10 +76,7 @@ export async function PUT(request: Request) {
     }
 
     return NextResponse.json(
-      {
-        error:
-          'Azione non valida: usa start_trial oppure applica una chiave SaaS (saasToken)',
-      },
+      { error: 'Azione licenza non consentita' },
       { status: 400 }
     );
   } catch (error) {

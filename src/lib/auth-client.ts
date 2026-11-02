@@ -1,15 +1,27 @@
 /**
  * Client auth DomuSafe — API account server, nessuna persistenza browser durevole.
- * La data-key sbloccata vive solo in memoria di processo.
+ * Account data-key + family-key solo in memoria di processo.
  */
-import type { DomuAccount, DomuFamily } from '@/types/account';
+import type { DomuAccount, DomuFamily, SealedKeyBlob } from '@/types/account';
 import {
   prepareRegistrationCrypto,
   unlockDataKeyFromAccount,
 } from '@/lib/crypto-auth';
-
+import {
+  createFamilyKey,
+  importFamilyKey,
+  openFamilyKeyFromInvite,
+  sealFamilyKeyForInvite,
+  unwrapFamilyKeyForMember,
+  wrapFamilyKeyForMember,
+} from '@/lib/crypto-family';
+import { parseInvitePayload } from '@/lib/family';
 /** Memoria di processo: data-key per accountId. */
 const unlockedDataKeys = new Map<string, CryptoKey>();
+/** Family-key per familyId (workspace condiviso). */
+const unlockedFamilyKeys = new Map<string, CryptoKey>();
+/** Raw family-key (per seal inviti) — solo memoria. */
+const familyKeyRaws = new Map<string, Uint8Array>();
 
 export function getUnlockedDataKey(accountId: string): CryptoKey | null {
   return unlockedDataKeys.get(accountId) ?? null;
@@ -27,6 +39,33 @@ export function clearUnlockedDataKey(accountId?: string): void {
   else unlockedDataKeys.clear();
 }
 
+export function getUnlockedFamilyKey(familyId: string): CryptoKey | null {
+  return unlockedFamilyKeys.get(familyId) ?? null;
+}
+
+export function getFamilyKeyRaw(familyId: string): Uint8Array | null {
+  return familyKeyRaws.get(familyId) ?? null;
+}
+
+function setFamilyKeyMemory(
+  familyId: string,
+  key: CryptoKey,
+  raw: Uint8Array
+): void {
+  unlockedFamilyKeys.set(familyId, key);
+  familyKeyRaws.set(familyId, raw);
+}
+
+export function clearFamilyKeyMemory(familyId?: string): void {
+  if (familyId) {
+    unlockedFamilyKeys.delete(familyId);
+    familyKeyRaws.delete(familyId);
+  } else {
+    unlockedFamilyKeys.clear();
+    familyKeyRaws.clear();
+  }
+}
+
 async function parseError(res: Response): Promise<string> {
   try {
     const body = (await res.json()) as { error?: string };
@@ -34,6 +73,70 @@ async function parseError(res: Response): Promise<string> {
   } catch {
     return `Errore ${res.status}`;
   }
+}
+
+async function putMemberKeyWrap(
+  familyId: string,
+  wrap: SealedKeyBlob
+): Promise<DomuFamily> {
+  const res = await fetch(`/api/family/${familyId}/key-wrap`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ wrap }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  const data = (await res.json()) as { family: DomuFamily };
+  return data.family;
+}
+
+/**
+ * Sblocca o crea la family-key per l’account corrente.
+ * Legacy (nessun wrap): genera nuova key, il chiamante migra i blob.
+ */
+export async function ensureFamilyKeyForSession(input: {
+  family: DomuFamily;
+  accountId: string;
+  accountDataKey: CryptoKey;
+}): Promise<{
+  familyKey: CryptoKey;
+  familyKeyRaw: Uint8Array;
+  family: DomuFamily;
+  createdNew: boolean;
+}> {
+  const cached = getUnlockedFamilyKey(input.family.familyId);
+  const cachedRaw = getFamilyKeyRaw(input.family.familyId);
+  if (cached && cachedRaw) {
+    return {
+      familyKey: cached,
+      familyKeyRaw: cachedRaw,
+      family: input.family,
+      createdNew: false,
+    };
+  }
+
+  const existing = input.family.memberKeyWraps?.[input.accountId];
+  if (existing) {
+    const raw = await unwrapFamilyKeyForMember(existing, input.accountDataKey);
+    const key = await importFamilyKey(raw);
+    setFamilyKeyMemory(input.family.familyId, key, raw);
+    return {
+      familyKey: key,
+      familyKeyRaw: raw,
+      family: input.family,
+      createdNew: false,
+    };
+  }
+
+  const { key, raw } = await createFamilyKey();
+  const wrap = await wrapFamilyKeyForMember(raw, input.accountDataKey);
+  const family = await putMemberKeyWrap(input.family.familyId, wrap);
+  setFamilyKeyMemory(input.family.familyId, key, raw);
+  return {
+    familyKey: key,
+    familyKeyRaw: raw,
+    family,
+    createdNew: true,
+  };
 }
 
 export async function registerAccount(input: {
@@ -92,6 +195,7 @@ export async function fetchSession(): Promise<{
 
 export async function logoutAccount(): Promise<void> {
   clearUnlockedDataKey();
+  clearFamilyKeyMemory();
   await fetch('/api/auth/logout', { method: 'POST' });
 }
 
@@ -104,9 +208,14 @@ export async function unlockWithPassword(
   return dataKey;
 }
 
-export async function createFamilyApi(name: string): Promise<{
+export async function createFamilyApi(
+  name: string,
+  accountDataKey: CryptoKey,
+  accountId: string
+): Promise<{
   family: DomuFamily;
   account: DomuAccount;
+  familyKey: CryptoKey;
 }> {
   const res = await fetch('/api/family', {
     method: 'POST',
@@ -114,12 +223,25 @@ export async function createFamilyApi(name: string): Promise<{
     body: JSON.stringify({ name }),
   });
   if (!res.ok) throw new Error(await parseError(res));
-  return (await res.json()) as { family: DomuFamily; account: DomuAccount };
+  const created = (await res.json()) as {
+    family: DomuFamily;
+    account: DomuAccount;
+  };
+  const { key, raw } = await createFamilyKey();
+  const wrap = await wrapFamilyKeyForMember(raw, accountDataKey);
+  const family = await putMemberKeyWrap(created.family.familyId, wrap);
+  setFamilyKeyMemory(family.familyId, key, raw);
+  void accountId;
+  return { family, account: created.account, familyKey: key };
 }
 
-export async function joinFamilyApi(inviteCode: string): Promise<{
+export async function joinFamilyApi(
+  inviteCode: string,
+  accountDataKey: CryptoKey
+): Promise<{
   family: DomuFamily;
   account: DomuAccount;
+  familyKey: CryptoKey;
 }> {
   const res = await fetch('/api/family/join', {
     method: 'POST',
@@ -127,14 +249,47 @@ export async function joinFamilyApi(inviteCode: string): Promise<{
     body: JSON.stringify({ inviteCode }),
   });
   if (!res.ok) throw new Error(await parseError(res));
-  return (await res.json()) as { family: DomuFamily; account: DomuAccount };
+  const data = (await res.json()) as {
+    family: DomuFamily;
+    account: DomuAccount;
+    sealedFamilyKey: SealedKeyBlob;
+    inviteToken: string;
+    familyId: string;
+  };
+  const raw = await openFamilyKeyFromInvite(
+    data.sealedFamilyKey,
+    data.inviteToken,
+    data.familyId
+  );
+  const key = await importFamilyKey(raw);
+  const wrap = await wrapFamilyKeyForMember(raw, accountDataKey);
+  const family = await putMemberKeyWrap(data.familyId, wrap);
+  setFamilyKeyMemory(data.familyId, key, raw);
+  return { family, account: data.account, familyKey: key };
 }
 
-export async function createInviteApi(): Promise<{
+export async function createInviteApi(
+  familyId: string,
+  familyKeyRaw: Uint8Array
+): Promise<{
   family: DomuFamily;
   inviteCode: string;
 }> {
-  const res = await fetch('/api/family/invite', { method: 'POST' });
+  /** Token opaco client-side (hex 32) — consente seal family-key prima del POST. */
+  const tokenBytes = crypto.getRandomValues(new Uint8Array(16));
+  const clientToken = Array.from(tokenBytes, (b) =>
+    b.toString(16).padStart(2, '0')
+  ).join('');
+  const sealedFamilyKey = await sealFamilyKeyForInvite(
+    familyKeyRaw,
+    clientToken,
+    familyId
+  );
+  const res = await fetch('/api/family/invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sealedFamilyKey, clientToken }),
+  });
   if (!res.ok) throw new Error(await parseError(res));
   return (await res.json()) as { family: DomuFamily; inviteCode: string };
 }
@@ -146,17 +301,24 @@ export async function markTutorialCompletedApi(): Promise<DomuAccount> {
   return data.account;
 }
 
-/** Avvia prova Premium 30 giorni (logica trial solo sul server). */
-export async function startTrialApi(): Promise<DomuAccount> {
+/** Avvia prova Premium — il server applica startPremiumTrial (no spoof). */
+export async function startPremiumTrialApi(): Promise<DomuAccount> {
   const res = await fetch('/api/account/license', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'start_trial' }),
+    body: JSON.stringify({ action: 'start_premium_trial' }),
   });
   if (!res.ok) throw new Error(await parseError(res));
   const data = (await res.json()) as { account: DomuAccount };
   return data.account;
 }
+
+/** @deprecated use startPremiumTrialApi */
+export async function updateLicenseApi(): Promise<DomuAccount> {
+  return startPremiumTrialApi();
+}
+
+export { parseInvitePayload };
 
 /** Applica chiave JWT/Ed25519 SaaS verificata sul server. */
 export async function applySaasLicenseApi(
@@ -171,4 +333,3 @@ export async function applySaasLicenseApi(
   const data = (await res.json()) as { account: DomuAccount };
   return data.account;
 }
-

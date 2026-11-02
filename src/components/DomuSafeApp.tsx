@@ -128,6 +128,7 @@ function AuthenticatedApp() {
     account,
     family,
     dataKey,
+    familyKey,
     effectiveTier,
     logout,
     completeTutorial,
@@ -136,14 +137,15 @@ function AuthenticatedApp() {
     createInvite,
     refreshAccount,
   } = useSession();
+  /** Workspace: family-key condivisa (fallback account data-key solo in migrazione). */
   const storageCtx: StorageContext | null = useMemo(() => {
-    if (!family || !dataKey) return null;
+    if (!family || !familyKey) return null;
     return {
       familyId: family.familyId,
-      dataKey,
+      dataKey: familyKey,
       tier: effectiveTier,
     };
-  }, [family, dataKey, effectiveTier]);
+  }, [family, familyKey, effectiveTier]);
 
   const [collection, setCollection] = useState<DomusHouseCollection | null>(
     null
@@ -167,12 +169,32 @@ function AuthenticatedApp() {
   const qrPayload = useClientUrl();
 
   useEffect(() => {
-    if (!storageCtx) return;
+    if (!storageCtx || !dataKey) return;
     let active = true;
-    Promise.all([
-      loadHouseCollection(storageCtx),
-      loadSuccessionChecklist(storageCtx.familyId, storageCtx.dataKey),
-    ])
+
+    const loadWithOptionalLegacyMigrate = async () => {
+      try {
+        return await Promise.all([
+          loadHouseCollection(storageCtx),
+          loadSuccessionChecklist(storageCtx.familyId, storageCtx.dataKey),
+        ]);
+      } catch {
+        // Legacy pre-0.7: blob cifrati con account data-key → migra a family-key.
+        const legacyCtx: StorageContext = {
+          ...storageCtx,
+          dataKey,
+        };
+        const [col, succ] = await Promise.all([
+          loadHouseCollection(legacyCtx),
+          loadSuccessionChecklist(legacyCtx.familyId, legacyCtx.dataKey),
+        ]);
+        await replaceHouseCollection(col, storageCtx);
+        await saveSuccessionChecklist(succ, storageCtx.dataKey);
+        return [col, succ] as const;
+      }
+    };
+
+    loadWithOptionalLegacyMigrate()
       .then(([col, succ]) => {
         if (!active) return;
         setCollection(col);
@@ -187,7 +209,7 @@ function AuthenticatedApp() {
     return () => {
       active = false;
     };
-  }, [storageCtx, account]);
+  }, [storageCtx, account, dataKey]);
 
   const handleQrReady = useCallback((svg: string) => {
     setQrSvg(svg);
