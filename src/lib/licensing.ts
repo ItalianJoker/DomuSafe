@@ -3,14 +3,35 @@ import type { LicenseConfig, LicenseTier } from '@/types/domus';
 import { effectiveTierFromLicense } from '@/lib/trial';
 
 /**
- * Limiti funzionali per piano. Il Feature Gate Engine legge solo questa mappa:
- * nessuna chiamata di rete obbligatoria in modalità self-host / offline BASIC.
+ * Limiti funzionali per piano (binding docs/license-tiers.md).
+ * Feature Gate Engine: unica mappa; zero rete in self-host.
+ *
+ * Free → L1+L2, 1 residente, watermark
+ * Basic → L1+L2, residenti illimitati, watermark
+ * Advanced → + L3 documenti Famiglia, no watermark; no tasse / patrimonio personale / sync
+ * Premium → tutto (tasse, patrimonio personale, successione, sync E2EE, …)
  */
 export const TIER_LIMITS: Record<LicenseTier, LicenseConfig['features']> = {
+  FREE: {
+    maxHouses: 1,
+    allowLevel3Vault: false,
+    allowPersonalPatrimonio: false,
+    allowResidentTax: false,
+    allowSuccessionChecklist: false,
+    allowCloudSync: false,
+    allowCustomFields: false,
+    allowSmsAlerts: false,
+    customBranding: false,
+    auditLog: false,
+  },
   BASIC: {
     maxHouses: 1,
     allowLevel3Vault: false,
+    allowPersonalPatrimonio: false,
+    allowResidentTax: false,
+    allowSuccessionChecklist: false,
     allowCloudSync: false,
+    allowCustomFields: false,
     allowSmsAlerts: false,
     customBranding: false,
     auditLog: false,
@@ -18,7 +39,11 @@ export const TIER_LIMITS: Record<LicenseTier, LicenseConfig['features']> = {
   ADVANCED: {
     maxHouses: 3,
     allowLevel3Vault: true,
-    allowCloudSync: true,
+    allowPersonalPatrimonio: false,
+    allowResidentTax: false,
+    allowSuccessionChecklist: false,
+    allowCloudSync: false,
+    allowCustomFields: false,
     allowSmsAlerts: false,
     customBranding: false,
     auditLog: false,
@@ -26,24 +51,30 @@ export const TIER_LIMITS: Record<LicenseTier, LicenseConfig['features']> = {
   PREMIUM: {
     maxHouses: 999,
     allowLevel3Vault: true,
+    allowPersonalPatrimonio: true,
+    allowResidentTax: true,
+    allowSuccessionChecklist: true,
     allowCloudSync: true,
+    allowCustomFields: true,
     allowSmsAlerts: true,
     customBranding: true,
     auditLog: true,
   },
 };
 
-/** BASIC: max 2 schede ICE; ADVANCED/PREMIUM: illimitati. */
+/** Free: 1 scheda ICE; Basic+: illimitati. */
 export const MAX_RESIDENTS_BY_TIER: Record<LicenseTier, number> = {
-  BASIC: 2,
+  FREE: 1,
+  BASIC: Number.POSITIVE_INFINITY,
   ADVANCED: Number.POSITIVE_INFINITY,
   PREMIUM: Number.POSITIVE_INFINITY,
 };
 
 /** Tier predefinito per installazioni self-host senza chiave SaaS. */
-export const DEFAULT_TIER: LicenseTier = 'BASIC';
+export const DEFAULT_TIER: LicenseTier = 'FREE';
 
 const VALID_TIERS: ReadonlySet<string> = new Set([
+  'FREE',
   'BASIC',
   'ADVANCED',
   'PREMIUM',
@@ -51,8 +82,7 @@ const VALID_TIERS: ReadonlySet<string> = new Set([
 
 /**
  * Risolve il piano attivo da `NEXT_PUBLIC_DOMUSAFE_TIER` (self-host / test).
- * Valori ammessi: BASIC | ADVANCED | PREMIUM. Qualsiasi altro valore → BASIC.
- * Non richiede rete: sicuro da usare anche offline.
+ * Valori ammessi: FREE | BASIC | ADVANCED | PREMIUM. Altro → FREE.
  */
 export function resolveConfiguredTier(
   envValue: string | undefined = process.env.NEXT_PUBLIC_DOMUSAFE_TIER
@@ -66,8 +96,7 @@ export function resolveConfiguredTier(
 
 /**
  * Verifica se l'operazione richiesta è permessa nel piano corrente.
- * Utilizzato sia nei componenti UI per nascondere/bloccare sezioni,
- * sia nella logica di salvataggio/esportazione.
+ * Usato in UI (FeatureGate) e logica di salvataggio/esportazione.
  */
 export function canAccessFeature(
   currentTier: LicenseTier,
@@ -104,16 +133,15 @@ export function canAddResident(
 }
 
 /**
- * Watermark di stampa DomuSafe: solo BASIC (PRD).
- * ADVANCED/PREMIUM stampano senza watermark (privacy flap resta).
+ * Watermark di stampa DomuSafe: Free e Basic.
+ * Advanced/Premium stampano senza watermark (privacy flap resta).
  */
 export function shouldShowPrintWatermark(tier: LicenseTier): boolean {
-  return tier === 'BASIC';
+  return tier === 'FREE' || tier === 'BASIC';
 }
 
 /**
  * Costruisce una LicenseConfig locale (self-host) senza firma SaaS.
- * La firma Ed25519 resta opzionale e riservata al percorso cloud.
  */
 export function createLocalLicense(
   tier: LicenseTier = resolveConfiguredTier(),
@@ -128,7 +156,7 @@ export function createLocalLicense(
 
 /**
  * Piano effettivo per Feature Gate: trial Premium attivo → PREMIUM,
- * altrimenti `baseTier` (dopo scadenza torna BASIC o piano pagato precedente).
+ * altrimenti `baseTier` (dopo scadenza torna Free/Basic/…).
  */
 export function resolveEffectiveTier(
   license: AccountLicenseState,
@@ -139,6 +167,7 @@ export function resolveEffectiveTier(
 
 /** Etichette italiane brevi per UI licenze. */
 export const TIER_LABELS: Record<LicenseTier, string> = {
+  FREE: 'Free',
   BASIC: 'Basic',
   ADVANCED: 'Advanced',
   PREMIUM: 'Premium',

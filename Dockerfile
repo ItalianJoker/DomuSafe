@@ -10,8 +10,8 @@ WORKDIR /app
 RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Piano self-host incorporato in build (BASIC|ADVANCED|PREMIUM). Default BASIC.
-ARG NEXT_PUBLIC_DOMUSAFE_TIER=BASIC
+# Piano self-host incorporato in build (FREE|BASIC|ADVANCED|PREMIUM). Default FREE.
+ARG NEXT_PUBLIC_DOMUSAFE_TIER=FREE
 ENV NEXT_PUBLIC_DOMUSAFE_TIER=$NEXT_PUBLIC_DOMUSAFE_TIER
 RUN pnpm build
 

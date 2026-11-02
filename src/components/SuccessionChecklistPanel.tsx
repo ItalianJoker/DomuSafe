@@ -2,12 +2,16 @@
 
 /**
  * Checklist successione — family-scoped, contesto patrimonio / L3.
- * Gate ADVANCED+ (o trial PREMIUM) nel parent via FeatureGate.
+ * Gate Premium (+ trial) nel parent via allowSuccessionChecklist.
+ * Campi personalizzati: allowCustomFields (Premium).
  */
 
 import { ScrollText } from 'lucide-react';
+import type { LicenseTier } from '@/types/domus';
 import type { SuccessionChecklist } from '@/types/checklists';
 import { FieldLabel, TouchInput } from '@/components/TouchField';
+import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
+import { FeatureGate } from '@/components/FeatureGate';
 
 const CATEGORY_LABELS: Record<
   SuccessionChecklist['items'][number]['category'],
@@ -23,12 +27,14 @@ const CATEGORY_LABELS: Record<
 };
 
 interface SuccessionChecklistPanelProps {
+  tier: LicenseTier;
   checklist: SuccessionChecklist;
   onChange: (next: SuccessionChecklist) => void;
   familyName?: string;
 }
 
 export function SuccessionChecklistPanel({
+  tier,
   checklist,
   onChange,
   familyName,
@@ -109,6 +115,22 @@ export function SuccessionChecklistPanel({
           </li>
         ))}
       </ul>
+
+      <div className="mt-4">
+        <FeatureGate tier={tier} feature="allowCustomFields">
+          <CustomFieldsEditor
+            title="Campi personalizzati (successione)"
+            fields={checklist.customFields}
+            onChange={(customFields) =>
+              onChange({
+                ...checklist,
+                customFields,
+                updatedAt: new Date().toISOString(),
+              })
+            }
+          />
+        </FeatureGate>
+      </div>
     </section>
   );
 }

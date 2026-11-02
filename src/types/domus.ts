@@ -1,5 +1,5 @@
-/** Livelli di sottoscrizione supportati */
-export type LicenseTier = 'BASIC' | 'ADVANCED' | 'PREMIUM';
+/** Livelli di sottoscrizione supportati (binding: Free / Basic / Advanced / Premium). */
+export type LicenseTier = 'FREE' | 'BASIC' | 'ADVANCED' | 'PREMIUM';
 
 /** Licenza crittografica o impostazione d'ambiente */
 export interface LicenseConfig {
@@ -9,12 +9,35 @@ export interface LicenseConfig {
   signature?: string;
   features: {
     maxHouses: number;
+    /** Livello 3 cassaforte (documenti Famiglia su Advanced; tutto su Premium). */
     allowLevel3Vault: boolean;
+    /**
+     * Sezioni patrimoniali personali in cassaforte (conti, polizze, lavoro).
+     * Solo Premium (+ trial). Advanced resta su documenti Famiglia.
+     */
+    allowPersonalPatrimonio: boolean;
+    /** Checklist tasse IT sulle schede residenti — solo Premium (+ trial). */
+    allowResidentTax: boolean;
+    /** Checklist successione Famiglia — solo Premium (+ trial). */
+    allowSuccessionChecklist: boolean;
+    /** Sync cloud E2EE multi-device — solo Premium (+ trial). */
     allowCloudSync: boolean;
+    /**
+     * Campi personalizzati oltre agli standard (L1/L2/L3).
+     * Solo Premium (+ trial). Free/Basic/Advanced = campi standard only.
+     */
+    allowCustomFields: boolean;
     allowSmsAlerts: boolean;
     customBranding: boolean;
     auditLog: boolean;
   };
+}
+
+/** Campo libero Premium: etichetta + valore, oltre allo schema standard. */
+export interface CustomField {
+  id: string;
+  label: string;
+  value: string;
 }
 
 export type BloodGroup =
@@ -77,8 +100,10 @@ export interface ResidentHealthRecord {
   mobilityStatus: EvacuationMobility;
   sleepingRoom: string;
   iceContacts: EmergencyContact[];
-  /** Adempimenti fiscali IT per questo residente (730, ISEE, IMU…). */
+  /** Adempimenti fiscali IT per questo residente (730, ISEE, IMU…). Premium. */
   taxChecklist?: ResidentTaxBlock;
+  /** Solo Premium (+ trial): campi oltre allo schema standard. */
+  customFields?: CustomField[];
 }
 
 export interface PetRecord {
@@ -90,6 +115,8 @@ export interface PetRecord {
     phone: string;
     address: string;
   };
+  /** Solo Premium (+ trial): campi oltre allo schema standard. */
+  customFields?: CustomField[];
 }
 
 export interface PublicHouseData {
@@ -106,6 +133,8 @@ export interface PublicHouseData {
   };
   wasteSchedule: Array<{ day: string; fractions: string[] }>;
   artisanContacts: Array<{ trade: string; name: string; phone: string }>;
+  /** Solo Premium (+ trial): campi oltre allo schema standard. */
+  customFields?: CustomField[];
 }
 
 export interface EncryptedVaultPayload {
@@ -136,6 +165,8 @@ export interface EncryptedVaultPayload {
     googleInactiveManagerActive: boolean;
     passwordManagerKitLocation: string;
   };
+  /** Solo Premium (+ trial): campi oltre allo schema standard della cassaforte. */
+  customFields?: CustomField[];
 }
 
 export interface DomusRunbookDocument {

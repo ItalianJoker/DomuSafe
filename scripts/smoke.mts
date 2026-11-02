@@ -1,6 +1,7 @@
 /**
  * Smoke critico DomuSafe (Node 22).
- * Account filesystem (no IndexedDB), licensing/trial, vault, sync E2EE, checklists.
+ * Account filesystem (no IndexedDB), licensing Free→Premium + trial,
+ * vault, sync E2EE family-scoped, custom fields Premium, checklists.
  */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
@@ -94,34 +95,49 @@ function record(name: string, fn: () => void | Promise<void>) {
 const dataDir = mkdtempSync(resolve(tmpdir(), 'domusafe-app-'));
 process.env.DOMUSAFE_DATA_DIR = dataDir;
 
-await record('licensing: default tier is BASIC', () => {
-  assert.equal(DEFAULT_TIER, 'BASIC');
-  assert.equal(resolveConfiguredTier(undefined), 'BASIC');
+await record('licensing: default tier is FREE', () => {
+  assert.equal(DEFAULT_TIER, 'FREE');
+  assert.equal(resolveConfiguredTier(undefined), 'FREE');
   assert.equal(resolveConfiguredTier('advanced'), 'ADVANCED');
+  assert.equal(resolveConfiguredTier('premium'), 'PREMIUM');
 });
 
-await record('licensing: BASIC gates + ADVANCED houses', () => {
+await record('licensing: Free/Basic/Advanced/Premium gates', () => {
+  assert.equal(canAccessFeature('FREE', 'allowLevel3Vault'), false);
   assert.equal(canAccessFeature('BASIC', 'allowLevel3Vault'), false);
   assert.equal(canAccessFeature('ADVANCED', 'allowLevel3Vault'), true);
+  assert.equal(canAccessFeature('ADVANCED', 'allowCloudSync'), false);
+  assert.equal(canAccessFeature('ADVANCED', 'allowCustomFields'), false);
+  assert.equal(canAccessFeature('ADVANCED', 'allowPersonalPatrimonio'), false);
+  assert.equal(canAccessFeature('ADVANCED', 'allowResidentTax'), false);
+  assert.equal(canAccessFeature('PREMIUM', 'allowCloudSync'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowCustomFields'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowResidentTax'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowSuccessionChecklist'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowPersonalPatrimonio'), true);
   assert.equal(canAddHouse('ADVANCED', 3), false);
-  assert.equal(canAddResident('BASIC', 2), false);
+  assert.equal(canAddResident('FREE', 1), false);
+  assert.equal(canAddResident('BASIC', 2), true);
   assert.equal(getMaxHouses('PREMIUM'), 999);
-  assert.equal(Number.isFinite(getMaxResidents('ADVANCED')), false);
+  assert.equal(getMaxResidents('FREE'), 1);
+  assert.equal(Number.isFinite(getMaxResidents('BASIC')), false);
+  assert.equal(shouldShowPrintWatermark('FREE'), true);
   assert.equal(shouldShowPrintWatermark('BASIC'), true);
+  assert.equal(shouldShowPrintWatermark('ADVANCED'), false);
   assert.equal(shouldShowPrintWatermark('PREMIUM'), false);
 });
 
 await record('trial: 30-day Premium once per account', () => {
-  let license = createInitialLicense('BASIC');
-  assert.equal(effectiveTierFromLicense(license), 'BASIC');
-  assert.equal(resolveEffectiveTier(license), 'BASIC');
+  let license = createInitialLicense('FREE');
+  assert.equal(effectiveTierFromLicense(license), 'FREE');
+  assert.equal(resolveEffectiveTier(license), 'FREE');
   license = startPremiumTrial(license, 1_000_000);
   assert.equal(isTrialActive(license, 1_000_000), true);
   assert.equal(effectiveTierFromLicense(license, 1_000_000), 'PREMIUM');
-  assert.equal(canAccessFeature('PREMIUM', 'allowLevel3Vault'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowCustomFields'), true);
   assert.equal(
     effectiveTierFromLicense(license, 1_000_000 + PREMIUM_TRIAL_MS + 1),
-    'BASIC'
+    'FREE'
   );
   let caught: unknown;
   try {
@@ -145,6 +161,7 @@ await record('account server: register/login/family/invite (filesystem)', async 
     wrappedDataKeyIvBase64: cryptoMaterial.wrappedDataKeyIvBase64,
   });
   assert.equal(account.email, 'owner@example.it');
+  assert.equal(account.license.baseTier, 'FREE');
   const pub = toPublicAccount(account);
   assert.equal('passwordHashHex' in pub, false);
 
@@ -190,7 +207,6 @@ await record('account server: register/login/family/invite (filesystem)', async 
   });
   assert.equal(joined.members.length, 2);
 
-  // Unlock data key + encrypt houses blob on account store
   const dataKey = await unlockDataKeyFromAccount('password-ok-12', {
     dataKeySaltBase64: account.dataKeySaltBase64,
     wrappedDataKeyBase64: account.wrappedDataKeyBase64,
@@ -205,7 +221,7 @@ await record('account server: register/login/family/invite (filesystem)', async 
         version: '1.0.0',
         documentId: 'house-1',
         updatedAt: new Date().toISOString(),
-        tier: 'BASIC',
+        tier: 'FREE',
         level1_public: {
           houseName: 'Casa Segreta',
           utilities: {
@@ -292,10 +308,12 @@ await record('vault: encrypt/decrypt + wrong PIN Italian error', async () => {
       googleInactiveManagerActive: false,
       passwordManagerKitLocation: 'Cassaforte',
     },
+    customFields: [{ id: 'cf1', label: 'Nota libera', value: 'solo Premium' }],
   };
   const encrypted = await encryptVault(payload, '1234');
   const decrypted = await decryptVault(encrypted, '1234');
   assert.equal(decrypted.bankAccounts[0]?.institution, 'Banca Test');
+  assert.equal(decrypted.customFields?.[0]?.label, 'Nota libera');
   let caught: unknown;
   try {
     await decryptVault(encrypted, '0000');
@@ -306,7 +324,7 @@ await record('vault: encrypt/decrypt + wrong PIN Italian error', async () => {
   assert.equal(isVaultPinError(caught), true);
 });
 
-await record('print CSS + branding assets present', () => {
+await record('print CSS + branding + responsive shell assets', () => {
   const printPath = resolve('src/styles/print.css');
   assert.equal(existsSync(printPath), true);
   const css = readFileSync(printPath, 'utf8');
@@ -315,8 +333,14 @@ await record('print CSS + branding assets present', () => {
   const globals = readFileSync(resolve('src/app/globals.css'), 'utf8');
   assert.match(globals, /--brand-ink/);
   assert.match(globals, /print\.css/);
+  assert.match(globals, /safe-area-inset/);
+  assert.match(globals, /app-shell-main/);
   assert.equal(existsSync(resolve('public/domusafe-logo.svg')), true);
   assert.equal(existsSync(resolve('src/components/DomuSafeLogo.tsx')), true);
+  assert.equal(
+    existsSync(resolve('src/components/CustomFieldsEditor.tsx')),
+    true
+  );
 });
 
 await record('ui: auth gate + manuale + license + tax/succession modules', () => {
@@ -335,29 +359,44 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   const app = readFileSync(resolve('src/components/DomuSafeApp.tsx'), 'utf8');
   assert.match(app, /SessionProvider/);
   assert.match(app, /allowLevel3Vault/);
+  assert.match(app, /allowCloudSync/);
+  assert.match(app, /allowCustomFields|allowSuccessionChecklist/);
+  assert.match(app, /md:hidden/);
+  assert.match(app, /AppTabs/);
   assert.equal(
     existsSync(resolve('src/app/api/auth/register/route.ts')),
     true
   );
-  // No IndexedDB SoT in storage/auth-client
   const storage = readFileSync(resolve('src/lib/storage.ts'), 'utf8');
   assert.equal(storage.includes('idb-keyval'), false);
   assert.equal(storage.includes('indexedDB'), false);
   const authClient = readFileSync(resolve('src/lib/auth-client.ts'), 'utf8');
   assert.equal(authClient.includes('idb-keyval'), false);
+  const readme = readFileSync(resolve('README.md'), 'utf8');
+  assert.match(readme, /telefono/i);
+  assert.match(readme, /BSL 1\.1|Business Source License/i);
+  assert.match(readme, /Use Limitation|Non consentito/i);
+  assert.equal(readme.toLowerCase().includes('docker run'), false);
+  assert.equal(readme.toLowerCase().includes('pnpm'), false);
+  const license = readFileSync(resolve('LICENSE.md'), 'utf8');
+  assert.match(license, /Business Source License 1\.1/);
+  assert.match(license, /Use Limitation/);
+  assert.match(license, /36 months/);
+  assert.equal(existsSync(resolve('LICENSE')), true);
 });
 
-await record('sync: E2EE envelope + wrong PIN', async () => {
+await record('sync: E2EE family-scoped envelope + QR pairing', async () => {
+  const familyId = 'fam-sync-1';
   const collection: DomusHouseCollection = {
     version: '1.0.0',
-    familyId: 'f1',
+    familyId,
     activeDocumentId: 'h1',
     houses: [
       {
         version: '1.0.0',
         documentId: 'h1',
         updatedAt: new Date().toISOString(),
-        tier: 'ADVANCED',
+        tier: 'PREMIUM',
         level1_public: {
           houseName: 'Villa Segreta Sync',
           utilities: {
@@ -372,6 +411,9 @@ await record('sync: E2EE envelope + wrong PIN', async () => {
           wifi: { ssid: '', password: '' },
           wasteSchedule: [],
           artisanContacts: [],
+          customFields: [
+            { id: 'x', label: 'Allarme', value: '1234' },
+          ],
         },
         level2_ice: { residents: [], pets: [] },
       },
@@ -380,8 +422,9 @@ await record('sync: E2EE envelope + wrong PIN', async () => {
   const { syncId, keyBytes } = createSyncIdentity();
   const { envelope, keyBytes: usedKey } = await encryptHouseCollection(
     collection,
-    { revision: 1, keyBytes }
+    { revision: 1, familyId, keyBytes }
   );
+  assert.equal(envelope.familyId, familyId);
   assert.equal(envelopeLooksEncrypted(envelope), true);
   const tmp = mkdtempSync(resolve(tmpdir(), 'domusafe-sync-'));
   process.env.DOMUSAFE_SYNC_DIR = tmp;
@@ -389,6 +432,7 @@ await record('sync: E2EE envelope + wrong PIN', async () => {
   assert.equal(written.ok, true);
   const stored = await readEnvelope(syncId);
   assert.ok(stored);
+  assert.equal(stored!.familyId, familyId);
   const disk = readFileSync(resolve(tmp, `${syncId}.json`), 'utf8');
   assert.equal(disk.includes('Villa Segreta'), false);
   const roundTrip = await decryptHouseCollection(envelope, {
@@ -398,8 +442,13 @@ await record('sync: E2EE envelope + wrong PIN', async () => {
     roundTrip.houses[0]?.level1_public.houseName,
     'Villa Segreta Sync'
   );
+  assert.equal(
+    roundTrip.houses[0]?.level1_public.customFields?.[0]?.label,
+    'Allarme'
+  );
   const pinSealed = await encryptHouseCollection(collection, {
     revision: 2,
+    familyId,
     pin: 'sync-pin-ok',
   });
   let caught: unknown;

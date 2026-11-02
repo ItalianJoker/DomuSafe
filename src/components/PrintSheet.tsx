@@ -86,7 +86,7 @@ export function PrintSheet({ document, qrSvg }: PrintSheetProps) {
         {shouldShowPrintWatermark(document.tier) ? (
           <div className="mt-2 flex items-center gap-2 text-[9px] font-semibold text-zinc-600">
             <DomuSafeLogo size={16} />
-            <span>Watermark DomuSafe · piano BASIC</span>
+            <span>Watermark DomuSafe · piano Free/Basic</span>
           </div>
         ) : null}
       </section>

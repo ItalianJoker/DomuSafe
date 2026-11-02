@@ -5,47 +5,51 @@
 const SECTIONS = [
   {
     title: 'Account e accesso',
-    body: 'DomuSafe richiede la registrazione. Account e dati restano sul server self-host (non in IndexedDB). Dopo un aggiornamento pagina ti viene chiesta di nuovo la password solo per sbloccare in memoria la chiave di cifratura.',
+    body: 'Per usare DomuSafe serve un account. I dati restano legati al tuo profilo Famiglia/Residente, non alla sola memoria del browser. Quando riapri l’app su un dispositivo, ti chiediamo la password per sbloccare in sicurezza i contenuti protetti.',
   },
   {
     title: 'Famiglia',
-    body: 'Il primo utente crea una Famiglia sull’account. Gli altri entrano con invito (link o QR). Case, residenti e checklist appartengono all’account → Famiglia / Residente.',
+    body: 'Il primo utente crea la Famiglia. Gli altri entrano con un invito (link o QR). Case, residenti e checklist appartengono alla Famiglia o al singolo Residente, secondo il tipo di dato.',
   },
   {
-    title: 'Livello 1 — Casa',
-    body: 'Salva dove chiudere acqua/gas/elettrico, Wi‑Fi, calendario rifiuti e contatti artigiani. Ideale da condividere con ospiti.',
+    title: 'Casa (livello 1)',
+    body: 'Annota dove chiudere acqua, gas ed elettricità, il Wi‑Fi, i rifiuti e i contatti degli artigiani. Sono informazioni pensate anche per gli ospiti.',
   },
   {
-    title: 'Livello 2 — ICE',
-    body: 'Schede sanitarie dei residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. In stampa restano sotto la linguetta da piegare.',
+    title: 'Emergenza ICE (livello 2)',
+    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. In stampa restano sotto la linguetta da piegare.',
   },
   {
     title: 'Tasse italiane (scheda residente)',
-    body: 'Su ogni scheda residente trovi la checklist annuale (CU, precompilata, 730, ISEE, IMU, TARI, acconti). Segna «fatto» per anno e aggiungi note: restano cifrate con il runbook della Famiglia.',
+    body: 'Con Premium (o durante la prova) su ogni scheda residente trovi la checklist annuale (CU, precompilata, 730, ISEE, IMU, TARI, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
   },
   {
-    title: 'Livello 3 — Cassaforte',
-    body: 'Dati patrimoniali e di eredità cifrati con un PIN separato (AES-256-GCM). PIN errato → «PIN errato o dati non validi». Serve piano Advanced, Premium o prova attiva.',
+    title: 'Cassaforte (livello 3)',
+    body: 'Advanced: documenti di Famiglia (utenze, eredità digitale) protetti da un PIN. Premium: anche patrimonio personale (conti, polizze, lavoro). PIN sbagliato → «PIN errato o dati non validi».',
   },
   {
     title: 'Checklist successione (Famiglia)',
-    body: 'Nella scheda Cassaforte, sotto il patrimonio, c’è la checklist successione per tutta la Famiglia (documenti, testamento, banche, polizze, legacy digitale, scadenze). Non è per singolo residente. Dati cifrati a riposo.',
+    body: 'Con Premium, nella Cassaforte trovi la checklist successione per tutta la Famiglia (documenti, testamento, banche, polizze, eredità digitale, scadenze). Non è per un singolo residente.',
   },
   {
-    title: 'Cifratura (minaccia)',
-    body: 'Prima del salvataggio sull’account, runbook e checklist sono cifrati nel browser (AES-GCM + chiave derivata dalla password). Il server self-host conserva solo ciphertext e hash password. Livello 3 usa un PIN aggiuntivo. Non c’è una copia durevole in chiaro nel browser. Proteggi password/PIN e il volume dati del server.',
+    title: 'Campi personalizzati',
+    body: 'Solo Premium (o prova): oltre ai campi previsti puoi aggiungere etichette libere su casa, residenti, animali, cassaforte e successione. Free, Basic e Advanced usano solo i campi standard.',
+  },
+  {
+    title: 'Come sono protetti i dati',
+    body: 'Prima del salvataggio, DomuSafe protegge i contenuti sensibili sul tuo dispositivo. Sul server restano solo dati già protetti. La Cassaforte ha un PIN aggiuntivo. Conserva con cura password e PIN.',
   },
   {
     title: 'QR e stampa',
-    body: 'Nella scheda Stampa/QR generi il codice da appendere e stampi il foglio A4. Piano Basic: watermark DomuSafe. Advanced/Premium: senza watermark.',
+    body: 'In Stampa/QR generi il codice da appendere e stampi il foglio A4. Free e Basic mostrano il marchio DomuSafe; Advanced e Premium stampano senza marchio.',
   },
   {
-    title: 'Sync cloud',
-    body: 'Con Advanced/Premium puoi creare una sync E2EE e collegare un altro device con QR. Il server salva solo dati già cifrati.',
+    title: 'Altri telefoni',
+    body: 'Con Premium (o prova) colleghi un altro telefono o computer con un QR, in modo cifrato. Free e Basic salvano sull’account senza questa funzione tra dispositivi.',
   },
   {
-    title: 'Licenze e prova Premium',
-    body: 'In Licenze vedi piano, limiti e giorni di prova. Ogni account può avviare una prova Premium di 30 giorni una sola volta. Allo scadere torni al piano base (di solito Basic).',
+    title: 'Piani e prova Premium',
+    body: 'In Piano vedi Free, Basic, Advanced e Premium con i relativi limiti. Ogni account può avviare una prova Premium di 30 giorni una sola volta. Alla scadenza torni al piano base (di solito Free).',
   },
 ] as const;
 

@@ -17,32 +17,32 @@ import {
 const STEPS = [
   {
     title: 'Famiglia',
-    body: 'La Famiglia è il tuo spazio condiviso. Invita i membri con link o QR: tutti vedono le stesse case del runbook.',
+    body: 'La Famiglia è il vostro spazio condiviso. Invita chi vive con te con link o QR: vedrete le stesse case.',
     icon: Users,
   },
   {
-    title: 'Livello 1 — Casa',
-    body: 'Utenze, Wi‑Fi, rifiuti e artigiani: utili a ospiti e vicini, senza dati sanitari.',
+    title: 'Casa',
+    body: 'Utenze, Wi‑Fi, rifiuti e artigiani: utili anche agli ospiti, senza dati sanitari.',
     icon: BookOpen,
   },
   {
-    title: 'Livello 2 — ICE',
+    title: 'Emergenza (ICE)',
     body: 'Schede sanitarie per il soccorso 118/112. In stampa restano sotto la linguetta privacy.',
     icon: ShieldAlert,
   },
   {
-    title: 'Livello 3 — Cassaforte',
-    body: 'Dati patrimoniali cifrati con PIN (AES-256-GCM). Disponibile con Advanced, Premium o prova.',
+    title: 'Cassaforte',
+    body: 'Documenti riservati protetti da un PIN. Disponibile con Advanced, Premium o durante la prova.',
     icon: KeyRound,
   },
   {
     title: 'QR e stampa A4',
-    body: 'Genera il QR della scheda e stampa il foglio A4 da appendere in casa. Piano Basic: watermark DomuSafe.',
+    body: 'Genera il QR da appendere e stampa il foglio A4. Free e Basic mostrano il marchio DomuSafe.',
     icon: Printer,
   },
   {
-    title: 'Licenze',
-    body: 'Gestisci il piano in Licenze. Ogni account può attivare una prova Premium di 30 giorni una sola volta.',
+    title: 'Piano',
+    body: 'In Piano vedi i limiti e puoi attivare una prova Premium di 30 giorni (una sola volta per account).',
     icon: BadgeCheck,
   },
 ] as const;

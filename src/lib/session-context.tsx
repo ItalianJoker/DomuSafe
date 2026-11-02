@@ -246,7 +246,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     () =>
       account
         ? effectiveTierFromLicense(account.license)
-        : ('BASIC' as LicenseTier),
+        : ('FREE' as LicenseTier),
     [account]
   );
 

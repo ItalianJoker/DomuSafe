@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * Pannello Cloud Sync E2EE (ADVANCED+ / allowCloudSync).
- * Flusso: crea stanza → cifra collezione → upload → QR pairing multi-device.
- * BASIC non raggiunge questo componente (FeatureGate nel parent).
+ * Pannello Cloud Sync E2EE (Premium / trial · allowCloudSync).
+ * Flusso: crea stanza Famiglia → cifra collezione → upload → QR multi-device.
+ * Free/Basic/Advanced non raggiungono questo componente (FeatureGate parent).
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -119,6 +119,7 @@ export function CloudSyncPanel({
       const nextRevision = 1;
       const { envelope } = await encryptHouseCollection(collection, {
         revision: nextRevision,
+        familyId,
         keyBytes,
       });
       // Invariante: plaintext mai nella request — solo envelope.
@@ -127,7 +128,8 @@ export function CloudSyncPanel({
         syncId,
         keyBytes,
         envelope.revision,
-        envelope.updatedAt
+        envelope.updatedAt,
+        familyId
       );
       await saveSyncSession(familyId, dataKey, next);
       setSession(next);
@@ -154,10 +156,12 @@ export function CloudSyncPanel({
       const sealed = pin.trim()
         ? await encryptHouseCollection(collection, {
             revision,
+            familyId,
             pin: pin.trim(),
           })
         : await encryptHouseCollection(collection, {
             revision,
+            familyId,
             keyBytes: keyBytesFromSession(session),
           });
 
@@ -170,7 +174,8 @@ export function CloudSyncPanel({
         session.syncId,
         sealed.keyBytes,
         uploaded.revision,
-        uploaded.updatedAt
+        uploaded.updatedAt,
+        familyId
       );
       await saveSyncSession(familyId, dataKey, next);
       setSession(next);
@@ -235,11 +240,17 @@ export function CloudSyncPanel({
         pin: pin.trim() || undefined,
       });
 
+      if (envelope.familyId && envelope.familyId !== familyId) {
+        throw new Error(
+          'Questa stanza sync appartiene a un’altra Famiglia.'
+        );
+      }
       const next = sessionFromIdentity(
         syncId,
         nextKey,
         envelope.revision,
-        envelope.updatedAt
+        envelope.updatedAt,
+        familyId
       );
       await saveSyncSession(familyId, dataKey, next);
       setSession(next);
@@ -288,12 +299,12 @@ export function CloudSyncPanel({
         className="flex items-center gap-2 text-lg font-bold text-zinc-950"
       >
         <CloudUpload className="size-6" aria-hidden />
-        Sync cloud cifrata (E2EE)
+        Altri telefoni (sync protetta)
       </h2>
       <p className="text-sm text-zinc-700">
-        I dati vengono cifrati sul dispositivo <strong>prima</strong> di
-        qualsiasi invio. Il server self-host memorizza solo ciphertext. Usa il
-        QR per collegare un altro telefono o PC.
+        I contenuti vengono protetti sul dispositivo <strong>prima</strong> di
+        qualsiasi invio. Usa il QR per collegare un altro telefono o computer
+        della stessa Famiglia.
       </p>
 
       {session ? (

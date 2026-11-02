@@ -10,16 +10,18 @@ Licensor:             ItalianJoker / DomuSafe copyright holder
 Licensed Work:        DomuSafe
                       The Licensed Work is (c) 2026 ItalianJoker
 
-Additional Use Grant: You may make production use of the Licensed Work,
-                      provided Your use does not include offering the Licensed
-                      Work to third parties as a hosted, managed, cloud, or
-                      SaaS service (including any service that exposes
-                      substantially similar functionality of the Licensed Work
-                      over a network for a fee).
+Additional Use Grant: You may make production use of the Licensed Work for
+                      personal, family, or internal non-commercial purposes,
+                      including self-hosted installations.
 
-Change Date:          Four years from the date the Licensed Work is published
-                      (or, for each version, 36 months from that version's
-                      first public release — see Change License).
+Use Limitation:       The Licensed Work may not be offered to third parties as
+                      a hosted, managed, cloud, or SaaS service (including any
+                      service that exposes substantially similar functionality
+                      of the Licensed Work over a network for a fee). That
+                      commercial hosted use is reserved to the Licensor.
+
+Change Date:          36 months from the first public release of each version
+                      of the Licensed Work.
 
 Change License:       Apache License, Version 2.0
 

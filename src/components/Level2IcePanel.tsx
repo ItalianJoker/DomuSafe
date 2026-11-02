@@ -2,7 +2,7 @@
 
 /**
  * Livello 2 — Triage ICE (In Case of Emergency) per soccorso 118/112.
- * Piano BASIC: massimo 2 residenti; ADVANCED/PREMIUM: illimitati + animali.
+ * Free: 1 residente; Basic+: illimitati. Tasse e custom fields: Premium (+ trial).
  */
 
 import { AlertTriangle, Cat, Plus, Trash2, UserRound } from 'lucide-react';
@@ -17,6 +17,8 @@ import { createEmptyPet, createEmptyResident } from '@/lib/defaults';
 import { BLOOD_GROUP_LABELS, MOBILITY_LABELS } from '@/lib/labels';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
 import { ResidentTaxChecklist } from '@/components/ResidentTaxChecklist';
+import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
+import { FeatureGate } from '@/components/FeatureGate';
 import type { LicenseTier } from '@/types/domus';
 
 interface Level2IcePanelProps {
@@ -245,17 +247,34 @@ export function Level2IcePanel({
                   }
                 />
 
-                <ResidentTaxChecklist
-                  taxChecklist={resident.taxChecklist}
-                  onChange={(taxChecklist) =>
-                    patchResident(
-                      residents,
-                      resident.id,
-                      { taxChecklist },
-                      onResidentsChange
-                    )
-                  }
-                />
+                <FeatureGate tier={tier} feature="allowResidentTax">
+                  <ResidentTaxChecklist
+                    taxChecklist={resident.taxChecklist}
+                    onChange={(taxChecklist) =>
+                      patchResident(
+                        residents,
+                        resident.id,
+                        { taxChecklist },
+                        onResidentsChange
+                      )
+                    }
+                  />
+                </FeatureGate>
+
+                <FeatureGate tier={tier} feature="allowCustomFields">
+                  <CustomFieldsEditor
+                    title="Campi personalizzati (residente)"
+                    fields={resident.customFields}
+                    onChange={(customFields) =>
+                      patchResident(
+                        residents,
+                        resident.id,
+                        { customFields },
+                        onResidentsChange
+                      )
+                    }
+                  />
+                </FeatureGate>
               </li>
             ))}
           </ul>
@@ -402,6 +421,17 @@ export function Level2IcePanel({
                       )
                     }
                   />
+                </div>
+                <div className="sm:col-span-2">
+                  <FeatureGate tier={tier} feature="allowCustomFields">
+                    <CustomFieldsEditor
+                      title="Campi personalizzati (animale)"
+                      fields={pet.customFields}
+                      onChange={(customFields) =>
+                        patchPet(pets, index, { customFields }, onPetsChange)
+                      }
+                    />
+                  </FeatureGate>
                 </div>
               </li>
             ))}
