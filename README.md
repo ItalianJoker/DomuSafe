@@ -1,110 +1,79 @@
 # DomuSafe
 
 ![License](https://img.shields.io/badge/license-BSL%201.1-blue)
-![Version](https://img.shields.io/badge/version-0.4.0-green)
-![Stack](https://img.shields.io/badge/Next.js-App%20Router-black)
-![Auth](https://img.shields.io/badge/auth-account%20%2B%20Famiglia-emerald)
+![Version](https://img.shields.io/badge/version-0.5.0-green)
+![Devices](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 
-## Che cos'è DomuSafe
+**Your home handbook and emergency hub — private, family-ready, works on phone, tablet, and computer.**
 
-DomuSafe è il **manuale digitale della tua casa** e un **hub di emergenza**.
-Ti registri, crei una **Famiglia**, invitì i membri con link/QR, salvi utenze e schede ICE, cifri il patrimonio e stampi un foglio A4 con linguetta privacy.
-I dati durevoli vivono sull’**account** (server self-host), sotto **Famiglia** o **Residente** — non in IndexedDB/localStorage.
+## Che cos’è
 
-## Avvio rapido (Docker)
+**DomuSafe** è il manuale digitale della casa e un punto di riferimento in caso di emergenza.
 
-```bash
-docker run -d -p 3000:3000 \
-  -v domusafe-data:/app/data/app \
-  -v domusafe-sync:/app/data/sync \
-  --name domussafe ghcr.io/italianjoker/domussafe:latest
-```
+Lo apri dal telefono, dal tablet o dal computer: stessi contenuti, pulsanti grandi, parole semplici.
+Ti registri, crei la tua **Famiglia**, invitì chi vive con te (anche inquadrando un QR), salvi dove chiudere acqua e gas, le schede per il soccorso e — se vuoi — i documenti più riservati dietro un PIN.
 
-Apri [http://localhost:3000](http://localhost:3000), registrati e crea la Famiglia.
+I dati appartengono al tuo **account** (per **Famiglia** o per **Residente**) e vengono protetti sul dispositivo prima di essere salvati. Non dipendono dalla sola memoria del browser.
 
-### Build locale
+## Come iniziare
 
-```bash
-docker build -t domusafe:local .
-docker run -d -p 3000:3000 \
-  -v domusafe-data:/app/data/app \
-  -v domusafe-sync:/app/data/sync \
-  --name domusafe domusafe:local
-```
+1. Apri DomuSafe e **crea un account** (email e una password che ricordi).
+2. **Crea la Famiglia**, oppure entra con l’invito / QR che ti hanno mandato.
+3. Compila **Casa** (utenze, Wi‑Fi) e **Emergenza** (schede sanitarie ICE).
 
-Piano ADVANCED in build:
+Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSafe** (Manuale Utente) dal menu.
 
-```bash
-docker build --build-arg NEXT_PUBLIC_DOMUSAFE_TIER=ADVANCED -t domusafe:advanced .
-```
+## Cosa trovi nell’app
 
-## Registrazione e Famiglia
+| Sezione | A cosa serve |
+| :--- | :--- |
+| **Casa** | Dove chiudere acqua, gas e luce; Wi‑Fi; rifiuti; artigiani |
+| **Emergenza (ICE)** | Schede per il 118 / 112: allergie, farmaci, contatti |
+| **Cassaforte** | Documenti riservati protetti da PIN (da Advanced in su) |
+| **Stampa / QR** | Foglio A4 da appendere e codice da scansionare |
+| **Famiglia** | Inviti e QR per aggiungere i membri |
+| **Piano** | Free, Basic, Advanced, Premium e prova Premium 30 giorni |
+| **Altri telefoni** | Collegare un altro dispositivo in modo cifrato (Premium o prova) |
 
-1. Crea un account (email + password ≥ 8 caratteri).
-2. Il primo utente **crea la Famiglia**; gli altri entrano con **invito + QR**.
-3. Senza sessione non si apre il runbook.
-4. Dopo un refresh serve di nuovo la password solo per sbloccare in memoria la chiave di cifratura (cookie httpOnly per la sessione).
+### Tre livelli di protezione
 
-## Cifratura (minaccia in breve)
+1. **Pubblico** — sicuro da lasciare agli ospiti  
+2. **ICE** — per il soccorso; in stampa resta sotto la linguetta pieghevole  
+3. **Cassaforte** — protetta da PIN (PIN sbagliato → *«PIN errato o dati non validi»*)
 
-- Prima del salvataggio, runbook / checklist / sessione sync sono cifrati nel browser (PBKDF2 100k + AES-256-GCM, IV 12 byte).
-- Il server conserva **solo ciphertext** e hash password (PBKDF2).
-- Livello 3 (cassaforte) ha un PIN aggiuntivo: PIN errato → *«PIN errato o dati non validi»*.
-- Nessuna fonte di verità nel browser: solo cache/ephemeral in memoria.
+## Piani
 
-## La filosofia dei 3 livelli
-
-| Livello | A chi serve | Cosa contiene |
-| :--- | :--- | :--- |
-| **1 — Pubblico** | Ospiti, host | Acqua/gas/elettrico, Wi‑Fi, rifiuti, artigiani |
-| **2 — ICE** | Soccorso 118/112 | Schede residenti (+ **checklist tasse IT**), animali |
-| **3 — Cassaforte** | Famiglia / eredità | Patrimonio cifrato PIN + **checklist successione Famiglia** |
-
-### Piani (Feature Gate)
-
-| Funzione | BASIC | ADVANCED | PREMIUM |
+| Piano | Cosa include | Residenti | In più |
 | :--- | :--- | :--- | :--- |
-| Abitazioni | 1 | ≤3 | illimitate |
-| ICE | max 2 | illimitati | illimitati |
-| Cassaforte + successione Famiglia | teaser | sì | sì |
-| Sync cloud E2EE | no | sì | sì |
-| Prova Premium 30 giorni | una volta / account | — | — |
+| **Free** | Livelli 1 e 2 | 1 | Marchio DomuSafe in stampa · campi standard |
+| **Basic** | Livelli 1 e 2 | Illimitati | Marchio in stampa · campi standard |
+| **Advanced** | + Cassaforte (documenti di Famiglia) | Illimitati | Stampa senza marchio |
+| **Premium** | Tutto | Illimitati | Tasse IT, successione, sync tra dispositivi, **campi personalizzati** |
 
-## Tasse e successione
+Ogni account può attivare **una sola volta** la prova **Premium di 30 giorni**, dalla sezione **Piano**.
 
-- **Tasse IT**: checklist annuale **sulla scheda residente** (CU, 730, ISEE, IMU/TARI…).
-- **Successione**: checklist **per Famiglia**, accanto alla cassaforte (ADVANCED+ / trial).
+## Su telefono, tablet e computer
 
-## Manuale Utente / Guida DomuSafe
+- Interfaccia pensata per le dita: pulsanti ampi, testo leggibile, niente gergo.
+- Sul **telefono** il menu delle sezioni sta in basso; su **tablet** e **computer** in alto.
+- Con Premium (o durante la prova) puoi collegare un altro dispositivo da **Altri telefoni** con un QR: i contenuti partono già protetti.
 
-In-app: scheda **Manuale** (anche chiamata Guida DomuSafe). Tutorial al primo accesso.
+## Privacy, in breve
 
-## Variabili d'ambiente
+DomuSafe protegge i contenuti sensibili **sul tuo dispositivo** prima del salvataggio.
+Sul server restano solo dati già protetti e le informazioni necessarie all’accesso. Non c’è una copia “in chiaro” nel browser come fonte ufficiale dei tuoi dati.
 
-| Variabile | Default | Descrizione |
-| :--- | :--- | :--- |
-| `NEXT_PUBLIC_DOMUSAFE_TIER` | `BASIC` | Piano base self-host |
-| `DOMUSAFE_DATA_DIR` | `./data/app` | Account, Famiglie, blob cifrati |
-| `DOMUSAFE_SYNC_DIR` | `./data/sync` | Envelope sync E2EE |
+## Licenza — Business Source License 1.1 (BSL 1.1)
 
-## Licenza (BSL 1.1)
+DomuSafe è rilasciato sotto **BSL 1.1**. Dopo **36 mesi** da ogni versione pubblica, quella versione passa automaticamente ad **Apache 2.0**.
 
-- ✅ Gratuito per self-host personale/familiare.
-- ❌ Vietato SaaS commerciale a terzi (riservato all’autore).
-- Dettagli in [`LICENSE.md`](./LICENSE.md).
+| | |
+| :--- | :--- |
+| **Consentito** | Uso personale e familiare; installazione a casa per la tua Famiglia |
+| **Non consentito** | Offrire DomuSafe ad altri come servizio cloud / SaaS a pagamento (riservato all’autore — *Use Limitation*) |
 
-## Sviluppo locale
+Testo completo della licenza: [`LICENSE.md`](./LICENSE.md) (copia anche in [`LICENSE`](./LICENSE)).
 
-```bash
-pnpm install
-pnpm dev
-pnpm verify   # lint + typecheck + smoke + build
-```
+---
 
-## Stack
-
-- Next.js App Router + TypeScript + Tailwind
-- Auth lean: credenziali + cookie httpOnly, store filesystem
-- Web Crypto client (`crypto-auth`, `crypto-vault`, `crypto-sync`)
-- Feature gate + trial Premium 30g
-- Logo: `public/domusafe-logo.svg` + `src/components/DomuSafeLogo.tsx`
+*DomuSafe — la casa a portata di mano, anche nell’emergenza.*

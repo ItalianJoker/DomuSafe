@@ -27,7 +27,7 @@ export function isTrialActive(
 
 /**
  * Piano effettivo: PREMIUM durante trial attivo, altrimenti `baseTier`.
- * Trial scaduto → non Premium (torna a baseTier, tipicamente BASIC).
+ * Trial scaduto → non Premium (torna a baseTier, tipicamente FREE).
  */
 export function effectiveTierFromLicense(
   license: AccountLicenseState,
@@ -73,9 +73,9 @@ export function trialDaysRemaining(
   return Math.max(0, Math.ceil((ends - nowMs) / (24 * 60 * 60 * 1000)));
 }
 
-/** Stato licenza iniziale per nuovo account (BASIC, trial disponibile). */
+/** Stato licenza iniziale per nuovo account (FREE, trial Premium disponibile). */
 export function createInitialLicense(
-  baseTier: LicenseTier = 'BASIC'
+  baseTier: LicenseTier = 'FREE'
 ): AccountLicenseState {
   return {
     baseTier,

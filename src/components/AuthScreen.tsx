@@ -50,30 +50,31 @@ export function AuthScreen() {
         aria-hidden
       />
 
-      <main className="relative mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-10">
-        <div className="mb-8 flex flex-col items-center text-center">
+      <main className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-xl">
+        <div className="mb-6 flex flex-col items-center text-center sm:mb-8">
           <DomuSafeLogo size={88} className="mb-4 drop-shadow-lg" />
           <h1 className="font-display text-4xl font-black tracking-tight text-white sm:text-5xl">
             DomuSafe
           </h1>
-          <p className="mt-3 max-w-sm text-base text-emerald-100/90">
-            Manuale casa e hub emergenza. Registrati per creare la tua Famiglia
-            e proteggere i dati con cifratura sul dispositivo.
+          <p className="mt-3 max-w-md text-base leading-relaxed text-emerald-100/90 sm:text-lg">
+            Il manuale della tua casa e le info di emergenza, al sicuro.
+            Crea un account, invita la Famiglia, usa telefono, tablet o
+            computer.
           </p>
         </div>
 
-        <section className="rounded-2xl border-2 border-[var(--brand-gold)]/40 bg-[var(--brand-ink)]/80 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur">
-          <h2 className="font-display text-xl font-bold text-white">
+        <section className="rounded-2xl border-2 border-[var(--brand-gold)]/40 bg-[var(--brand-ink)]/80 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur sm:p-6">
+          <h2 className="font-display text-xl font-bold text-white sm:text-2xl">
             {isUnlock
-              ? 'Sblocca i dati'
+              ? 'Riscrivi la password'
               : mode === 'register'
-                ? 'Crea account'
-                : 'Accedi'}
+                ? 'Inizia qui'
+                : 'Bentornato'}
           </h2>
-          <p className="mt-1 text-sm text-emerald-100/80">
+          <p className="mt-1 text-sm leading-relaxed text-emerald-100/80 sm:text-base">
             {isUnlock
-              ? 'Sessione trovata: inserisci la password per sbloccare la cifratura.'
-              : 'Nessun uso anonimo del runbook: serve un account.'}
+              ? 'Per proteggere i dati ti chiediamo la password a ogni apertura su questo dispositivo.'
+              : 'Servono pochi secondi: email e una password che ricordi.'}
           </p>
 
           <div className="mt-4 space-y-3">

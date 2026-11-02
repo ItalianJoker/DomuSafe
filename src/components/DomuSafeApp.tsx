@@ -251,9 +251,10 @@ function AuthenticatedApp() {
     <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
       <h3 className="text-lg font-bold">Livello 3 — Cassaforte</h3>
       <p className="mt-2 text-zinc-700">
-        La cassaforte e la checklist successione Famiglia sono nei piani{' '}
-        <strong>ADVANCED</strong> / <strong>PREMIUM</strong> (o prova Premium).
-        Piano attuale: <strong>{effectiveTier}</strong>.
+        La cassaforte (documenti Famiglia) è nel piano <strong>Advanced</strong>.
+        Patrimonio personale, successione, campi personalizzati e sync richiedono{' '}
+        <strong>Premium</strong> (o prova). Piano attuale:{' '}
+        <strong>{effectiveTier}</strong>.
       </p>
       <p className="mt-2 text-sm text-zinc-600">
         Apri <strong>Licenze</strong> per avviare la prova Premium di 30 giorni.
@@ -265,7 +266,19 @@ function AuthenticatedApp() {
     <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
       <h3 className="text-lg font-bold">Sync cloud</h3>
       <p className="mt-2 text-zinc-700">
-        Sync E2EE family-scoped nei piani ADVANCED/PREMIUM. Piano attuale:{' '}
+        Sync E2EE family-scoped e QR multi-device: piano{' '}
+        <strong>Premium</strong> (o prova). Free/Basic restano solo
+        salvataggio account locale. Piano attuale:{' '}
+        <strong>{effectiveTier}</strong>.
+      </p>
+    </aside>
+  );
+
+  const successionFallback = (
+    <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
+      <h3 className="text-lg font-bold">Checklist successione</h3>
+      <p className="mt-2 text-zinc-700">
+        Disponibile con <strong>Premium</strong> (o prova). Piano attuale:{' '}
         <strong>{effectiveTier}</strong>.
       </p>
     </aside>
@@ -283,22 +296,30 @@ function AuthenticatedApp() {
       ) : null}
 
       <header className="no-print border-b-4 border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <DomuSafeLogo size={48} />
-            <div>
-              <p className="font-display text-2xl font-black tracking-tight sm:text-3xl">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <DomuSafeLogo size={44} className="shrink-0 sm:hidden" />
+            <DomuSafeLogo size={48} className="hidden shrink-0 sm:block" />
+            <div className="min-w-0">
+              <p className="font-display text-xl font-black tracking-tight sm:text-3xl">
                 DomuSafe
               </p>
-              <p className="text-sm text-emerald-100">
-                {family.name} · {account.displayName} · Piano {effectiveTier}
+              <p className="truncate text-xs text-emerald-100 sm:text-sm">
+                {family.name} · {account.displayName} ·{' '}
+                {effectiveTier === 'FREE'
+                  ? 'Free'
+                  : effectiveTier === 'BASIC'
+                    ? 'Basic'
+                    : effectiveTier === 'ADVANCED'
+                      ? 'Advanced'
+                      : 'Premium'}
               </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-white bg-[var(--brand-forest)] px-4 font-bold text-white hover:brightness-110"
+              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-white bg-[var(--brand-forest)] px-3 font-bold text-white hover:brightness-110 sm:px-4"
               disabled={saving}
               onClick={() => persist(liveDoc)}
             >
@@ -307,77 +328,32 @@ function AuthenticatedApp() {
               ) : (
                 <Save className="size-5" aria-hidden />
               )}
-              Salva
+              <span className="hidden xs:inline sm:inline">Salva</span>
             </button>
             <button
               type="button"
-              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-white/70 bg-transparent px-4 font-bold text-white hover:bg-white/10"
+              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-white/70 bg-transparent px-3 font-bold text-white hover:bg-white/10 sm:px-4"
               onClick={() => void logout()}
+              aria-label="Esci"
             >
               <LogOut className="size-5" aria-hidden />
-              Esci
+              <span className="hidden sm:inline">Esci</span>
             </button>
           </div>
         </div>
       </header>
 
+      {/* Desktop/tablet: barra superiore. Telefono: barra fissa in basso. */}
       <nav
-        className="no-print sticky top-0 z-10 border-b-2 border-zinc-900 bg-white/95 backdrop-blur"
+        className="no-print sticky top-0 z-10 hidden border-b-2 border-zinc-900 bg-white/95 backdrop-blur md:block"
         aria-label="Sezioni DomuSafe"
       >
-        <div className="mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
-          <TabButton
-            active={tab === 'casa'}
-            onClick={() => setTab('casa')}
-            icon={<Home className="size-5" aria-hidden />}
-            label="Casa"
-          />
-          <TabButton
-            active={tab === 'ice'}
-            onClick={() => setTab('ice')}
-            icon={<ShieldAlert className="size-5" aria-hidden />}
-            label="ICE"
-          />
-          <TabButton
-            active={tab === 'cassaforte'}
-            onClick={() => setTab('cassaforte')}
-            icon={<ShieldCheck className="size-5" aria-hidden />}
-            label="Cassaforte"
-          />
-          <TabButton
-            active={tab === 'sync'}
-            onClick={() => setTab('sync')}
-            icon={<Cloud className="size-5" aria-hidden />}
-            label="Sync"
-          />
-          <TabButton
-            active={tab === 'stampa'}
-            onClick={() => setTab('stampa')}
-            icon={<Printer className="size-5" aria-hidden />}
-            label="Stampa / QR"
-          />
-          <TabButton
-            active={tab === 'famiglia'}
-            onClick={() => setTab('famiglia')}
-            icon={<Users className="size-5" aria-hidden />}
-            label="Famiglia"
-          />
-          <TabButton
-            active={tab === 'licenze'}
-            onClick={() => setTab('licenze')}
-            icon={<BadgeCheck className="size-5" aria-hidden />}
-            label="Licenze"
-          />
-          <TabButton
-            active={tab === 'manuale'}
-            onClick={() => setTab('manuale')}
-            icon={<BookOpen className="size-5" aria-hidden />}
-            label="Manuale"
-          />
+        <div className="device-nav-scroll mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
+          <AppTabs tab={tab} setTab={setTab} layout="row" />
         </div>
       </nav>
 
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-6">
+      <main className="app-shell-main mx-auto w-full max-w-5xl space-y-5 px-3 py-4 sm:space-y-6 sm:px-4 sm:py-6">
         {status ? (
           <p
             className="no-print rounded-md border-2 border-emerald-800 bg-emerald-50 px-4 py-3 font-semibold text-emerald-950"
@@ -423,6 +399,7 @@ function AuthenticatedApp() {
 
         {tab === 'casa' ? (
           <Level1PublicPanel
+            tier={effectiveTier}
             data={liveDoc.level1_public}
             onChange={(level1_public) =>
               setDocument({ ...liveDoc, level1_public })
@@ -434,7 +411,7 @@ function AuthenticatedApp() {
           <div className="space-y-4">
             <p className="no-print inline-flex items-center gap-2 text-sm font-semibold text-amber-950">
               <Receipt className="size-4" aria-hidden />
-              Le checklist tasse IT sono su ogni scheda residente.
+              Checklist tasse IT sulle schede residenti: piano Premium (o prova).
             </p>
             <Level2IcePanel
               tier={effectiveTier}
@@ -465,6 +442,7 @@ function AuthenticatedApp() {
             <div className="space-y-6">
               <Level3VaultPanel
                 key={`${liveDoc.documentId}:${liveDoc.level3_vault?.ciphertextBase64 ?? 'empty'}`}
+                tier={effectiveTier}
                 vault={liveDoc.level3_vault}
                 onVaultChange={(level3_vault) => {
                   const next = { ...liveDoc, level3_vault };
@@ -472,13 +450,20 @@ function AuthenticatedApp() {
                   void persist(next);
                 }}
               />
-              {succession ? (
-                <SuccessionChecklistPanel
-                  checklist={succession}
-                  familyName={family.name}
-                  onChange={(next) => void persistSuccession(next)}
-                />
-              ) : null}
+              <FeatureGate
+                tier={effectiveTier}
+                feature="allowSuccessionChecklist"
+                fallback={successionFallback}
+              >
+                {succession ? (
+                  <SuccessionChecklistPanel
+                    tier={effectiveTier}
+                    checklist={succession}
+                    familyName={family.name}
+                    onChange={(next) => void persistSuccession(next)}
+                  />
+                ) : null}
+              </FeatureGate>
             </div>
           </FeatureGate>
         ) : null}
@@ -528,8 +513,8 @@ function AuthenticatedApp() {
             </div>
             <p className="text-sm text-zinc-700">
               In stampa, i dati ICE restano sotto la linguetta da piegare.
-              {effectiveTier === 'BASIC'
-                ? ' Piano BASIC: watermark DomuSafe.'
+              {effectiveTier === 'FREE' || effectiveTier === 'BASIC'
+                ? ' Piano Free/Basic: watermark DomuSafe.'
                 : ' Piano ADVANCED/PREMIUM: senza watermark.'}
             </p>
           </div>
@@ -553,10 +538,60 @@ function AuthenticatedApp() {
         <PrintSheet document={liveDoc} qrSvg={qrSvg} />
       </main>
 
-      <footer className="no-print border-t-2 border-zinc-900 bg-white px-4 py-6 text-center text-sm text-zinc-600">
-        DomuSafe · Famiglia cifrata · BSL 1.1
+      <footer className="no-print mb-[calc(4.75rem+var(--safe-bottom))] border-t-2 border-zinc-900 bg-white px-4 py-6 text-center text-sm text-zinc-600 md:mb-0">
+        DomuSafe · I tuoi dati restano cifrati · Uso familiare
       </footer>
+
+      <nav
+        className="no-print fixed inset-x-0 bottom-0 z-20 border-t-2 border-zinc-900 bg-white/95 pb-[var(--safe-bottom)] backdrop-blur md:hidden"
+        aria-label="Sezioni DomuSafe (telefono)"
+      >
+        <div className="device-nav-scroll flex gap-1 overflow-x-auto px-2 py-2">
+          <AppTabs tab={tab} setTab={setTab} layout="phone" />
+        </div>
+      </nav>
     </div>
+  );
+}
+
+const TAB_ITEMS: Array<{
+  id: Tab;
+  label: string;
+  short: string;
+  icon: ReactNode;
+}> = [
+  { id: 'casa', label: 'Casa', short: 'Casa', icon: <Home className="size-5" aria-hidden /> },
+  { id: 'ice', label: 'Emergenza', short: 'ICE', icon: <ShieldAlert className="size-5" aria-hidden /> },
+  { id: 'cassaforte', label: 'Cassaforte', short: 'Cassa', icon: <ShieldCheck className="size-5" aria-hidden /> },
+  { id: 'sync', label: 'Altri telefoni', short: 'Sync', icon: <Cloud className="size-5" aria-hidden /> },
+  { id: 'stampa', label: 'Stampa / QR', short: 'Stampa', icon: <Printer className="size-5" aria-hidden /> },
+  { id: 'famiglia', label: 'Famiglia', short: 'Famiglia', icon: <Users className="size-5" aria-hidden /> },
+  { id: 'licenze', label: 'Piano', short: 'Piano', icon: <BadgeCheck className="size-5" aria-hidden /> },
+  { id: 'manuale', label: 'Guida', short: 'Guida', icon: <BookOpen className="size-5" aria-hidden /> },
+];
+
+function AppTabs({
+  tab,
+  setTab,
+  layout,
+}: {
+  tab: Tab;
+  setTab: (t: Tab) => void;
+  layout: 'row' | 'phone';
+}) {
+  return (
+    <>
+      {TAB_ITEMS.map((item) => (
+        <TabButton
+          key={item.id}
+          active={tab === item.id}
+          onClick={() => setTab(item.id)}
+          icon={item.icon}
+          label={layout === 'phone' ? item.short : item.label}
+          layout={layout}
+        />
+      ))}
+    </>
   );
 }
 
@@ -565,18 +600,38 @@ function TabButton({
   onClick,
   icon,
   label,
+  layout,
 }: {
   active: boolean;
   onClick: () => void;
   icon: ReactNode;
   label: string;
+  layout: 'row' | 'phone';
 }) {
+  if (layout === 'phone') {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-current={active ? 'page' : undefined}
+        className={`inline-flex min-h-14 min-w-[4.25rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded-md border-2 px-2 text-[11px] font-bold leading-tight ${
+          active
+            ? 'border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white'
+            : 'border-zinc-300 bg-white text-zinc-950'
+        }`}
+      >
+        {icon}
+        {label}
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className={`inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 px-4 font-bold ${
+      className={`inline-flex min-h-12 min-w-12 shrink-0 items-center gap-2 rounded-md border-2 px-4 font-bold ${
         active
           ? 'border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white'
           : 'border-zinc-900 bg-white text-zinc-950 hover:bg-zinc-100'

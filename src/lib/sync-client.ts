@@ -1,6 +1,7 @@
 /**
  * Client HTTP sync: upload/download *solo* di SyncEnvelope cifrati.
- * Nessuna serializzazione plaintext verso la rete — cifratura avviene in crypto-sync.
+ * Cookie di sessione inclusi: PUT gated Premium sul server.
+ * Nessuna serializzazione plaintext verso la rete — cifratura in crypto-sync.
  */
 
 import type { SyncEnvelope } from '@/lib/crypto-sync';
@@ -26,6 +27,7 @@ function apiBase(): string {
 
 /**
  * Scarica l'envelope cifrato. 404 → null (stanza vuota / id nuovo).
+ * Richiede sessione Famiglia (family-scoped).
  */
 export async function fetchSyncEnvelope(
   syncId: string,
@@ -34,10 +36,17 @@ export async function fetchSyncEnvelope(
   const res = await fetch(`${baseUrl}/api/sync/${encodeURIComponent(syncId)}`, {
     method: 'GET',
     headers: { Accept: 'application/json' },
+    credentials: 'include',
     cache: 'no-store',
   });
   if (res.status === 404) {
     return null;
+  }
+  if (res.status === 401 || res.status === 403) {
+    throw new SyncHttpError(
+      'Accesso sync negato: serve Premium (o prova) e membership Famiglia',
+      res.status
+    );
   }
   if (!res.ok) {
     throw new SyncHttpError('Download sync non riuscito', res.status);
@@ -47,6 +56,7 @@ export async function fetchSyncEnvelope(
 
 /**
  * Carica un envelope già cifrato. `force` ignora conflitto di revisione (409).
+ * Server: auth + allowCloudSync + family membership.
  */
 export async function uploadSyncEnvelope(
   syncId: string,
@@ -56,6 +66,7 @@ export async function uploadSyncEnvelope(
   const baseUrl = options.baseUrl ?? apiBase();
   const res = await fetch(`${baseUrl}/api/sync/${encodeURIComponent(syncId)}`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -65,6 +76,15 @@ export async function uploadSyncEnvelope(
       force: Boolean(options.force),
     }),
   });
+
+  if (res.status === 401 || res.status === 403) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new SyncHttpError(
+      body.error ??
+        'Upload sync negato: serve Premium (o prova) e membership Famiglia',
+      res.status
+    );
+  }
 
   if (res.status === 409) {
     const body = (await res.json().catch(() => ({}))) as {

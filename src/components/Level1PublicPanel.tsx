@@ -3,21 +3,40 @@
 /**
  * Livello 1 — Runbook pubblico della casa (utenze, Wi‑Fi, rifiuti, artigiani).
  * Accessibile a ospiti/host senza PIN: nessun dato sanitario.
+ * Campi personalizzati: solo Premium (+ trial) via allowCustomFields.
  */
 
 import type { ReactNode } from 'react';
 import { Plus, Trash2, Wifi, Droplets, Flame, Zap, Thermometer, Recycle, Wrench } from 'lucide-react';
-import type { PublicHouseData } from '@/types/domus';
+import type { LicenseTier, PublicHouseData } from '@/types/domus';
+import { canAccessFeature } from '@/lib/licensing';
 import { WEEKDAYS } from '@/lib/labels';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
+import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
+import { FeatureGate } from '@/components/FeatureGate';
 
 interface Level1PublicPanelProps {
+  tier: LicenseTier;
   data: PublicHouseData;
   onChange: (next: PublicHouseData) => void;
 }
 
-export function Level1PublicPanel({ data, onChange }: Level1PublicPanelProps) {
+export function Level1PublicPanel({
+  tier,
+  data,
+  onChange,
+}: Level1PublicPanelProps) {
   const update = (patch: Partial<PublicHouseData>) => {
+    // Free/Basic/Advanced: non persistere custom fields anche se arrivano da sync.
+    if (
+      !canAccessFeature(tier, 'allowCustomFields') &&
+      'customFields' in patch
+    ) {
+      const rest = { ...patch };
+      delete rest.customFields;
+      onChange({ ...data, ...rest });
+      return;
+    }
     onChange({ ...data, ...patch });
   };
 
@@ -373,6 +392,14 @@ export function Level1PublicPanel({ data, onChange }: Level1PublicPanelProps) {
           ))}
         </ul>
       </div>
+
+      <FeatureGate tier={tier} feature="allowCustomFields">
+        <CustomFieldsEditor
+          title="Campi personalizzati (casa)"
+          fields={data.customFields}
+          onChange={(customFields) => update({ customFields })}
+        />
+      </FeatureGate>
     </section>
   );
 }

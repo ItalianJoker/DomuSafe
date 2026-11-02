@@ -28,7 +28,8 @@ export const viewport: Viewport = {
   themeColor: '#0b1f17',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  /* Zoom consentito: accessibilità + tablet/phone non tecnici. */
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

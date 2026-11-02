@@ -69,4 +69,6 @@ export interface SuccessionChecklist {
   familyId: string;
   items: SuccessionChecklistItem[];
   updatedAt: string;
+  /** Solo Premium (+ trial): voci libere oltre al catalogo standard. */
+  customFields?: Array<{ id: string; label: string; value: string }>;
 }

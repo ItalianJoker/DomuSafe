@@ -2,6 +2,7 @@
 
 /**
  * Gestione licenza per account/Famiglia + avvio prova Premium 30 giorni.
+ * Piani: Free / Basic / Advanced / Premium (binding license-tiers).
  */
 
 import { useState } from 'react';
@@ -12,6 +13,7 @@ import {
   TIER_LIMITS,
   getMaxHouses,
   getMaxResidents,
+  shouldShowPrintWatermark,
 } from '@/lib/licensing';
 import {
   isTrialActive,
@@ -73,20 +75,34 @@ export function LicensePanel({
           <li>
             Piano base: <strong>{TIER_LABELS[account.license.baseTier]}</strong>
           </li>
-          <li>
-            Abitazioni: fino a {getMaxHouses(effectiveTier)}
-          </li>
+          <li>Abitazioni: fino a {getMaxHouses(effectiveTier)}</li>
           <li>
             Schede ICE:{' '}
             {Number.isFinite(maxResidents) ? `max ${maxResidents}` : 'illimitate'}
+          </li>
+          <li>
+            Watermark stampa:{' '}
+            {shouldShowPrintWatermark(effectiveTier) ? 'sì' : 'no'}
           </li>
           <li>
             Cassaforte L3:{' '}
             {features.allowLevel3Vault ? 'inclusa' : 'non inclusa'}
           </li>
           <li>
-            Sync cloud:{' '}
+            Patrimonio personale:{' '}
+            {features.allowPersonalPatrimonio ? 'incluso' : 'non incluso'}
+          </li>
+          <li>
+            Tasse IT / successione:{' '}
+            {features.allowResidentTax ? 'incluse' : 'non incluse'}
+          </li>
+          <li>
+            Sync cloud E2EE:{' '}
             {features.allowCloudSync ? 'inclusa' : 'non inclusa'}
+          </li>
+          <li>
+            Campi personalizzati:{' '}
+            {features.allowCustomFields ? 'inclusi' : 'solo campi standard'}
           </li>
         </ul>
 
@@ -126,12 +142,50 @@ export function LicensePanel({
         ) : null}
       </div>
 
+      <div className="overflow-x-auto rounded-lg border-2 border-zinc-900 bg-white">
+        <table className="w-full min-w-[32rem] text-left text-sm">
+          <thead className="border-b-2 border-zinc-900 bg-zinc-100">
+            <tr>
+              <th className="px-3 py-2">Piano</th>
+              <th className="px-3 py-2">Livelli</th>
+              <th className="px-3 py-2">Residenti</th>
+              <th className="px-3 py-2">Extra</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-zinc-200">
+              <td className="px-3 py-2 font-bold">Free</td>
+              <td className="px-3 py-2">1 + 2</td>
+              <td className="px-3 py-2">1</td>
+              <td className="px-3 py-2">Campi standard · watermark</td>
+            </tr>
+            <tr className="border-b border-zinc-200">
+              <td className="px-3 py-2 font-bold">Basic</td>
+              <td className="px-3 py-2">1 + 2</td>
+              <td className="px-3 py-2">Illimitati</td>
+              <td className="px-3 py-2">Campi standard · watermark</td>
+            </tr>
+            <tr className="border-b border-zinc-200">
+              <td className="px-3 py-2 font-bold">Advanced</td>
+              <td className="px-3 py-2">+ L3 Famiglia</td>
+              <td className="px-3 py-2">Illimitati</td>
+              <td className="px-3 py-2">No watermark · no sync/tasse/custom</td>
+            </tr>
+            <tr>
+              <td className="px-3 py-2 font-bold">Premium</td>
+              <td className="px-3 py-2">Tutto</td>
+              <td className="px-3 py-2">Illimitati</td>
+              <td className="px-3 py-2">
+                Sync · tasse · successione · custom fields
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <p className="text-xs text-zinc-600">
-        Self-host: puoi fissare il piano base con{' '}
-        <code className="rounded bg-zinc-200 px-1">
-          NEXT_PUBLIC_DOMUSAFE_TIER
-        </code>
-        . La prova Premium vale comunque una sola volta per account.
+        La prova Premium vale una sola volta per account. Dopo la scadenza torni
+        al piano base indicato sopra.
       </p>
     </section>
   );

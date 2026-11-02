@@ -1,8 +1,9 @@
 'use client';
 
 /**
- * Livello 3 — Cassaforte patrimoniale E2EE (ADVANCED / PREMIUM).
- * Cifra/decifra `EncryptedVaultPayload` via Web Crypto (`lib/crypto-vault.ts`).
+ * Livello 3 — Cassaforte patrimoniale E2EE (Advanced / Premium).
+ * Advanced: documenti Famiglia (utenze + eredità digitale).
+ * Premium: + patrimonio personale + campi personalizzati.
  * PIN errato → messaggio italiano; nessun crash applicativo.
  */
 
@@ -11,6 +12,7 @@ import { Lock, LockOpen, Plus, Shield, Trash2 } from 'lucide-react';
 import type {
   DomusRunbookDocument,
   EncryptedVaultPayload,
+  LicenseTier,
 } from '@/types/domus';
 import {
   VAULT_PIN_ERROR_MESSAGE,
@@ -18,10 +20,14 @@ import {
   encryptVault,
   isVaultPinError,
 } from '@/lib/crypto-vault';
+import { canAccessFeature } from '@/lib/licensing';
 import { createEmptyVaultPayload } from '@/lib/defaults';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
+import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
+import { FeatureGate } from '@/components/FeatureGate';
 
 interface Level3VaultPanelProps {
+  tier: LicenseTier;
   vault: DomusRunbookDocument['level3_vault'];
   onVaultChange: (vault: DomusRunbookDocument['level3_vault']) => void;
 }
@@ -33,9 +39,11 @@ type VaultView = 'locked' | 'unlocked' | 'create';
  * ciphertext o abitazione, così non serve un effect di reset.
  */
 export function Level3VaultPanel({
+  tier,
   vault,
   onVaultChange,
 }: Level3VaultPanelProps) {
+  const allowPersonal = canAccessFeature(tier, 'allowPersonalPatrimonio');
   const [view, setView] = useState<VaultView>(vault ? 'locked' : 'create');
   const [payload, setPayload] = useState<EncryptedVaultPayload>(
     createEmptyVaultPayload
@@ -211,7 +219,19 @@ export function Level3VaultPanel({
 
       {view === 'create' || view === 'unlocked' ? (
         <div className="space-y-6">
-          <VaultEditor payload={payload} onChange={setPayload} />
+          {!allowPersonal ? (
+            <p className="rounded-md border-2 border-amber-800 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950">
+              Piano Advanced: documenti Famiglia (utenze e eredità digitale).
+              Patrimonio personale (conti, polizze, lavoro) e campi liberi
+              richiedono Premium o prova.
+            </p>
+          ) : null}
+          <VaultEditor
+            tier={tier}
+            allowPersonal={allowPersonal}
+            payload={payload}
+            onChange={setPayload}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -280,14 +300,20 @@ export function Level3VaultPanel({
 }
 
 function VaultEditor({
+  tier,
+  allowPersonal,
   payload,
   onChange,
 }: {
+  tier: LicenseTier;
+  allowPersonal: boolean;
   payload: EncryptedVaultPayload;
   onChange: (next: EncryptedVaultPayload) => void;
 }) {
   return (
     <div className="space-y-8">
+      {allowPersonal ? (
+      <>
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-bold">Conti bancari</h3>
@@ -591,6 +617,8 @@ function VaultEditor({
           </div>
         </div>
       </div>
+      </>
+      ) : null}
 
       <div className="space-y-3 rounded-md border-2 border-amber-900/40 bg-white p-3">
         <h3 className="text-lg font-bold">Utenze &amp; abbonamenti</h3>
@@ -683,6 +711,14 @@ function VaultEditor({
           />
         </div>
       </div>
+
+      <FeatureGate tier={tier} feature="allowCustomFields">
+        <CustomFieldsEditor
+          title="Campi personalizzati (cassaforte)"
+          fields={payload.customFields}
+          onChange={(customFields) => onChange({ ...payload, customFields })}
+        />
+      </FeatureGate>
     </div>
   );
 }

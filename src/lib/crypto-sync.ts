@@ -1,11 +1,13 @@
 /**
- * Sync cloud E2EE (ADVANCED+): cifra la collezione case *prima* di qualsiasi rete.
+ * Sync cloud E2EE (Premium / trial): cifra la collezione case *prima* di qualsiasi rete.
+ * Family-scoped: envelope porta `familyId` (metadato); chiave mai sul wire HTTP.
  *
  * Invarianti di sicurezza:
- * - Il server riceve solo salt/iv/ciphertext + metadati di revisione.
+ * - Il server riceve solo salt/iv/ciphertext + metadati di revisione/Famiglia.
  * - La chiave grezza (32 byte) non lascia mai il client verso `/api/sync`.
  * - IV AES-GCM a 12 byte (96-bit NIST); salt PBKDF2 a 16 byte solo in modalità PIN.
  * - PIN/chiave errati → errore italiano, mai OperationError grezzo del browser.
+ * - Sessione sync: cifrata con data-key account, persistita su account→Famiglia (no IndexedDB SoT).
  */
 
 import type { DomusHouseCollection } from '@/lib/storage';
@@ -29,7 +31,7 @@ export const SYNC_PAIRING_PREFIX = 'ds1';
 /** Envelope opaco persistito dal server (nessun plaintext). */
 export interface SyncEnvelope {
   format: 'domusync-1';
-  /** Revisione monotona client-side: conflitto se server > client (PREMIUM history dopo). */
+  /** Revisione monotona client-side: conflitto se server > client. */
   revision: number;
   updatedAt: string;
   ivBase64: string;
@@ -39,20 +41,26 @@ export interface SyncEnvelope {
    * Assente quando la chiave grezza arriva dal QR di pairing.
    */
   saltBase64?: string;
+  /** Famiglia owner della stanza (metadato non segreto; scoping server). */
+  familyId?: string;
 }
 
-/** Sessione sync locale (IndexedDB): syncId + chiave, mai inviata al server. */
+/**
+ * Sessione sync per account (cifrata a riposo sull’account Famiglia).
+ * Contiene syncId + chiave grezza — mai inviata in chiaro al server.
+ */
 export interface SyncSession {
   syncId: string;
-  /** Chiave AES-256 grezza in Base64 (solo storage locale del device). */
+  /** Chiave AES-256 grezza in Base64 (solo ciphertext sull’account). */
   keyBase64: string;
   revision: number;
   updatedAt: string;
+  familyId?: string;
 }
 
 export interface EncryptSyncResult {
   envelope: SyncEnvelope;
-  /** Chiave usata (grezza o derivata); da salvare in sessione locale. */
+  /** Chiave usata (grezza o derivata); da salvare in sessione account. */
   keyBytes: Uint8Array;
 }
 
@@ -117,11 +125,13 @@ export function createSyncIdentity(): {
 /**
  * Cifra la collezione case con chiave grezza (bootstrap QR) o PIN (salt nuovo).
  * `revision` deve essere ≥ revisione precedente del device mittente.
+ * `familyId` è metadato di scoping Famiglia (non segreto).
  */
 export async function encryptHouseCollection(
   collection: DomusHouseCollection,
   options: {
     revision: number;
+    familyId: string;
     keyBytes?: Uint8Array;
     pin?: string;
   }
@@ -163,6 +173,7 @@ export async function encryptHouseCollection(
       ivBase64: bytesToBase64(iv),
       ciphertextBase64: bytesToBase64(new Uint8Array(cipherBuffer)),
       saltBase64,
+      familyId: options.familyId,
     },
   };
 }
@@ -296,13 +307,15 @@ export function sessionFromIdentity(
   syncId: string,
   keyBytes: Uint8Array,
   revision: number,
-  updatedAt: string
+  updatedAt: string,
+  familyId?: string
 ): SyncSession {
   return {
     syncId,
     keyBase64: bytesToBase64(keyBytes),
     revision,
     updatedAt,
+    familyId,
   };
 }
 
@@ -312,7 +325,7 @@ export function keyBytesFromSession(session: SyncSession): Uint8Array {
 
 /**
  * Ricostruisce i 32 byte chiave da sessione QR oppure da PIN+salt envelope.
- * Usato dopo un download riuscito per persistere la sessione locale.
+ * Usato dopo un download riuscito per persistere la sessione sull’account.
  */
 export async function resolveSyncKeyBytes(
   envelope: SyncEnvelope,
