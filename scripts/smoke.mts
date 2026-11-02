@@ -1,9 +1,10 @@
 /**
  * Smoke critico DomuSafe (Node 22 + fake-indexeddb).
- * Esegue: licensing BASIC/ADVANCED, multi-casa, IndexedDB, vault PIN IT, print CSS.
+ * Esegue: licensing, multi-casa, vault PIN, sync E2EE gate/invariants, print CSS.
  */
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import 'fake-indexeddb/auto';
 
@@ -23,6 +24,21 @@ import {
   encryptVault,
   isVaultPinError,
 } from '../src/lib/crypto-vault';
+import {
+  SYNC_CREDENTIALS_ERROR_MESSAGE,
+  buildPairingUrl,
+  createSyncIdentity,
+  decryptHouseCollection,
+  encodePairingPayload,
+  encryptHouseCollection,
+  isSyncCredentialsError,
+  parsePairingPayload,
+} from '../src/lib/crypto-sync';
+import {
+  envelopeLooksEncrypted,
+  writeEnvelope,
+  readEnvelope,
+} from '../src/lib/sync-server';
 import {
   addHouse,
   clearRunbook,
@@ -67,7 +83,9 @@ await record('licensing: BASIC max 2 residents + gate flags', () => {
   assert.equal(canAccessFeature('BASIC', 'allowLevel3Vault'), false);
   assert.equal(canAccessFeature('BASIC', 'allowCloudSync'), false);
   assert.equal(canAccessFeature('ADVANCED', 'allowLevel3Vault'), true);
+  assert.equal(canAccessFeature('ADVANCED', 'allowCloudSync'), true);
   assert.equal(canAccessFeature('PREMIUM', 'allowLevel3Vault'), true);
+  assert.equal(canAccessFeature('PREMIUM', 'allowCloudSync'), true);
 });
 
 await record('licensing: ADVANCED houses ≤3 + unlimited ICE + no watermark', () => {
@@ -191,6 +209,115 @@ await record('ui modules: FeatureGate + Level3VaultPanel present', () => {
   assert.match(vaultUi, /PIN errato|VAULT_PIN_ERROR_MESSAGE/);
   assert.match(vaultUi, /encryptVault/);
   assert.match(vaultUi, /decryptVault/);
+});
+
+await record('sync: feature gate BASIC local-only / ADVANCED allowed', () => {
+  assert.equal(canAccessFeature('BASIC', 'allowCloudSync'), false);
+  assert.equal(canAccessFeature('ADVANCED', 'allowCloudSync'), true);
+  const appUi = readFileSync(resolve('src/components/DomuSafeApp.tsx'), 'utf8');
+  assert.match(appUi, /allowCloudSync/);
+  assert.match(appUi, /CloudSyncPanel/);
+  assert.match(appUi, /solo locale/);
+  const syncUi = readFileSync(
+    resolve('src/components/CloudSyncPanel.tsx'),
+    'utf8'
+  );
+  assert.match(syncUi, /encryptHouseCollection/);
+  assert.match(syncUi, /uploadSyncEnvelope/);
+  assert.match(syncUi, /SYNC_CREDENTIALS_ERROR_MESSAGE/);
+});
+
+await record('sync: encrypt-before-upload invariant + wrong PIN', async () => {
+  await clearRunbook();
+  const collection = await loadHouseCollection();
+  collection.houses[0]!.level1_public.houseName = 'Villa Segreta Sync';
+
+  const { syncId, keyBytes } = createSyncIdentity();
+  const { envelope, keyBytes: usedKey } = await encryptHouseCollection(
+    collection,
+    { revision: 1, keyBytes }
+  );
+
+  assert.equal(envelope.format, 'domusync-1');
+  assert.equal(envelope.revision, 1);
+  assert.equal(envelopeLooksEncrypted(envelope), true);
+  assert.equal(envelope.ciphertextBase64.includes('Villa Segreta'), false);
+  assert.equal(envelope.ciphertextBase64.includes('level1_public'), false);
+
+  // Persistenza server: solo envelope (simula API PUT senza rete).
+  const tmp = mkdtempSync(resolve(tmpdir(), 'domusafe-sync-'));
+  process.env.DOMUSAFE_SYNC_DIR = tmp;
+  const written = await writeEnvelope(syncId, envelope);
+  assert.equal(written.ok, true);
+  const stored = await readEnvelope(syncId);
+  assert.ok(stored);
+  assert.equal(stored!.ciphertextBase64, envelope.ciphertextBase64);
+  const disk = readFileSync(resolve(tmp, `${syncId}.json`), 'utf8');
+  assert.equal(disk.includes('Villa Segreta'), false);
+  assert.equal(disk.includes('level1_public'), false);
+
+  const roundTrip = await decryptHouseCollection(envelope, {
+    keyBytes: usedKey,
+  });
+  assert.equal(
+    roundTrip.houses[0]?.level1_public.houseName,
+    'Villa Segreta Sync'
+  );
+
+  // PIN path + wrong credentials Italian message
+  const pinSealed = await encryptHouseCollection(collection, {
+    revision: 2,
+    pin: 'sync-pin-ok',
+  });
+  assert.ok(pinSealed.envelope.saltBase64);
+  const pinOk = await decryptHouseCollection(pinSealed.envelope, {
+    pin: 'sync-pin-ok',
+  });
+  assert.equal(pinOk.houses[0]?.level1_public.houseName, 'Villa Segreta Sync');
+
+  let caught: unknown;
+  try {
+    await decryptHouseCollection(pinSealed.envelope, { pin: 'wrong-pin' });
+  } catch (error) {
+    caught = error;
+  }
+  assert.ok(caught instanceof Error);
+  assert.equal((caught as Error).message, SYNC_CREDENTIALS_ERROR_MESSAGE);
+  assert.equal(isSyncCredentialsError(caught), true);
+
+  const newer = await writeEnvelope(syncId, { ...envelope, revision: 5 });
+  assert.equal(newer.ok, true);
+  const conflict = await writeEnvelope(syncId, {
+    ...envelope,
+    revision: 2,
+  });
+  assert.equal(conflict.ok, false);
+  if (!conflict.ok) {
+    assert.equal(conflict.status, 409);
+  }
+
+  rmSync(tmp, { recursive: true, force: true });
+  delete process.env.DOMUSAFE_SYNC_DIR;
+  await clearRunbook();
+});
+
+await record('sync: QR pairing encode/decode + deep-link', () => {
+  const { syncId, keyBytes } = createSyncIdentity();
+  const token = encodePairingPayload(syncId, keyBytes);
+  assert.match(token, /^ds1\.[a-f0-9]{64}\./u);
+  const parsed = parsePairingPayload(token);
+  assert.ok(parsed);
+  assert.equal(parsed!.syncId, syncId);
+  assert.equal(parsed!.keyBytes.length, 32);
+
+  const url = buildPairingUrl('http://localhost:3000', syncId, keyBytes);
+  assert.match(url, /^http:\/\/localhost:3000\/#ds1\./u);
+  const fromUrl = parsePairingPayload(url);
+  assert.ok(fromUrl);
+  assert.equal(fromUrl!.syncId, syncId);
+
+  assert.equal(parsePairingPayload('not-a-pairing'), null);
+  assert.equal(existsSync(resolve('src/app/api/sync/[syncId]/route.ts')), true);
 });
 
 const failed = results.filter((r) => !r.ok);

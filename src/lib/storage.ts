@@ -199,6 +199,35 @@ export async function removeHouse(
   return next;
 }
 
+/**
+ * Sostituisce l'intera collezione (es. dopo download sync E2EE).
+ * Applica il tier configurato a ogni casa.
+ */
+export async function replaceHouseCollection(
+  collection: DomusHouseCollection
+): Promise<DomusHouseCollection> {
+  if (
+    collection.version !== '1.0.0' ||
+    !Array.isArray(collection.houses) ||
+    collection.houses.length === 0
+  ) {
+    throw new Error('Collezione sync non valida');
+  }
+  const next = applyTierToCollection({
+    version: '1.0.0',
+    activeDocumentId: collection.activeDocumentId,
+    houses: collection.houses,
+  });
+  const activeExists = next.houses.some(
+    (h) => h.documentId === next.activeDocumentId
+  );
+  if (!activeExists) {
+    next.activeDocumentId = next.houses[0]!.documentId;
+  }
+  await set(HOUSES_STORAGE_KEY, next);
+  return next;
+}
+
 /** Cancella runbook/collezione locale (reset fabbrica). */
 export async function clearRunbook(): Promise<void> {
   await del(RUNBOOK_STORAGE_KEY);

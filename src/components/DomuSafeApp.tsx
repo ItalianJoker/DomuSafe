@@ -2,8 +2,8 @@
 
 /**
  * Shell principale DomuSafe — offline con Feature Gate per piano.
- * BASIC: L1+L2 (max 2 ICE), 1 casa, watermark stampa.
- * ADVANCED+: multi-casa, ICE illimitati, Livello 3 cassaforte E2EE.
+ * BASIC: L1+L2 (max 2 ICE), 1 casa, watermark stampa, solo locale.
+ * ADVANCED+: multi-casa, ICE illimitati, Livello 3, cloud sync E2EE + QR.
  */
 
 import {
@@ -14,6 +14,7 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  Cloud,
   Home,
   Loader2,
   Printer,
@@ -27,11 +28,13 @@ import {
   getActiveHouse,
   loadHouseCollection,
   removeHouse,
+  replaceHouseCollection,
   saveRunbook,
   switchActiveHouse,
   type DomusHouseCollection,
 } from '@/lib/storage';
 import { FeatureGate } from '@/components/FeatureGate';
+import { CloudSyncPanel } from '@/components/CloudSyncPanel';
 import { HouseSwitcher } from '@/components/HouseSwitcher';
 import { Level1PublicPanel } from '@/components/Level1PublicPanel';
 import { Level2IcePanel } from '@/components/Level2IcePanel';
@@ -39,7 +42,7 @@ import { Level3VaultPanel } from '@/components/Level3VaultPanel';
 import { PrintSheet } from '@/components/PrintSheet';
 import { QrPanel } from '@/components/QrPanel';
 
-type Tab = 'casa' | 'ice' | 'cassaforte' | 'stampa';
+type Tab = 'casa' | 'ice' | 'cassaforte' | 'sync' | 'stampa';
 
 /** URL client-only senza hydration mismatch (snapshot server stabile). */
 function useClientUrl(): string {
@@ -148,6 +151,24 @@ export function DomuSafeApp() {
     </aside>
   );
 
+  const syncFallback = (
+    <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
+      <h3 className="text-lg font-bold">Sync cloud</h3>
+      <p className="mt-2 text-zinc-700">
+        Il piano <strong>BASIC</strong> resta solo locale (IndexedDB). La sync
+        cloud cifrata end-to-end e il QR multi-dispositivo sono nei piani{' '}
+        <strong>ADVANCED</strong> e <strong>PREMIUM</strong>.
+      </p>
+      <p className="mt-2 text-sm text-zinc-600">
+        Self-host: imposta{' '}
+        <code className="rounded bg-zinc-200 px-1">
+          NEXT_PUBLIC_DOMUSAFE_TIER=ADVANCED
+        </code>{' '}
+        e monta la cartella sync (`DOMUSAFE_SYNC_DIR`).
+      </p>
+    </aside>
+  );
+
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f4f7f2_0%,#e8eef5_45%,#f7f3ea_100%)] text-zinc-950">
       <header className="no-print border-b-4 border-zinc-950 bg-[#0f1a14] text-white">
@@ -201,6 +222,12 @@ export function DomuSafeApp() {
             onClick={() => setTab('cassaforte')}
             icon={<ShieldCheck className="size-5" aria-hidden />}
             label="Cassaforte"
+          />
+          <TabButton
+            active={tab === 'sync'}
+            onClick={() => setTab('sync')}
+            icon={<Cloud className="size-5" aria-hidden />}
+            label="Sync"
           />
           <TabButton
             active={tab === 'stampa'}
@@ -302,6 +329,23 @@ export function DomuSafeApp() {
           </FeatureGate>
         ) : null}
 
+        {tab === 'sync' ? (
+          <FeatureGate
+            tier={document.tier}
+            feature="allowCloudSync"
+            fallback={syncFallback}
+          >
+            <CloudSyncPanel
+              collection={collection}
+              onStatus={setStatus}
+              onCollectionImported={async (imported) => {
+                const saved = await replaceHouseCollection(imported);
+                setCollection(saved);
+              }}
+            />
+          </FeatureGate>
+        ) : null}
+
         {tab === 'stampa' ? (
           <div className="no-print space-y-6">
             <QrPanel payload={qrPayload} onSvgReady={handleQrReady} />
@@ -337,7 +381,11 @@ export function DomuSafeApp() {
       </main>
 
       <footer className="no-print border-t-2 border-zinc-900 bg-white px-4 py-6 text-center text-sm text-zinc-600">
-        DomuSafe · dati solo su questo dispositivo · BSL 1.1
+        DomuSafe · locale
+        {document.tier === 'BASIC'
+          ? ' (BASIC)'
+          : ' + sync E2EE opzionale'}{' '}
+        · BSL 1.1
       </footer>
     </div>
   );
