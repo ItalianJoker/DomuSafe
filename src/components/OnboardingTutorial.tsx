@@ -42,7 +42,7 @@ const STEPS = [
   },
   {
     title: 'Piano',
-    body: 'In Piano vedi i limiti e puoi attivare una prova Premium di 30 giorni (una sola volta per account).',
+    body: 'Free e Basic: Casa ed Emergenza. Advanced: anche Cassaforte Famiglia. Premium: tasse, successione, sync e altro. Puoi provare Premium 30 giorni, una sola volta.',
     icon: BadgeCheck,
   },
 ] as const;

@@ -1,0 +1,22 @@
+# DomuSafe — avvio self-host locale / LAN
+services:
+  domusafe:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_DOMUSAFE_TIER: FREE
+    image: domusafe:local
+    ports:
+      - '3000:3000'
+    environment:
+      DOMUSAFE_DATA_DIR: /app/data/app
+      DOMUSAFE_SYNC_DIR: /app/data/sync
+      DOMUSAFE_SOS_PROVIDER: log
+    volumes:
+      - domusafe-app:/app/data/app
+      - domusafe-sync:/app/data/sync
+    restart: unless-stopped
+
+volumes:
+  domusafe-app:
+  domusafe-sync:

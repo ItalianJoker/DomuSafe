@@ -2,7 +2,8 @@
  * Smoke critico DomuSafe (Node 22).
  * Account filesystem (no IndexedDB), licensing Free→Premium + trial,
  * vault, sync E2EE family-scoped, custom fields Premium, checklists,
- * Premium pack: audit log, SOS provider, branding, inheritance kit.
+ * Premium pack: audit log, SOS provider, branding, inheritance kit,
+ * PWA shell, Docker/self-host docs, copy piani IT.
  */
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
@@ -85,6 +86,7 @@ import {
   PREMIUM_TRIAL_MS,
   TRIAL_ALREADY_USED_MESSAGE,
 } from '../src/lib/trial';
+import { TIER_COPY, TIER_SUMMARY } from '../src/lib/tier-copy';
 import type { EncryptedVaultPayload } from '../src/types/domus';
 import type { DomusHouseCollection } from '../src/lib/storage';
 
@@ -411,15 +413,93 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   assert.match(readme, /telefono/i);
   assert.match(readme, /BSL 1\.1|Business Source License/i);
   assert.match(readme, /Use Limitation|Non consentito/i);
-  assert.match(readme, /DOMUSAFE_SOS_PROVIDER/);
   assert.match(readme, /registro accessi|Registro accessi/i);
+  assert.match(readme, /I piani, spiegati con chiarezza/);
+  assert.match(readme, /\*\*Free\*\*/);
+  assert.match(readme, /\*\*Basic\*\*/);
+  assert.match(readme, /\*\*Advanced\*\*/);
+  assert.match(readme, /\*\*Premium\*\*/);
+  assert.match(readme, /Watermark/);
+  assert.match(readme, /Privacy/);
+  assert.match(readme, /SELF-HOST\.md/);
+  assert.match(readme, /PWA/);
+  // README prodotto IT: niente one-liner EN, niente deploy-first
+  assert.equal(readme.includes('Your home handbook'), false);
   assert.equal(readme.toLowerCase().includes('docker run'), false);
   assert.equal(readme.toLowerCase().includes('pnpm'), false);
+  assert.equal(readme.includes('DOMUSAFE_SOS_PROVIDER'), false);
+  const selfHost = readFileSync(resolve('SELF-HOST.md'), 'utf8');
+  assert.match(selfHost, /Dockerfile/);
+  assert.match(selfHost, /DOMUSAFE_SOS_PROVIDER/);
+  assert.match(selfHost, /ghcr\.io/);
+  assert.equal(existsSync(resolve('docker-compose.yml')), true);
+  assert.equal(existsSync(resolve('Dockerfile')), true);
   const license = readFileSync(resolve('LICENSE.md'), 'utf8');
   assert.match(license, /Business Source License 1\.1/);
   assert.match(license, /Use Limitation/);
   assert.match(license, /36 months/);
   assert.equal(existsSync(resolve('LICENSE')), true);
+  const manuale = readFileSync(
+    resolve('src/components/ManualeUtente.tsx'),
+    'utf8'
+  );
+  assert.match(manuale, /Piani: Free, Basic, Advanced, Premium/);
+  assert.match(manuale, /Prova Premium/);
+  assert.match(manuale, /Installare DomuSafe sul telefono/);
+});
+
+await record('tier copy: Free→Premium IT clarity', () => {
+  assert.match(TIER_COPY.FREE.audience, /iniziare/i);
+  assert.ok(TIER_COPY.FREE.includes.some((l) => /Watermark/i.test(l)));
+  assert.ok(TIER_COPY.FREE.limits.some((l) => /Cassaforte/i.test(l)));
+  assert.ok(TIER_COPY.BASIC.includes.some((l) => /illimitat/i.test(l)));
+  assert.ok(
+    TIER_COPY.ADVANCED.includes.some((l) => /Cassaforte|Famiglia/i.test(l))
+  );
+  assert.ok(
+    TIER_COPY.ADVANCED.limits.some((l) => /tasse|patrimoniali|sync/i.test(l))
+  );
+  assert.equal(TIER_COPY.PREMIUM.limits.length, 0);
+  assert.ok(
+    TIER_COPY.PREMIUM.includes.some((l) => /personalizzat/i.test(l))
+  );
+  assert.match(TIER_SUMMARY.FREE, /Watermark/);
+  assert.match(TIER_SUMMARY.PREMIUM, /Tutto/);
+  const panel = readFileSync(
+    resolve('src/components/LicensePanel.tsx'),
+    'utf8'
+  );
+  assert.match(panel, /TIER_COPY/);
+  assert.match(panel, /Confronta i piani/);
+});
+
+await record('pwa: manifest + icons + offline shell + register', () => {
+  assert.equal(existsSync(resolve('public/manifest.webmanifest')), true);
+  assert.equal(existsSync(resolve('public/sw.js')), true);
+  assert.equal(existsSync(resolve('public/offline.html')), true);
+  assert.equal(existsSync(resolve('public/icons/icon-192.png')), true);
+  assert.equal(existsSync(resolve('public/icons/icon-512.png')), true);
+  assert.equal(existsSync(resolve('public/icons/maskable-512.png')), true);
+  assert.equal(existsSync(resolve('public/icons/apple-touch-icon.png')), true);
+  assert.equal(existsSync(resolve('src/components/PwaRegister.tsx')), true);
+  const manifest = readFileSync(
+    resolve('public/manifest.webmanifest'),
+    'utf8'
+  );
+  assert.match(manifest, /"name": "DomuSafe"/);
+  assert.match(manifest, /"display": "standalone"/);
+  assert.match(manifest, /icon-512\.png/);
+  const sw = readFileSync(resolve('public/sw.js'), 'utf8');
+  assert.match(sw, /domusafe-shell/);
+  assert.match(sw, /\/api\//);
+  assert.match(sw, /offline\.html/);
+  const layout = readFileSync(resolve('src/app/layout.tsx'), 'utf8');
+  assert.match(layout, /manifest\.webmanifest/);
+  assert.match(layout, /PwaRegister/);
+  assert.equal(existsSync(resolve('.github/workflows/ghcr.yml')), true);
+  const ghcr = readFileSync(resolve('.github/workflows/ghcr.yml'), 'utf8');
+  assert.match(ghcr, /ghcr\.io/);
+  assert.match(ghcr, /packages: write/);
 });
 
 await record('premium pack: audit + SOS provider + branding + kit assets', async () => {
