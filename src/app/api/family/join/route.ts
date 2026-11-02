@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import {
   acceptInviteOnServer,
+  findOpenInviteSeal,
   getAccountById,
+  getFamily,
   getSession,
   saveAccount,
   toPublicAccount,
@@ -32,6 +34,33 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    const parts = body.inviteCode.trim().split('.');
+    if (parts.length !== 3 || parts[0] !== 'df1') {
+      return NextResponse.json(
+        { error: 'Codice invito non valido' },
+        { status: 400 }
+      );
+    }
+    const familyId = parts[1]!;
+    const inviteToken = parts[2]!;
+    const before = await getFamily(familyId);
+    if (!before) {
+      return NextResponse.json(
+        { error: 'Famiglia non trovata per questo invito' },
+        { status: 400 }
+      );
+    }
+    const sealedFamilyKey = findOpenInviteSeal(before, inviteToken);
+    if (!sealedFamilyKey) {
+      return NextResponse.json(
+        {
+          error:
+            'Invito senza chiave Famiglia: chiedi un nuovo QR al proprietario',
+        },
+        { status: 400 }
+      );
+    }
+
     const family = await acceptInviteOnServer({
       inviteCode: body.inviteCode,
       accountId: account.accountId,
@@ -47,6 +76,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       family,
       account: toPublicAccount(next),
+      sealedFamilyKey,
+      inviteToken,
+      familyId,
     });
   } catch (error) {
     const message =

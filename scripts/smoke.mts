@@ -60,6 +60,7 @@ import {
   ensureFamilyScanToken,
   findFamilyByScanToken,
   hashIpForAudit,
+  putMemberKeyWrapOnServer,
 } from '../src/lib/account-server';
 import {
   dispatchSos,
@@ -87,8 +88,18 @@ import {
   TRIAL_ALREADY_USED_MESSAGE,
 } from '../src/lib/trial';
 import { TIER_COPY, TIER_SUMMARY } from '../src/lib/tier-copy';
+import {
+  createFamilyKey,
+  sealFamilyKeyForInvite,
+  openFamilyKeyFromInvite,
+  wrapFamilyKeyForMember,
+  unwrapFamilyKeyForMember,
+} from '../src/lib/crypto-family';
+import { enforceVaultPayloadForTier } from '../src/lib/vault-policy';
 import type { EncryptedVaultPayload } from '../src/types/domus';
 import type { DomusHouseCollection } from '../src/lib/storage';
+import { createEmptyVaultPayload } from '../src/lib/defaults';
+import { bytesToBase64 } from '../src/lib/crypto-bytes';
 
 const results: Array<{ name: string; ok: boolean; detail?: string }> = [];
 
@@ -217,6 +228,11 @@ await record('account server: register/login/family/invite (filesystem)', async 
   const { inviteCode } = await createInviteOnServer({
     familyId: family.familyId,
     createdByAccountId: account.accountId,
+    clientToken: 'a'.repeat(32),
+    sealedFamilyKey: {
+      ivBase64: 'dGVzdGl2MTIzNDU2',
+      ciphertextBase64: 'dGVzdGNpcGhlcnRleHQ',
+    },
   });
   assert.match(inviteCode, /^df1\./);
 
@@ -304,6 +320,86 @@ await record('account server: register/login/family/invite (filesystem)', async 
   );
   assert.equal(succPlain.familyId, family.familyId);
   assert.ok(succPlain.items.length >= 5);
+
+  // Family-key: wrap per membro + seal invito (workspace condiviso)
+  const { raw: famRaw } = await createFamilyKey();
+  const memberWrap = await wrapFamilyKeyForMember(famRaw, dataKey);
+  const withWrap = await putMemberKeyWrapOnServer({
+    familyId: family.familyId,
+    accountId: account.accountId,
+    wrap: memberWrap,
+  });
+  assert.ok(withWrap.memberKeyWraps?.[account.accountId]);
+  const unwrapped = await unwrapFamilyKeyForMember(
+    withWrap.memberKeyWraps![account.accountId]!,
+    dataKey
+  );
+  assert.equal(bytesToBase64(unwrapped), bytesToBase64(famRaw));
+
+  const inviteToken = 'b'.repeat(32);
+  const familySeal = await sealFamilyKeyForInvite(
+    famRaw,
+    inviteToken,
+    family.familyId
+  );
+  const opened = await openFamilyKeyFromInvite(
+    familySeal,
+    inviteToken,
+    family.familyId
+  );
+  assert.equal(bytesToBase64(opened), bytesToBase64(famRaw));
+  const { inviteCode: sealedInvite } = await createInviteOnServer({
+    familyId: family.familyId,
+    createdByAccountId: account.accountId,
+    clientToken: inviteToken,
+    sealedFamilyKey: familySeal,
+  });
+  assert.match(sealedInvite, new RegExp(`^df1\\.${family.familyId}\\.`));
+});
+
+await record('license API: only start_premium_trial (anti-spoof)', () => {
+  const route = readFileSync(
+    resolve('src/app/api/account/license/route.ts'),
+    'utf8'
+  );
+  assert.match(route, /start_premium_trial/);
+  assert.match(route, /startPremiumTrial\(account\.license\)/);
+  assert.equal(route.includes('body.license'), false);
+  assert.match(route, /Azione licenza non consentita/);
+});
+
+await record('vault policy: strip personal on Advanced', () => {
+  const full: EncryptedVaultPayload = {
+    ...createEmptyVaultPayload(),
+    bankAccounts: [
+      {
+        institution: 'Banca',
+        accountType: 'Corrente',
+        ownershipDetails: 'Solo',
+      },
+    ],
+    customFields: [{ id: '1', label: 'X', value: 'Y' }],
+    utilitiesLocations: {
+      lastBillsFolderLocation: 'Cassetto',
+      activeSubscriptionsToRevoke: ['Netflix'],
+    },
+  };
+  const advanced = enforceVaultPayloadForTier(full, {
+    allowPersonal: false,
+    allowCustomFields: false,
+  });
+  assert.equal(advanced.bankAccounts.length, 0);
+  assert.equal(advanced.customFields, undefined);
+  assert.equal(
+    advanced.utilitiesLocations.lastBillsFolderLocation,
+    'Cassetto'
+  );
+  const premium = enforceVaultPayloadForTier(full, {
+    allowPersonal: true,
+    allowCustomFields: true,
+  });
+  assert.equal(premium.bankAccounts.length, 1);
+  assert.equal(premium.customFields?.length, 1);
 });
 
 await record('checklists: tax on residente + succession Famiglia', () => {

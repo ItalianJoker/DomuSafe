@@ -5,9 +5,13 @@ import {
   saveAccount,
   toPublicAccount,
 } from '@/lib/account-server';
-import type { AccountLicenseState } from '@/types/account';
 import { readSessionToken } from '@/lib/session-cookie';
+import { startPremiumTrial } from '@/lib/trial';
 
+/**
+ * Unica mutazione licenza consentita dal client: avvio prova Premium.
+ * Non accetta `baseTier` / campi trial arbitrari (anti-spoof Feature Gate).
+ */
 export async function PUT(request: Request) {
   try {
     const token = await readSessionToken();
@@ -19,13 +23,17 @@ export async function PUT(request: Request) {
     if (!account) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
     }
-    const body = (await request.json()) as { license?: AccountLicenseState };
-    if (!body.license) {
-      return NextResponse.json({ error: 'Licenza mancante' }, { status: 400 });
+    const body = (await request.json()) as { action?: string };
+    if (body.action !== 'start_premium_trial') {
+      return NextResponse.json(
+        { error: 'Azione licenza non consentita' },
+        { status: 400 }
+      );
     }
+    const license = startPremiumTrial(account.license);
     const next = {
       ...account,
-      license: body.license,
+      license,
       updatedAt: new Date().toISOString(),
     };
     await saveAccount(next);

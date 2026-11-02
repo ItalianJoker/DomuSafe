@@ -42,6 +42,12 @@ export interface FamilyMember {
   joinedAt: string;
 }
 
+/** Blob AES-GCM opaco (family-key wrap o seal invito). */
+export interface SealedKeyBlob {
+  ivBase64: string;
+  ciphertextBase64: string;
+}
+
 export interface FamilyInvite {
   inviteId: string;
   token: string;
@@ -49,6 +55,11 @@ export interface FamilyInvite {
   expiresAt: string;
   createdByAccountId: string;
   acceptedByAccountId?: string;
+  /**
+   * Family-key suggellata col token invito (prodotta dal client).
+   * Il server la conserva senza poterla aprire.
+   */
+  sealedFamilyKey?: SealedKeyBlob;
 }
 
 /**
@@ -62,6 +73,11 @@ export interface DomuFamily {
   ownerAccountId: string;
   members: FamilyMember[];
   invites: FamilyInvite[];
+  /**
+   * Family-key avvolta per ciascun membro con la propria account data-key.
+   * Case e successione si cifrano con la family-key (workspace condiviso).
+   */
+  memberKeyWraps?: Record<string, SealedKeyBlob>;
   /** Token pubblico per QR di monitoraggio scan (Premium audit log). */
   scanToken?: string;
   /** White-label host (Premium customBranding). */
