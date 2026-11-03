@@ -1,41 +1,36 @@
 {
-  "name": "domusafe",
-  "version": "0.14.0",
+  "name": "domusafe-suite",
+  "version": "0.1.0",
   "private": true,
+  "type": "module",
   "license": "SEE LICENSE IN LICENSE.md",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "typecheck": "tsc --noEmit",
-    "db:ensure": "tsx --tsconfig tsconfig.json -e \"import { ensureDbSchema, closeDb } from './src/db/client.ts'; await ensureDbSchema(); await closeDb();\"",
-    "smoke": "tsx --tsconfig tsconfig.json scripts/smoke.mts",
-    "verify": "pnpm lint && pnpm typecheck && pnpm smoke && pnpm build"
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=26.0.0 <27"
   },
-  "dependencies": {
-    "drizzle-orm": "^0.45.4",
-    "lucide-react": "^1.66.0",
-    "next": "16.4.4",
-    "postgres": "^4.0.0",
-    "qrcode": "^1.5.4",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "pnpm --filter @domusafe/db run migrate",
+    "openapi:write": "pnpm --filter @domusafe/api run openapi:write",
+    "openapi:check": "pnpm --filter @domusafe/api run openapi:check",
+    "verify": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run openapi:check"
   },
   "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
-    "@types/pg": "^8.23.1",
-    "@types/qrcode": "^1.5.6",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "dotenv": "^18.0.9",
-    "drizzle-kit": "^0.31.11",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.4",
-    "tailwindcss": "^4",
-    "tsx": "^4.23.15",
-    "typescript": "^5"
-  },
-  "packageManager": "pnpm@10.33.4"
+    "@domusafe/config": "workspace:*",
+    "@types/node": "26.6.6",
+    "eslint": "10.14.0",
+    "eslint-plugin-jsdoc": "65.4.2",
+    "eslint-plugin-tsdoc": "0.5.4",
+    "prettier": "3.9.10",
+    "turbo": "2.11.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "8.3.5",
+    "vitest": "5.1.0"
+  }
 }

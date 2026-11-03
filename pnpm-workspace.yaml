@@ -1,3 +1,6 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+packages:
+  - apps/*
+  - packages/*
+
+overrides:
+  eslint-plugin-tsdoc>@typescript-eslint/utils: 8.72.1

@@ -1,0 +1,26 @@
+{
+  "name": "@domusafe/plans",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DomuSafe plans, limits, features and Premium trial as pure functions shared by web and server.",
+  "exports": {
+    ".": {
+      "@domusafe/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src test",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@domusafe/config": "workspace:*"
+  }
+}
