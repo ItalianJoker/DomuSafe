@@ -71,6 +71,8 @@ import { InheritanceKitPanel } from '@/components/InheritanceKitPanel';
 import { HomeDashboard } from '@/components/HomeDashboard';
 import { QuickCompileWizard } from '@/components/QuickCompileWizard';
 import { EmergencyPublishPanel } from '@/components/EmergencyPublishPanel';
+import { EmergencyPrintSheet } from '@/components/EmergencyPrintSheet';
+import { IceRescueMode } from '@/components/IceRescueMode';
 import { JsonBackupPanel } from '@/components/JsonBackupPanel';
 
 type Tab =
@@ -164,6 +166,7 @@ function AuthenticatedApp() {
   const [qrSvg, setQrSvg] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [showRescue, setShowRescue] = useState(false);
   const [qr118Svg, setQr118Svg] = useState<string | null>(null);
   /** Override locale dopo salvataggio branding; altrimenti da Famiglia. */
   const [brandingOverride, setBrandingOverride] = useState<
@@ -365,9 +368,21 @@ function AuthenticatedApp() {
     const body = window.document.body;
     body.classList.add('print-runbook-only');
     body.classList.remove('print-inheritance-only');
+    body.classList.remove('print-emergency-only');
     window.print();
     window.setTimeout(() => {
       body.classList.remove('print-runbook-only');
+    }, 500);
+  };
+
+  const printEmergencyOnly = () => {
+    const body = window.document.body;
+    body.classList.add('print-emergency-only');
+    body.classList.remove('print-runbook-only');
+    body.classList.remove('print-inheritance-only');
+    window.print();
+    window.setTimeout(() => {
+      body.classList.remove('print-emergency-only');
     }, 500);
   };
 
@@ -393,6 +408,14 @@ function AuthenticatedApp() {
             setShowWizard(false);
             setTab('home');
           }}
+        />
+      ) : null}
+
+      {showRescue ? (
+        <IceRescueMode
+          document={liveDoc}
+          familyName={family.name}
+          onClose={() => setShowRescue(false)}
         />
       ) : null}
 
@@ -493,11 +516,14 @@ function AuthenticatedApp() {
 
         {tab === 'home' ? (
           <HomeDashboard
+            familyId={family.familyId}
             familyName={family.name}
             document={liveDoc}
             tier={effectiveTier}
             onGo={(target) => setTab(target)}
             onStartWizard={() => setShowWizard(true)}
+            onOpenRescue={() => setShowRescue(true)}
+            onStatus={setStatus}
           />
         ) : null}
 
@@ -508,6 +534,7 @@ function AuthenticatedApp() {
             onChange={(level1_public) =>
               setDocument({ ...liveDoc, level1_public })
             }
+            onStartWizard={() => setShowWizard(true)}
           />
         ) : null}
 
@@ -536,6 +563,8 @@ function AuthenticatedApp() {
                   level2_ice: { ...liveDoc.level2_ice, pets },
                 })
               }
+              onOpenRescue={() => setShowRescue(true)}
+              onStartWizard={() => setShowWizard(true)}
             />
           </div>
         ) : null}
@@ -623,6 +652,14 @@ function AuthenticatedApp() {
               </button>
               <button
                 type="button"
+                className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-red-900 bg-red-50 px-5 font-bold text-red-950 hover:bg-red-100"
+                onClick={printEmergencyOnly}
+              >
+                <ShieldAlert className="size-5" aria-hidden />
+                Stampa solo emergenza (A5)
+              </button>
+              <button
+                type="button"
                 className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-5 font-bold hover:bg-zinc-100"
                 onClick={() => persist(liveDoc)}
               >
@@ -631,8 +668,8 @@ function AuthenticatedApp() {
               </button>
             </div>
             <p className="text-sm text-zinc-700">
-              In stampa: box acqua/gas/luce, QR app + QR rosso 118; i dati ICE
-              restano sotto la linguetta da piegare.
+              A4: manuale completo. A5: solo chiusure + ICE + QR 118 (linguetta
+              tasca). I dati ICE restano sotto la linguetta da piegare.
               {effectiveTier === 'FREE' || effectiveTier === 'BASIC'
                 ? ' Piano Free/Basic: watermark DomuSafe.'
                 : ' Piano Advanced/Premium: senza watermark.'}
@@ -690,7 +727,11 @@ function AuthenticatedApp() {
         ) : null}
 
         {tab === 'famiglia' ? (
-          <FamilyInvitePanel family={family} onCreateInvite={createInvite} />
+          <FamilyInvitePanel
+            family={family}
+            house={liveDoc.level1_public}
+            onCreateInvite={createInvite}
+          />
         ) : null}
         {tab === 'licenze' ? (
           <LicensePanel
@@ -707,6 +748,11 @@ function AuthenticatedApp() {
         <PrintSheet
           document={liveDoc}
           qrSvg={qrSvg}
+          qr118Svg={qr118Svg}
+          branding={branding}
+        />
+        <EmergencyPrintSheet
+          document={liveDoc}
           qr118Svg={qr118Svg}
           branding={branding}
         />

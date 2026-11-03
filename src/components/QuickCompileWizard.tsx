@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * Wizard compilazione rapida: Casa (~5 min) + scheda medica (≤90s/persona).
- * Guida i campi essenziali; non sostituisce le sezioni complete.
+ * Wizard compilazione rapida: Casa + serie multi-residente ≤90s ciascuno.
+ * Barra tempo soft (non bloccante) sul passo medico.
  */
 
-import { useMemo, useState } from 'react';
-import { Check, ChevronRight, Sparkles, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Check, ChevronRight, Sparkles, Timer, X } from 'lucide-react';
 import type {
   DomusRunbookDocument,
   PublicHouseData,
@@ -47,7 +47,7 @@ const STEPS: Array<{ id: StepId; title: string; hint: string }> = [
   {
     id: 'medico',
     title: 'Scheda medica rapida',
-    hint: 'Obiettivo ≤ 90 secondi a persona',
+    hint: 'Obiettivo ≤ 90 secondi a persona (barra soft)',
   },
   {
     id: 'fine',
@@ -55,6 +55,8 @@ const STEPS: Array<{ id: StepId; title: string; hint: string }> = [
     hint: 'Puoi raffinare tutto dalle sezioni Casa ed Emergenza',
   },
 ];
+
+const MEDICO_SOFT_SECONDS = 90;
 
 export function QuickCompileWizard({
   document,
@@ -65,9 +67,26 @@ export function QuickCompileWizard({
   const [draftResident, setDraftResident] = useState<ResidentHealthRecord>(() =>
     createEmptyResident()
   );
+  /** Residenti aggiunti in questa sessione wizard (evita stale closure). */
+  const [sessionResidents, setSessionResidents] = useState<
+    ResidentHealthRecord[]
+  >([]);
+  const [elapsedSec, setElapsedSec] = useState(0);
+  const [medicoPass, setMedicoPass] = useState(0);
   const step = STEPS[stepIndex]!;
 
   const level1 = document.level1_public;
+  const residentsAdded = sessionResidents.length;
+
+  // Soft timer ≤90s: aggiorna solo via interval (non bloccante).
+  useEffect(() => {
+    if (step.id !== 'medico') return;
+    const started = Date.now();
+    const id = window.setInterval(() => {
+      setElapsedSec(Math.floor((Date.now() - started) / 1000));
+    }, 500);
+    return () => window.clearInterval(id);
+  }, [step.id, medicoPass]);
 
   const patchHouse = (patch: Partial<PublicHouseData>) => {
     onChange({
@@ -82,22 +101,56 @@ export function QuickCompileWizard({
     [stepIndex]
   );
 
+  const flushResidents = (extra: ResidentHealthRecord[]) => {
+    const merged = [
+      ...document.level2_ice.residents,
+      ...sessionResidents,
+      ...extra,
+    ];
+    // Dedup by id in case of re-flush
+    const seen = new Set<string>();
+    const residents = merged.filter((r) => {
+      if (seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    });
+    onChange({
+      ...document,
+      level2_ice: { ...document.level2_ice, residents },
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
   const next = () => {
     if (step.id === 'medico') {
       const name = draftResident.fullName.trim();
+      const extra = name ? [draftResident] : [];
       if (name) {
-        onChange({
-          ...document,
-          level2_ice: {
-            ...document.level2_ice,
-            residents: [...document.level2_ice.residents, draftResident],
-          },
-          updatedAt: new Date().toISOString(),
-        });
+        setSessionResidents((prev) => [...prev, draftResident]);
       }
+      flushResidents(extra);
+      setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+      return;
     }
     setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
   };
+
+  const addAnotherResident = () => {
+    const name = draftResident.fullName.trim();
+    if (!name) return;
+    const nextSession = [...sessionResidents, draftResident];
+    setSessionResidents(nextSession);
+    flushResidents([draftResident]);
+    setDraftResident(createEmptyResident());
+    setMedicoPass((p) => p + 1);
+    // Resta sul passo medico — serie ≤90s
+  };
+
+  const softPct = Math.min(
+    100,
+    Math.round((elapsedSec / MEDICO_SOFT_SECONDS) * 100)
+  );
+  const softOver = elapsedSec > MEDICO_SOFT_SECONDS;
 
   return (
     <div
@@ -120,6 +173,13 @@ export function QuickCompileWizard({
               {step.title}
             </h2>
             <p className="text-sm text-zinc-600">{step.hint}</p>
+            {residentsAdded > 0 && step.id === 'medico' ? (
+              <p className="text-xs font-semibold text-emerald-800">
+                {residentsAdded} resident
+                {residentsAdded === 1 ? 'e già aggiunto' : 'i già aggiunti'} ·
+                prossimo in serie
+              </p>
+            ) : null}
           </div>
           <button
             type="button"
@@ -252,6 +312,22 @@ export function QuickCompileWizard({
 
         {step.id === 'medico' ? (
           <div className="space-y-3">
+            <div
+              className="rounded-md border-2 border-zinc-300 bg-zinc-50 p-3"
+              aria-live="polite"
+            >
+              <p className="flex items-center gap-2 text-sm font-bold text-zinc-800">
+                <Timer className="size-4" aria-hidden />
+                Tempo soft: {elapsedSec}s / {MEDICO_SOFT_SECONDS}s
+                {softOver ? ' · oltre l’obiettivo (ok, non bloccante)' : ''}
+              </p>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-200">
+                <div
+                  className={`h-full ${softOver ? 'bg-amber-600' : 'bg-emerald-700'}`}
+                  style={{ width: `${softPct}%` }}
+                />
+              </div>
+            </div>
             <div>
               <FieldLabel>Nome completo</FieldLabel>
               <TouchInput
@@ -326,18 +402,86 @@ export function QuickCompileWizard({
                 }
               />
             </div>
+            <div>
+              <FieldLabel>Contatto ICE — nome</FieldLabel>
+              <TouchInput
+                value={draftResident.iceContacts[0]?.name ?? ''}
+                onChange={(e) =>
+                  setDraftResident({
+                    ...draftResident,
+                    iceContacts: [
+                      {
+                        priority: 1,
+                        name: e.target.value,
+                        relationship:
+                          draftResident.iceContacts[0]?.relationship ?? '',
+                        phoneNumber:
+                          draftResident.iceContacts[0]?.phoneNumber ?? '',
+                        hasHouseKeys:
+                          draftResident.iceContacts[0]?.hasHouseKeys ?? false,
+                      },
+                    ],
+                  })
+                }
+              />
+            </div>
+            <div>
+              <FieldLabel>Contatto ICE — telefono</FieldLabel>
+              <TouchInput
+                type="tel"
+                value={draftResident.iceContacts[0]?.phoneNumber ?? ''}
+                onChange={(e) =>
+                  setDraftResident({
+                    ...draftResident,
+                    iceContacts: [
+                      {
+                        priority: 1,
+                        name: draftResident.iceContacts[0]?.name ?? '',
+                        relationship:
+                          draftResident.iceContacts[0]?.relationship ?? '',
+                        phoneNumber: e.target.value,
+                        hasHouseKeys:
+                          draftResident.iceContacts[0]?.hasHouseKeys ?? false,
+                      },
+                    ],
+                  })
+                }
+              />
+            </div>
           </div>
         ) : null}
 
         {step.id === 'fine' ? (
           <p className="rounded-md border-2 border-emerald-800 bg-emerald-50 p-3 font-semibold text-emerald-950">
-            Base pronta. Continua da Casa / Emergenza per foto, scadenze e
-            contatti ICE.
+            Base pronta
+            {residentsAdded
+              ? ` · ${residentsAdded} resident${residentsAdded === 1 ? 'e' : 'i'}`
+              : ''}
+            . Continua da Casa / Emergenza per foto, scadenze e dettagli.
           </p>
         ) : null}
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          {step.id !== 'fine' ? (
+          {step.id === 'medico' ? (
+            <>
+              <button
+                type="button"
+                className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold"
+                onClick={addAnotherResident}
+              >
+                <Check className="size-5" aria-hidden />
+                Salva e altro residente
+              </button>
+              <button
+                type="button"
+                className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-[var(--brand-ink)] px-5 font-bold text-white"
+                onClick={next}
+              >
+                Salva e termina
+                <ChevronRight className="size-5" aria-hidden />
+              </button>
+            </>
+          ) : step.id !== 'fine' ? (
             <button
               type="button"
               className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-[var(--brand-ink)] px-5 font-bold text-white"

@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { readSessionToken } from '@/lib/session-cookie';
 import {
   getAccountById,
+  getLastBreakGlassAccess,
   getSession,
   publishEmergencyPackOnServer,
   readEmergencyBlob,
@@ -28,9 +29,11 @@ export async function GET(_request: Request, context: Ctx) {
     const { familyId } = await context.params;
     await requireMember(familyId);
     const blob = await readEmergencyBlob(familyId);
+    const lastBreakGlass = await getLastBreakGlassAccess(familyId);
     return NextResponse.json({
       published: Boolean(blob),
       updatedAt: blob?.updatedAt ?? null,
+      lastBreakGlass,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Errore';

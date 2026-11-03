@@ -131,6 +131,14 @@ import {
   buildEngagementSteps,
   engagementProgress,
 } from '../src/lib/engagement';
+import {
+  dashboardColumns,
+  isReadyToPublishEmergency,
+} from '../src/lib/dashboard-completeness';
+import {
+  deadlinesByWindow,
+  listUpcomingDeadlines,
+} from '../src/lib/deadlines';
 import { buildEmergencyPack } from '../src/lib/emergency-pack';
 import {
   buildEmergencyUrl,
@@ -1033,6 +1041,77 @@ await record('engagement: progressive casa→residenti→emergenza→utenze→L3
   assert.ok(
     prog.next?.id === 'l3' || prog.next?.id === 'utenze' || prog.done >= 4
   );
+});
+
+await record('usability: tre colonne % + scadenze week/month', () => {
+  const doc = createEmptyRunbook();
+  const cols0 = dashboardColumns(doc);
+  assert.equal(cols0.length, 3);
+  assert.equal(cols0[0]?.id, 'casa');
+  assert.equal(cols0[1]?.id, 'residenti');
+  assert.equal(cols0[2]?.id, 'emergenza');
+  assert.equal(cols0[0]?.percent, 0);
+  assert.equal(isReadyToPublishEmergency(doc), false);
+
+  doc.level1_public.houseName = 'Casa Luca';
+  doc.level1_public.utilities.waterCutoff.location = 'Sotto lavello';
+  doc.level1_public.utilities.gasCutoff.location = 'Esterno';
+  doc.level1_public.utilities.electricPanel.breakerLocation = 'Ingresso';
+  doc.level1_public.wifi.ssid = 'DomuNet';
+  doc.level1_public.utilities.waterCutoff.photoDataUrl =
+    'data:image/jpeg;base64,xx';
+  doc.level2_ice.residents = [
+    {
+      ...createEmptyResident(),
+      fullName: 'Ada',
+      bloodGroup: 'A+',
+      sleepingRoom: 'Camera 1',
+      allergies: ['Latte'],
+      iceContacts: [
+        {
+          priority: 1,
+          name: 'Marco',
+          relationship: 'Coniuge',
+          phoneNumber: '+39333111',
+          hasHouseKeys: true,
+        },
+      ],
+    },
+  ];
+  const cols = dashboardColumns(doc);
+  assert.ok((cols[0]?.percent ?? 0) >= 80);
+  assert.ok((cols[1]?.percent ?? 0) >= 60);
+  assert.ok((cols[2]?.percent ?? 0) >= 75);
+  assert.equal(isReadyToPublishEmergency(doc), true);
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const inThree = new Date(today);
+  inThree.setDate(inThree.getDate() + 3);
+  const wY = inThree.getFullYear();
+  const wM = String(inThree.getMonth() + 1).padStart(2, '0');
+  const wD = String(inThree.getDate()).padStart(2, '0');
+  const inTwenty = new Date(today);
+  inTwenty.setDate(inTwenty.getDate() + 20);
+  const mY = inTwenty.getFullYear();
+  const mM = String(inTwenty.getMonth() + 1).padStart(2, '0');
+  const mD = String(inTwenty.getDate()).padStart(2, '0');
+
+  doc.level1_public.familyServices = ensureFamilyServices(undefined);
+  doc.level1_public.familyServices.deadlines[0]!.renewalDate =
+    `${wY}-${wM}-${wD}`;
+  doc.level1_public.familyServices.utilities[0]!.renewalDate =
+    `${mY}-${mM}-${mD}`;
+  // overdue
+  doc.level1_public.familyServices.subscriptions[0]!.renewalDate = `${yyyy - 1}-${mm}-${dd}`;
+
+  const upcoming = listUpcomingDeadlines(doc, today);
+  const by = deadlinesByWindow(upcoming);
+  assert.ok(by.week.length >= 1);
+  assert.ok(by.month.length >= 1);
+  assert.ok(by.overdue.length >= 1);
 });
 
 await record('emergency pack: seal/open + strip personal', async () => {

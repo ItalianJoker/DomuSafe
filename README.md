@@ -1,7 +1,7 @@
 # DomuSafe
 
 ![Licenza](https://img.shields.io/badge/licenza-BSL%201.1-blue)
-![Versione](https://img.shields.io/badge/versione-0.10.0-green)
+![Versione](https://img.shields.io/badge/versione-0.11.0-green)
 ![Dispositivi](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 ![PWA](https://img.shields.io/badge/PWA-installabile-teal)
 
@@ -23,13 +23,13 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 
 | Sezione | A cosa serve |
 | :--- | :--- |
-| **Panoramica** | Dashboard Famiglia: prossimi passi, casa, residenti, emergenza |
-| **Casa** | Chiusure utenze, Wi‑Fi, rifiuti, artigiani; contratti Luce/Gas/Internet e scadenze Famiglia |
-| **Emergenza (ICE)** | Schede per il 118 / 112; mobile e abbonamenti personali; conti personali (Premium) |
+| **Panoramica** | Tre colonne Casa / Residenti / Emergenza con %, scadenze, QR emergenza in 1 tap, ultimo accesso break-glass |
+| **Casa** | Chiusure utenze con foto, Wi‑Fi, rifiuti, artigiani; contratti e scadenze Famiglia; anteprima ospite |
+| **Emergenza (ICE)** | Schede 118 / 112, modalità soccorso a schermo intero; mobile e abbonamenti personali |
 | **Cassaforte** | Documenti Famiglia (anche conti bancari Famiglia) protetti da PIN (Advanced+) · kit eredità (Premium) |
-| **Stampa / QR** | Foglio A4 da appendere e codice da scansionare |
+| **Stampa / QR** | Foglio A4, stampa solo emergenza A5, QR break-glass senza login |
 | **Premium** | Registro scan, SOS SMS/WhatsApp, marchio host |
-| **Famiglia** | Inviti e QR per aggiungere i membri |
+| **Famiglia** | Inviti QR e anteprima «cosa vede ospite / sitter» |
 | **Piano** | Free, Basic, Advanced, Premium e prova Premium 30 giorni |
 | **Altri telefoni** | Collegare un altro dispositivo in modo cifrato (Premium o prova) |
 | **Guida** | Manuale Utente / Guida DomuSafe |
