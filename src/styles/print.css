@@ -64,12 +64,50 @@
     page-break-before: auto;
   }
 
-  body.print-inheritance-only .print-runbook {
+  body.print-inheritance-only .print-runbook,
+  body.print-inheritance-only .print-emergency {
     display: none !important;
   }
 
-  body.print-runbook-only .inheritance-kit {
+  body.print-runbook-only .inheritance-kit,
+  body.print-runbook-only .print-emergency {
     display: none !important;
+  }
+
+  /* Solo emergenza A5 / linguetta tasca */
+  body.print-emergency-only .print-runbook,
+  body.print-emergency-only .inheritance-kit {
+    display: none !important;
+  }
+
+  body.print-emergency-only .print-emergency {
+    display: block !important;
+  }
+
+  body.print-emergency-only {
+    /* A5 portrait — foglio tasca / linguetta */
+  }
+
+  body.print-emergency-only .print-page.print-emergency {
+    width: 128mm;
+    height: 180mm;
+  }
+}
+
+@media print {
+  body.print-emergency-only {
+    /* override @page when emergency-only */
+  }
+}
+
+@page emergency-a5 {
+  size: A5 portrait;
+  margin: 6mm;
+}
+
+@media print {
+  body.print-emergency-only .print-emergency {
+    page: emergency-a5;
   }
 }
 

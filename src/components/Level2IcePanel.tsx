@@ -39,6 +39,8 @@ import {
   DEVICE_PRESETS,
   togglePreset,
 } from '@/lib/medical-presets';
+import { PhotoCaptureField } from '@/components/PhotoCaptureField';
+import { EmptyStateCta } from '@/components/EmptyStateCta';
 
 interface Level2IcePanelProps {
   tier: LicenseTier;
@@ -46,6 +48,8 @@ interface Level2IcePanelProps {
   pets: PetRecord[];
   onResidentsChange: (residents: ResidentHealthRecord[]) => void;
   onPetsChange: (pets: PetRecord[]) => void;
+  onOpenRescue?: () => void;
+  onStartWizard?: () => void;
 }
 
 export function Level2IcePanel({
@@ -54,6 +58,8 @@ export function Level2IcePanel({
   pets,
   onResidentsChange,
   onPetsChange,
+  onOpenRescue,
+  onStartWizard,
 }: Level2IcePanelProps) {
   const maxResidents = getMaxResidents(tier);
   const canAdd = canAddResident(tier, residents.length);
@@ -68,7 +74,7 @@ export function Level2IcePanel({
         <p className="text-sm font-bold uppercase tracking-widest text-red-800">
           Livello 2 · ICE Emergenza
         </p>
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap gap-3">
           <a
             href="tel:118"
             className="inline-flex min-h-14 items-center gap-2 rounded-md border-2 border-red-900 bg-red-700 px-5 font-black text-white"
@@ -76,6 +82,16 @@ export function Level2IcePanel({
             <Phone className="size-5" aria-hidden />
             SOS · Chiama 118
           </a>
+          {onOpenRescue && residents.length > 0 ? (
+            <button
+              type="button"
+              className="inline-flex min-h-14 items-center gap-2 rounded-md border-2 border-red-900 bg-white px-5 font-black text-red-950"
+              onClick={onOpenRescue}
+            >
+              <AlertTriangle className="size-5" aria-hidden />
+              Modalità soccorso
+            </button>
+          ) : null}
         </div>
         <h2 id="level2-title" className="mt-1 text-2xl font-black text-zinc-950">
           Schede sanitarie
@@ -97,25 +113,36 @@ export function Level2IcePanel({
             <UserRound className="size-6" aria-hidden />
             Residenti
           </h3>
-          <button
-            type="button"
-            disabled={!canAdd}
-            className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold text-zinc-950 enabled:hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={() =>
-              onResidentsChange([...residents, createEmptyResident()])
-            }
-          >
-            <Plus className="size-5" aria-hidden />
-            Aggiungi residente
-          </button>
+          {residents.length > 0 ? (
+            <button
+              type="button"
+              disabled={!canAdd}
+              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold text-zinc-950 enabled:hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() =>
+                onResidentsChange([...residents, createEmptyResident()])
+              }
+            >
+              <Plus className="size-5" aria-hidden />
+              Aggiungi residente
+            </button>
+          ) : null}
         </div>
 
         {residents.length === 0 ? (
-          <p className="rounded-lg border-2 border-dashed border-zinc-400 p-4 text-zinc-700">
-            {Number.isFinite(maxResidents)
-              ? `Nessun residente. Aggiungi fino a ${maxResidents} schede ICE.`
-              : 'Nessun residente. Puoi aggiungere schede ICE illimitate.'}
-          </p>
+          <EmptyStateCta
+            title="Nessun residente"
+            body={
+              Number.isFinite(maxResidents)
+                ? `Aggiungi fino a ${maxResidents} schede ICE (nome, allergie, contatti).`
+                : 'Aggiungi la prima scheda ICE: nome, allergie e un contatto.'
+            }
+            cta={onStartWizard ? 'Scheda rapida ≤90s' : 'Aggiungi residente'}
+            tone="danger"
+            onAction={() => {
+              if (onStartWizard) onStartWizard();
+              else onResidentsChange([...residents, createEmptyResident()]);
+            }}
+          />
         ) : (
           <ul className="space-y-6">
             {residents.map((resident, index) => {
@@ -236,6 +263,21 @@ export function Level2IcePanel({
                         }, onResidentsChange, tier)
                       }
                       placeholder="Es. Camera matrimoniale, primo piano"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <PhotoCaptureField
+                      label="Foto riconoscitiva (opzionale)"
+                      value={resident.photoDataUrl}
+                      onChange={(photoDataUrl) =>
+                        patchResident(
+                          residents,
+                          resident.id,
+                          { photoDataUrl },
+                          onResidentsChange,
+                          tier
+                        )
+                      }
                     />
                   </div>
                   <div className="sm:col-span-2">

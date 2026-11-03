@@ -185,16 +185,19 @@ export function BreakGlassViewer({ token }: BreakGlassViewerProps) {
             icon={<Droplets className="size-5" aria-hidden />}
             title="Acqua"
             body={`${pack.level1.utilities.waterCutoff.location} — ${pack.level1.utilities.waterCutoff.instructions}`}
+            photo={pack.level1.utilities.waterCutoff.photoDataUrl}
           />
           <UtilityLine
             icon={<Flame className="size-5" aria-hidden />}
             title="Gas"
             body={`${pack.level1.utilities.gasCutoff.location} — ${pack.level1.utilities.gasCutoff.instructions}`}
+            photo={pack.level1.utilities.gasCutoff.photoDataUrl}
           />
           <UtilityLine
             icon={<Zap className="size-5" aria-hidden />}
             title="Elettrico"
             body={`${pack.level1.utilities.electricPanel.breakerLocation} / ${pack.level1.utilities.electricPanel.externalMeterLocation}`}
+            photo={pack.level1.utilities.electricPanel.photoDataUrl}
           />
           <UtilityLine
             icon={<Wifi className="size-5" aria-hidden />}
@@ -324,17 +327,29 @@ function UtilityLine({
   icon,
   title,
   body,
+  photo,
 }: {
   icon: React.ReactNode;
   title: string;
   body: string;
+  photo?: string;
 }) {
   return (
     <div className="flex gap-2 rounded-md border border-zinc-300 bg-zinc-50 p-3 text-sm">
       <span className="mt-0.5 shrink-0">{icon}</span>
-      <p>
-        <strong>{title}:</strong> {body || '—'}
-      </p>
+      <div className="min-w-0 flex-1">
+        <p>
+          <strong>{title}:</strong> {body || '—'}
+        </p>
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photo}
+            alt=""
+            className="mt-2 max-h-40 w-full rounded-md border-2 border-zinc-900 object-cover"
+          />
+        ) : null}
+      </div>
     </div>
   );
 }

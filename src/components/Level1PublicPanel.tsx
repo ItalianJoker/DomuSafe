@@ -28,6 +28,8 @@ import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
 import { FamilyServicesPanel } from '@/components/FamilyServicesPanel';
 import { FeatureGate } from '@/components/FeatureGate';
+import { PhotoCaptureField } from '@/components/PhotoCaptureField';
+import { EmptyStateCta } from '@/components/EmptyStateCta';
 import { enforcePublicHouseForTier } from '@/lib/vault-policy';
 import { generateQrSvg } from '@/lib/qr';
 
@@ -35,6 +37,7 @@ interface Level1PublicPanelProps {
   tier: LicenseTier;
   data: PublicHouseData;
   onChange: (next: PublicHouseData) => void;
+  onStartWizard?: () => void;
 }
 
 type HouseView = 'guest' | 'tech';
@@ -43,11 +46,18 @@ export function Level1PublicPanel({
   tier,
   data,
   onChange,
+  onStartWizard,
 }: Level1PublicPanelProps) {
   const allowCustom = canAccessFeature(tier, 'allowCustomFields');
   const [view, setView] = useState<HouseView>('guest');
   const [wifiQr, setWifiQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [editingEmpty, setEditingEmpty] = useState(false);
+  const isEmpty =
+    !data.houseName.trim() &&
+    !data.utilities.waterCutoff.location.trim() &&
+    !data.utilities.gasCutoff.location.trim() &&
+    !data.wifi.ssid.trim();
 
   const update = (patch: Partial<PublicHouseData>) => {
     // Free/Basic/Advanced: strip custom fields / servizi personalizzati.
@@ -125,6 +135,70 @@ export function Level1PublicPanel({
         </div>
       </header>
 
+      {isEmpty && !editingEmpty ? (
+        <EmptyStateCta
+          title="Casa ancora vuota"
+          body="Parti dal nome abitazione e dalle chiusure acqua/gas/luce. Poi aggiungi foto valvole e Wi‑Fi."
+          cta={onStartWizard ? 'Avvia compilazione rapida' : 'Inizia a compilare'}
+          onAction={() => {
+            if (onStartWizard) onStartWizard();
+            else setEditingEmpty(true);
+          }}
+        />
+      ) : null}
+
+      {(!isEmpty || editingEmpty) && view === 'guest' ? (
+        <aside className="space-y-3 rounded-lg border-2 border-emerald-800 bg-emerald-50 p-4">
+          <p className="text-sm font-bold uppercase tracking-widest text-emerald-900">
+            Anteprima ospite / sitter
+          </p>
+          {(
+            [
+              {
+                title: 'Acqua',
+                body: data.utilities.waterCutoff.location,
+                photo: data.utilities.waterCutoff.photoDataUrl,
+              },
+              {
+                title: 'Gas',
+                body: data.utilities.gasCutoff.location,
+                photo: data.utilities.gasCutoff.photoDataUrl,
+              },
+              {
+                title: 'Quadro',
+                body: data.utilities.electricPanel.breakerLocation,
+                photo: data.utilities.electricPanel.photoDataUrl,
+              },
+            ] as const
+          ).map((row) =>
+            row.body || row.photo ? (
+              <div key={row.title} className="text-sm">
+                <p className="font-black">
+                  {row.title}: {row.body || '—'}
+                </p>
+                {row.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={row.photo}
+                    alt=""
+                    className="mt-1 h-28 w-full max-w-sm rounded-md border-2 border-zinc-900 object-cover"
+                  />
+                ) : null}
+              </div>
+            ) : null
+          )}
+          {!data.utilities.waterCutoff.location &&
+          !data.utilities.gasCutoff.location &&
+          !data.utilities.electricPanel.breakerLocation ? (
+            <p className="text-sm text-zinc-700">
+              Compila le chiusure qui sotto: l’ospite vedrà testo e foto.
+            </p>
+          ) : null}
+        </aside>
+      ) : null}
+
+      {(!isEmpty || editingEmpty) ? (
+      <>
       <div>
         <FieldLabel htmlFor="house-name">Nome abitazione</FieldLabel>
         <TouchInput
@@ -147,6 +221,7 @@ export function Level1PublicPanel({
           title="Chiusura acqua"
           location={data.utilities.waterCutoff.location}
           instructions={data.utilities.waterCutoff.instructions}
+          photoDataUrl={data.utilities.waterCutoff.photoDataUrl}
           onLocation={(location) =>
             update({
               utilities: {
@@ -163,6 +238,14 @@ export function Level1PublicPanel({
               },
             })
           }
+          onPhoto={(photoDataUrl) =>
+            update({
+              utilities: {
+                ...data.utilities,
+                waterCutoff: { ...data.utilities.waterCutoff, photoDataUrl },
+              },
+            })
+          }
         />
 
         <UtilityBlock
@@ -170,6 +253,7 @@ export function Level1PublicPanel({
           title="Chiusura gas"
           location={data.utilities.gasCutoff.location}
           instructions={data.utilities.gasCutoff.instructions}
+          photoDataUrl={data.utilities.gasCutoff.photoDataUrl}
           onLocation={(location) =>
             update({
               utilities: {
@@ -183,6 +267,14 @@ export function Level1PublicPanel({
               utilities: {
                 ...data.utilities,
                 gasCutoff: { ...data.utilities.gasCutoff, instructions },
+              },
+            })
+          }
+          onPhoto={(photoDataUrl) =>
+            update({
+              utilities: {
+                ...data.utilities,
+                gasCutoff: { ...data.utilities.gasCutoff, photoDataUrl },
               },
             })
           }
@@ -227,6 +319,21 @@ export function Level1PublicPanel({
               placeholder="Es. Nicchia vano scale piano terra"
             />
           </div>
+          <PhotoCaptureField
+            label="Foto quadro / interruttori"
+            value={data.utilities.electricPanel.photoDataUrl}
+            onChange={(photoDataUrl) =>
+              update({
+                utilities: {
+                  ...data.utilities,
+                  electricPanel: {
+                    ...data.utilities.electricPanel,
+                    photoDataUrl,
+                  },
+                },
+              })
+            }
+          />
         </div>
 
         <div className="rounded-lg border-2 border-zinc-900 bg-amber-50 p-4">
@@ -268,6 +375,21 @@ export function Level1PublicPanel({
               placeholder="Es. Reset: tenere premuto il pulsante rosso 5 secondi"
             />
           </div>
+          <PhotoCaptureField
+            label="Foto caldaia"
+            value={data.utilities.heatingBoiler.photoDataUrl}
+            onChange={(photoDataUrl) =>
+              update({
+                utilities: {
+                  ...data.utilities,
+                  heatingBoiler: {
+                    ...data.utilities.heatingBoiler,
+                    photoDataUrl,
+                  },
+                },
+              })
+            }
+          />
         </div>
       </div>
 
@@ -598,6 +720,8 @@ export function Level1PublicPanel({
           onChange={(customFields) => update({ customFields })}
         />
       </FeatureGate>
+      </>
+      ) : null}
     </section>
   );
 }
@@ -607,15 +731,19 @@ function UtilityBlock({
   title,
   location,
   instructions,
+  photoDataUrl,
   onLocation,
   onInstructions,
+  onPhoto,
 }: {
   icon: ReactNode;
   title: string;
   location: string;
   instructions: string;
+  photoDataUrl?: string;
   onLocation: (value: string) => void;
   onInstructions: (value: string) => void;
+  onPhoto: (value: string | undefined) => void;
 }) {
   return (
     <div className="rounded-lg border-2 border-zinc-900 bg-amber-50 p-4">
@@ -632,6 +760,11 @@ function UtilityBlock({
           onChange={(e) => onInstructions(e.target.value)}
         />
       </div>
+      <PhotoCaptureField
+        label="Foto valvola / posizione"
+        value={photoDataUrl}
+        onChange={onPhoto}
+      />
     </div>
   );
 }

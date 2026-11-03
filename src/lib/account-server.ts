@@ -638,6 +638,25 @@ export async function readAuditLog(
 }
 
 /**
+ * Ultimo accesso break-glass (metadati) — disponibile a ogni membro Famiglia
+ * senza gate Premium (tranquillità Panoramica).
+ */
+export async function getLastBreakGlassAccess(familyId: string): Promise<{
+  at: string;
+  actorLabel: string;
+  note?: string;
+} | null> {
+  const log = await readAuditLog(familyId);
+  const hit = log.entries.find((e) => e.kind === 'BREAK_GLASS');
+  if (!hit) return null;
+  return {
+    at: hit.at,
+    actorLabel: hit.actorLabel,
+    note: hit.note,
+  };
+}
+
+/**
  * Appende una voce all’audit log Famiglia (cap FIFO).
  * Metadati di accesso — non contiene ICE/vault in chiaro.
  */
