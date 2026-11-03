@@ -113,19 +113,17 @@ export function Level2IcePanel({
             <UserRound className="size-6" aria-hidden />
             Residenti
           </h3>
-          {residents.length > 0 ? (
-            <button
-              type="button"
-              disabled={!canAdd}
-              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold text-zinc-950 enabled:hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={() =>
-                onResidentsChange([...residents, createEmptyResident()])
-              }
-            >
-              <Plus className="size-5" aria-hidden />
-              Aggiungi residente
-            </button>
-          ) : null}
+          <button
+            type="button"
+            disabled={!canAdd}
+            className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold text-zinc-950 enabled:hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() =>
+              onResidentsChange([...residents, createEmptyResident()])
+            }
+          >
+            <Plus className="size-5" aria-hidden />
+            Aggiungi residente
+          </button>
         </div>
 
         {residents.length === 0 ? (
@@ -833,6 +831,15 @@ function MedicineEditor({
   );
 }
 
+function reindexContactPriorities(
+  contacts: ResidentHealthRecord['iceContacts']
+): ResidentHealthRecord['iceContacts'] {
+  return contacts.map((c, i) => ({
+    ...c,
+    priority: (Math.min(3, i + 1) as 1 | 2 | 3),
+  }));
+}
+
 function IceContactsEditor({
   contacts,
   onChange,
@@ -840,6 +847,15 @@ function IceContactsEditor({
   contacts: ResidentHealthRecord['iceContacts'];
   onChange: (next: ResidentHealthRecord['iceContacts']) => void;
 }) {
+  const patch = (
+    index: number,
+    patchFields: Partial<ResidentHealthRecord['iceContacts'][number]>
+  ) => {
+    onChange(
+      contacts.map((c, i) => (i === index ? { ...c, ...patchFields } : c))
+    );
+  };
+
   return (
     <div className="space-y-2 border-t-2 border-red-200 pt-3">
       <div className="flex items-center justify-between gap-2">
@@ -869,55 +885,62 @@ function IceContactsEditor({
           key={`ice-${index}`}
           className="grid gap-2 rounded-md border border-red-300 bg-white p-3 sm:grid-cols-2"
         >
+          <div>
+            <FieldLabel>Priorità (ordine di chiamata)</FieldLabel>
+            <TouchSelect
+              value={contact.priority}
+              aria-label={`Priorità contatto ${index + 1}`}
+              onChange={(e) => {
+                const priority = Number(e.target.value) as 1 | 2 | 3;
+                const next = contacts.map((c, i) =>
+                  i === index ? { ...c, priority } : c
+                );
+                next.sort((a, b) => a.priority - b.priority);
+                onChange(next);
+              }}
+            >
+              <option value={1}>1 — primo da chiamare</option>
+              <option value={2}>2 — secondo</option>
+              <option value={3}>3 — terzo</option>
+            </TouchSelect>
+          </div>
           <TouchInput
             placeholder="Nome"
             value={contact.name}
-            onChange={(e) => {
-              const next = contacts.map((c, i) =>
-                i === index ? { ...c, name: e.target.value } : c
-              );
-              onChange(next);
-            }}
+            onChange={(e) => patch(index, { name: e.target.value })}
           />
           <TouchInput
             placeholder="Relazione"
             value={contact.relationship}
-            onChange={(e) => {
-              const next = contacts.map((c, i) =>
-                i === index ? { ...c, relationship: e.target.value } : c
-              );
-              onChange(next);
-            }}
+            onChange={(e) => patch(index, { relationship: e.target.value })}
           />
           <TouchInput
             type="tel"
             placeholder="Telefono"
             value={contact.phoneNumber}
-            onChange={(e) => {
-              const next = contacts.map((c, i) =>
-                i === index ? { ...c, phoneNumber: e.target.value } : c
-              );
-              onChange(next);
-            }}
+            onChange={(e) => patch(index, { phoneNumber: e.target.value })}
           />
-          <label className="flex min-h-12 items-center gap-3 font-semibold text-zinc-900">
+          <label className="flex min-h-12 items-center gap-3 font-semibold text-zinc-900 sm:col-span-2">
             <input
               type="checkbox"
               className="size-6 accent-red-800"
               checked={contact.hasHouseKeys}
-              onChange={(e) => {
-                const next = contacts.map((c, i) =>
-                  i === index ? { ...c, hasHouseKeys: e.target.checked } : c
-                );
-                onChange(next);
-              }}
+              onChange={(e) =>
+                patch(index, { hasHouseKeys: e.target.checked })
+              }
             />
             Ha le chiavi di casa
           </label>
           <button
             type="button"
             className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-red-800 text-red-900 sm:col-span-2"
-            onClick={() => onChange(contacts.filter((_, i) => i !== index))}
+            onClick={() =>
+              onChange(
+                reindexContactPriorities(
+                  contacts.filter((_, i) => i !== index)
+                )
+              )
+            }
           >
             Rimuovi contatto
           </button>
