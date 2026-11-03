@@ -108,10 +108,24 @@ import {
   wrapFamilyKeyForMember,
   unwrapFamilyKeyForMember,
 } from '../src/lib/crypto-family';
-import { enforceVaultPayloadForTier } from '../src/lib/vault-policy';
+import {
+  enforceVaultPayloadForTier,
+  enforceResidentForTier,
+  enforcePublicHouseForTier,
+} from '../src/lib/vault-policy';
 import type { EncryptedVaultPayload } from '../src/types/domus';
 import type { DomusHouseCollection } from '../src/lib/storage';
-import { createEmptyVaultPayload } from '../src/lib/defaults';
+import {
+  createEmptyPublicHouse,
+  createEmptyResident,
+  createEmptyVaultPayload,
+} from '../src/lib/defaults';
+import {
+  FAMILY_UTILITY_CATALOG,
+  PERSONAL_SUBSCRIPTION_CATALOG,
+  addCustomServiceEntry,
+  ensureFamilyServices,
+} from '../src/lib/service-catalog';
 import { bytesToBase64 } from '../src/lib/crypto-bytes';
 
 const results: Array<{ name: string; ok: boolean; detail?: string }> = [];
@@ -383,14 +397,22 @@ await record('license API: start_premium_trial + apply_saas (anti-spoof)', () =>
   assert.match(route, /Azione licenza non consentita/);
 });
 
-await record('vault policy: strip personal on Advanced', () => {
+await record('vault policy: family banks kept on Advanced; personal stripped', () => {
   const full: EncryptedVaultPayload = {
     ...createEmptyVaultPayload(),
     bankAccounts: [
       {
-        institution: 'Banca',
+        institution: 'Banca Famiglia',
         accountType: 'Corrente',
-        ownershipDetails: 'Solo',
+        ownershipDetails: 'Cointestato',
+      },
+    ],
+    lifeInsurances: [
+      {
+        company: 'Genertel',
+        policyNumber: '1',
+        type: 'TCM',
+        beneficiariesSummary: 'Eredi',
       },
     ],
     customFields: [{ id: '1', label: 'X', value: 'Y' }],
@@ -403,7 +425,10 @@ await record('vault policy: strip personal on Advanced', () => {
     allowPersonal: false,
     allowCustomFields: false,
   });
-  assert.equal(advanced.bankAccounts.length, 0);
+  // Conti Famiglia restano; polizze/lavoro/custom no.
+  assert.equal(advanced.bankAccounts.length, 1);
+  assert.equal(advanced.bankAccounts[0]?.institution, 'Banca Famiglia');
+  assert.equal(advanced.lifeInsurances.length, 0);
   assert.equal(advanced.customFields, undefined);
   assert.equal(
     advanced.utilitiesLocations.lastBillsFolderLocation,
@@ -414,7 +439,75 @@ await record('vault policy: strip personal on Advanced', () => {
     allowCustomFields: true,
   });
   assert.equal(premium.bankAccounts.length, 1);
+  assert.equal(premium.lifeInsurances.length, 1);
   assert.equal(premium.customFields?.length, 1);
+});
+
+await record('family/resident services catalogs + tier strip', () => {
+  assert.ok(FAMILY_UTILITY_CATALOG.some((u) => u.id === 'luce'));
+  assert.ok(FAMILY_UTILITY_CATALOG.some((u) => u.id === 'gas'));
+  assert.ok(FAMILY_UTILITY_CATALOG.some((u) => u.id === 'internet'));
+  assert.ok(PERSONAL_SUBSCRIPTION_CATALOG.some((s) => s.id === 'bollo'));
+
+  const family = ensureFamilyServices(undefined);
+  assert.equal(family.utilities.length, FAMILY_UTILITY_CATALOG.length);
+  const withCustom = {
+    ...family,
+    utilities: addCustomServiceEntry(family.utilities, 'Fibra secondaria'),
+    customFields: [{ id: 'c1', label: 'POD backup', value: 'IT001' }],
+  };
+  const house = enforcePublicHouseForTier(
+    { ...createEmptyPublicHouse(), familyServices: withCustom },
+    { allowCustomFields: false }
+  );
+  assert.equal(
+    house.familyServices?.utilities.every(
+      (u) => !u.catalogId.startsWith('custom-')
+    ),
+    true
+  );
+  assert.equal(house.familyServices?.customFields, undefined);
+  assert.equal(house.customFields, undefined);
+
+  const resident = createEmptyResident();
+  resident.personalBankAccounts = [
+    {
+      id: 'b1',
+      institution: 'Fineco',
+      accountType: 'Corrente',
+      ownershipDetails: 'Personale',
+    },
+  ];
+  resident.personalSubscriptions = addCustomServiceEntry(
+    resident.personalSubscriptions ?? [],
+    'Abbonamento palestra'
+  );
+  resident.customFields = [{ id: 'r1', label: 'Nota', value: 'x' }];
+
+  const freeResident = enforceResidentForTier(resident, {
+    allowCustomFields: false,
+    allowPersonalPatrimonio: false,
+  });
+  assert.equal(freeResident.personalBankAccounts, undefined);
+  assert.equal(freeResident.customFields, undefined);
+  assert.equal(
+    freeResident.personalSubscriptions?.every(
+      (s) => !s.catalogId.startsWith('custom-')
+    ),
+    true
+  );
+
+  const premiumResident = enforceResidentForTier(resident, {
+    allowCustomFields: true,
+    allowPersonalPatrimonio: true,
+  });
+  assert.equal(premiumResident.personalBankAccounts?.length, 1);
+  assert.equal(premiumResident.customFields?.length, 1);
+  assert.ok(
+    premiumResident.personalSubscriptions?.some((s) =>
+      s.catalogId.startsWith('custom-')
+    )
+  );
 });
 
 await record('checklists: tax on residente + succession Famiglia', () => {

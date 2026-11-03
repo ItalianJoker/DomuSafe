@@ -88,6 +88,55 @@ export interface ResidentTaxBlock {
   updatedAt: string;
 }
 
+/**
+ * Voce utenza / abbonamento / scadenza (catalogo standard o custom-*).
+ * Persistita nel runbook Famiglia (cifrato a riposo) o sulla scheda Residente.
+ */
+export interface ServiceEntry {
+  catalogId: string;
+  /** Gestore / compagnia / etichetta custom. */
+  provider?: string;
+  /** POD, PDR, codice cliente, targa… */
+  customerCode?: string;
+  phone?: string;
+  notes?: string;
+  /** Data scadenza / rinnovo (YYYY-MM-DD). */
+  renewalDate?: string;
+}
+
+/** Piano mobile personale (scheda Residente). */
+export interface MobilePlanRecord {
+  carrier: string;
+  planName: string;
+  phoneNumber: string;
+  notes?: string;
+  renewalDate?: string;
+}
+
+/** Conto bancario (Famiglia in cassaforte Advanced+; personale su Residente Premium). */
+export interface BankAccountRecord {
+  id: string;
+  institution: string;
+  accountType: string;
+  ownershipDetails: string;
+  /** IBAN parziale o riferimento archivio — mai obbligatorio in chiaro completo. */
+  ibanHint?: string;
+  notes?: string;
+}
+
+/**
+ * Utenze, abbonamenti e scadenze di Famiglia (Casa).
+ * Free/Basic: catalogo standard; Premium: + customFields / voci custom-*.
+ */
+export interface FamilyServicesBlock {
+  version: '1.0.0';
+  utilities: ServiceEntry[];
+  subscriptions: ServiceEntry[];
+  deadlines: ServiceEntry[];
+  /** Solo Premium (+ trial). */
+  customFields?: CustomField[];
+}
+
 export interface ResidentHealthRecord {
   id: string;
   fullName: string;
@@ -102,6 +151,15 @@ export interface ResidentHealthRecord {
   iceContacts: EmergencyContact[];
   /** Adempimenti fiscali IT per questo residente (730, ISEE, IMU…). Premium. */
   taxChecklist?: ResidentTaxBlock;
+  /** Tariffa / piano mobile personale. */
+  mobilePlan?: MobilePlanRecord;
+  /** Abbonamenti personali (Assicurazione Auto, Bollo…). */
+  personalSubscriptions?: ServiceEntry[];
+  /**
+   * Conti bancari personali — solo Premium (+ trial), come patrimonio personale.
+   * I conti Famiglia restano in cassaforte (Advanced+).
+   */
+  personalBankAccounts?: BankAccountRecord[];
   /** Solo Premium (+ trial): campi oltre allo schema standard. */
   customFields?: CustomField[];
 }
@@ -133,15 +191,25 @@ export interface PublicHouseData {
   };
   wasteSchedule: Array<{ day: string; fractions: string[] }>;
   artisanContacts: Array<{ trade: string; name: string; phone: string }>;
+  /**
+   * Utenze (Luce/Gas/Internet…), abbonamenti e scadenze Famiglia.
+   * Cifrati a riposo col runbook (account → Famiglia).
+   */
+  familyServices?: FamilyServicesBlock;
   /** Solo Premium (+ trial): campi oltre allo schema standard. */
   customFields?: CustomField[];
 }
 
 export interface EncryptedVaultPayload {
+  /**
+   * Conti bancari **Famiglia** — documenti Famiglia, disponibili da Advanced in su.
+   * I conti personali stanno sulla scheda Residente (Premium).
+   */
   bankAccounts: Array<{
     institution: string;
     accountType: string;
     ownershipDetails: string;
+    ibanHint?: string;
     notes?: string;
   }>;
   lifeInsurances: Array<{
