@@ -129,7 +129,7 @@ export function IceRescueMode({
                         className="flex min-h-14 items-center justify-between gap-2 rounded-md border-2 border-zinc-900 bg-emerald-50 px-3 text-base font-bold"
                       >
                         <span>
-                          ICE {c.priority}: {c.name} · {c.phoneNumber}
+                          Emergenza {c.priority}: {c.name} · {c.phoneNumber}
                         </span>
                         <Phone className="size-5 shrink-0" aria-hidden />
                       </a>

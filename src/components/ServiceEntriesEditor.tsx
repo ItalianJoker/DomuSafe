@@ -131,7 +131,9 @@ export function ServiceEntriesEditor({
                   <FieldLabel>Codice / riferimento</FieldLabel>
                   <TouchInput
                     value={entry.customerCode ?? ''}
-                    placeholder={hint ?? 'Codice cliente, POD, targa…'}
+                    placeholder={
+                      hint ?? 'Codice cliente, codice fornitura, targa…'
+                    }
                     onChange={(e) =>
                       patch(index, { customerCode: e.target.value })
                     }

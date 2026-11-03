@@ -1,5 +1,22 @@
-# DomuSafe — avvio self-host locale / LAN
+# DomuSafe SaaS — app + Postgres (fonte di verità)
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: domusafe
+      POSTGRES_PASSWORD: domusafe
+      POSTGRES_DB: domusafe
+    ports:
+      - '5432:5432'
+    volumes:
+      - domusafe-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U domusafe -d domusafe']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   domusafe:
     build:
       context: .
@@ -9,14 +26,13 @@ services:
     ports:
       - '3000:3000'
     environment:
-      DOMUSAFE_DATA_DIR: /app/data/app
-      DOMUSAFE_SYNC_DIR: /app/data/sync
+      DATABASE_URL: postgres://domusafe:domusafe@db:5432/domusafe
       DOMUSAFE_SOS_PROVIDER: log
-    volumes:
-      - domusafe-app:/app/data/app
-      - domusafe-sync:/app/data/sync
+      NEXT_PUBLIC_DOMUSAFE_TIER: FREE
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  domusafe-app:
-  domusafe-sync:
+  domusafe-pg:

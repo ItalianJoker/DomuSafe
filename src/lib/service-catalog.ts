@@ -23,13 +23,21 @@ export type ServiceCatalogItem = {
   hint?: string;
 };
 
-/** Utenze Famiglia: Luce, Gas, Internet + Acqua, TARI. */
+/** Utenze Famiglia: Luce, Gas, Internet + Acqua, tassa rifiuti. */
 export const FAMILY_UTILITY_CATALOG: readonly ServiceCatalogItem[] = [
-  { id: 'luce', label: 'Luce', hint: 'POD / codice cliente' },
-  { id: 'gas', label: 'Gas', hint: 'PDR / codice cliente' },
+  {
+    id: 'luce',
+    label: 'Luce',
+    hint: 'Codice punto di fornitura o codice cliente',
+  },
+  {
+    id: 'gas',
+    label: 'Gas',
+    hint: 'Codice punto di riconsegna o codice cliente',
+  },
   { id: 'internet', label: 'Internet', hint: 'Operatore e contratto' },
   { id: 'acqua', label: 'Acqua', hint: 'Gestore idrico' },
-  { id: 'tari', label: 'TARI', hint: 'Tassa rifiuti' },
+  { id: 'tari', label: 'Tassa sui rifiuti', hint: 'Bollettino comunale' },
 ] as const;
 
 /** Abbonamenti / servizi familiari. */

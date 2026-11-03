@@ -76,6 +76,7 @@ import { EmergencyPrintSheet } from '@/components/EmergencyPrintSheet';
 import { IceRescueMode } from '@/components/IceRescueMode';
 import { JsonBackupPanel } from '@/components/JsonBackupPanel';
 import { FamilyServicesPanel } from '@/components/FamilyServicesPanel';
+import { ThemeSelector } from '@/components/ThemeSelector';
 
 type Tab =
   | 'home'
@@ -357,9 +358,9 @@ function AuthenticatedApp() {
     <aside className="rounded-lg border-2 border-zinc-900 bg-zinc-100 p-4">
       <h3 className="text-lg font-bold">Funzioni Premium</h3>
       <p className="mt-2 text-zinc-700">
-        Registro accessi (scan), avvisi SOS e marchio host personalizzato
-        richiedono <strong>Premium</strong> (o la prova di 30 giorni). Piano
-        attuale: <strong>{TIER_LABELS[effectiveTier]}</strong>.
+        Registro accessi (scan), avvisi di soccorso e marchio host
+        personalizzato richiedono <strong>Premium</strong> (o la prova di 30
+        giorni). Piano attuale: <strong>{TIER_LABELS[effectiveTier]}</strong>.
       </p>
       <p className="mt-2 text-sm text-zinc-600">
         Apri <strong>Piano</strong> per i dettagli o per avviare la prova.
@@ -390,7 +391,7 @@ function AuthenticatedApp() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#e8f2ec_0%,#eef3f0_40%,#f7f3ea_100%)] text-zinc-950">
+    <div className="min-h-screen bg-[var(--shell-gradient)] text-[var(--md-on-surface)]">
       {showTutorial ? (
         <OnboardingTutorial
           onComplete={() => {
@@ -403,6 +404,7 @@ function AuthenticatedApp() {
       {showWizard ? (
         <QuickCompileWizard
           document={liveDoc}
+          tier={effectiveTier}
           onChange={(next) => {
             setDocument(next);
             void persist(next);
@@ -422,7 +424,7 @@ function AuthenticatedApp() {
         />
       ) : null}
 
-      <header className="no-print border-b-4 border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white">
+      <header className="no-print border-b-4 border-[var(--md-outline)] bg-[var(--header-bg)] text-[var(--header-fg)]">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <DomuSafeLogo size={44} className="shrink-0 sm:hidden" />
@@ -431,15 +433,16 @@ function AuthenticatedApp() {
               <p className="font-display text-xl font-black tracking-tight sm:text-3xl">
                 DomuSafe
               </p>
-              <p className="truncate text-xs text-emerald-100 sm:text-sm">
+              <p className="truncate text-xs opacity-90 sm:text-sm">
                 Dashboard Famiglia · {family.name} · {account.displayName}
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <ThemeSelector compact />
             <button
               type="button"
-              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-white bg-[var(--brand-forest)] px-3 font-bold text-white hover:brightness-110 sm:px-4"
+              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-[var(--md-radius-sm)] border-2 border-white bg-[var(--brand-forest)] px-3 font-bold text-white hover:brightness-110 sm:px-4"
               disabled={saving}
               onClick={() => persist(liveDoc)}
             >
@@ -452,7 +455,7 @@ function AuthenticatedApp() {
             </button>
             <button
               type="button"
-              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-md border-2 border-white/70 bg-transparent px-3 font-bold text-white hover:bg-white/10 sm:px-4"
+              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-[var(--md-radius-sm)] border-2 border-white/70 bg-transparent px-3 font-bold text-white hover:bg-white/10 sm:px-4"
               onClick={() => void logout()}
               aria-label="Esci"
             >
@@ -465,7 +468,7 @@ function AuthenticatedApp() {
 
       {/* Desktop/tablet: barra superiore. Telefono: barra fissa in basso. */}
       <nav
-        className="no-print sticky top-0 z-10 hidden border-b-2 border-zinc-900 bg-white/95 backdrop-blur md:block"
+        className="no-print sticky top-0 z-10 hidden border-b-2 border-[var(--md-outline)] bg-[var(--md-surface-container)]/95 backdrop-blur md:block"
         aria-label="Sezioni DomuSafe"
       >
         <div className="device-nav-scroll mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
@@ -552,9 +555,9 @@ function AuthenticatedApp() {
                 Utenze, abbonamenti e scadenze
               </h2>
               <p className="mt-2 max-w-2xl text-base text-zinc-700">
-                Luce, Gas, Internet, Acqua, TARI, abbonamenti condivisi e
-                scadenze (es. controllo caldaia). Restano protetti con i dati
-                della casa. I conti bancari Famiglia stanno in{' '}
+                Luce, Gas, Internet, Acqua, tassa sui rifiuti, abbonamenti
+                condivisi e scadenze (es. controllo caldaia). Restano protetti
+                con i dati della casa. I conti bancari Famiglia stanno in{' '}
                 <button
                   type="button"
                   className="font-bold text-[var(--brand-forest)] underline"
@@ -625,12 +628,12 @@ function AuthenticatedApp() {
         ) : null}
 
         {tab === 'cassaforte' ? (
-          <FeatureGate
-            tier={effectiveTier}
-            feature="allowLevel3Vault"
-            fallback={vaultFallback}
-          >
-            <div className="space-y-6">
+          <div className="space-y-6">
+            <FeatureGate
+              tier={effectiveTier}
+              feature="allowLevel3Vault"
+              fallback={vaultFallback}
+            >
               <Level3VaultPanel
                 key={`${liveDoc.documentId}:${liveDoc.level3_vault?.ciphertextBase64 ?? 'empty'}`}
                 tier={effectiveTier}
@@ -641,29 +644,29 @@ function AuthenticatedApp() {
                   void persist(next);
                 }}
               />
-              <FeatureGate
-                tier={effectiveTier}
-                feature="allowSuccessionChecklist"
-                fallback={successionFallback}
-              >
-                {succession ? (
-                  <>
-                    <SuccessionChecklistPanel
-                      tier={effectiveTier}
-                      checklist={succession}
-                      familyName={family.name}
-                      onChange={(next) => void persistSuccession(next)}
-                    />
-                    <InheritanceKitPanel
-                      checklist={succession}
-                      familyName={family.name}
-                      branding={branding}
-                    />
-                  </>
-                ) : null}
-              </FeatureGate>
-            </div>
-          </FeatureGate>
+            </FeatureGate>
+            <FeatureGate
+              tier={effectiveTier}
+              feature="allowSuccessionChecklist"
+              fallback={successionFallback}
+            >
+              {succession ? (
+                <>
+                  <SuccessionChecklistPanel
+                    tier={effectiveTier}
+                    checklist={succession}
+                    familyName={family.name}
+                    onChange={(next) => void persistSuccession(next)}
+                  />
+                  <InheritanceKitPanel
+                    checklist={succession}
+                    familyName={family.name}
+                    branding={branding}
+                  />
+                </>
+              ) : null}
+            </FeatureGate>
+          </div>
         ) : null}
         {tab === 'sync' ? (
           <FeatureGate
@@ -723,8 +726,9 @@ function AuthenticatedApp() {
               </button>
             </div>
             <p className="text-sm text-zinc-700">
-              A4: manuale completo. A5: solo chiusure + ICE + QR 118 (linguetta
-              tasca). I dati ICE restano sotto la linguetta da piegare.
+              A4: manuale completo. A5: solo chiusure + schede di emergenza + QR
+              118 (linguetta tasca). I dati sanitari restano sotto la linguetta
+              da piegare.
               {effectiveTier === 'FREE' || effectiveTier === 'BASIC'
                 ? ' Piano Free/Basic: watermark DomuSafe.'
                 : ' Piano Advanced/Premium: senza watermark.'}
@@ -879,7 +883,7 @@ const TAB_ITEMS: Array<{
   {
     id: 'ice',
     label: 'Emergenza',
-    short: 'ICE',
+    short: 'Soccorso',
     icon: <ShieldAlert className="size-5" aria-hidden />,
   },
   {

@@ -1,29 +1,25 @@
 /**
  * Sessione sync E2EE per account entro la Famiglia.
- * Path: blobs/{familyId}.{accountId}.syncsession.json — evita overwrite tra membri.
+ * Persistenza Postgres (`family_blobs`, kind syncsession:<accountId>).
  * Blob già cifrato con data-key account (client).
  */
 
 import { NextResponse } from 'next/server';
+import { and, eq } from 'drizzle-orm';
 import {
   assertFamilyMember,
   getAccountById,
   getSession,
   type EncryptedAccountBlob,
-  getAppDataDir,
 } from '@/lib/account-server';
 import { readSessionToken } from '@/lib/session-cookie';
-import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
-import path from 'node:path';
+import { ensureDbSchema, getDb } from '@/db/client';
+import { familyBlobs } from '@/db/schema';
 
 type Ctx = { params: Promise<{ familyId: string }> };
 
-function syncSessionPath(familyId: string, accountId: string): string {
-  return path.join(
-    getAppDataDir(),
-    'blobs',
-    `${familyId}.${accountId}.syncsession.json`
-  );
+function syncSessionKind(accountId: string): string {
+  return `syncsession:${accountId}`;
 }
 
 async function requireMember(familyId: string) {
@@ -43,17 +39,28 @@ export async function GET(_request: Request, context: Ctx) {
     if (!account) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
     }
-    try {
-      const raw = await readFile(
-        syncSessionPath(familyId, account.accountId),
-        'utf8'
-      );
-      return NextResponse.json({
-        blob: JSON.parse(raw) as EncryptedAccountBlob,
-      });
-    } catch {
+    await ensureDbSchema();
+    const rows = await getDb()
+      .select()
+      .from(familyBlobs)
+      .where(
+        and(
+          eq(familyBlobs.familyId, familyId),
+          eq(familyBlobs.kind, syncSessionKind(account.accountId))
+        )
+      )
+      .limit(1);
+    const row = rows[0];
+    if (!row) {
       return NextResponse.json({ blob: null });
     }
+    const blob: EncryptedAccountBlob = {
+      version: 'enc-1',
+      ivBase64: row.ivBase64,
+      ciphertextBase64: row.ciphertextBase64,
+      updatedAt: row.updatedAt,
+    };
+    return NextResponse.json({ blob });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Errore';
     const status = message.includes('Accesso') ? 403 : 401;
@@ -80,15 +87,30 @@ export async function PUT(request: Request, context: Ctx) {
         { status: 400 }
       );
     }
+    const updatedAt = new Date().toISOString();
     const blob: EncryptedAccountBlob = {
       ...body.blob,
-      updatedAt: new Date().toISOString(),
+      updatedAt,
     };
-    const target = syncSessionPath(familyId, account.accountId);
-    await mkdir(path.dirname(target), { recursive: true });
-    const tmp = `${target}.${process.pid}.tmp`;
-    await writeFile(tmp, JSON.stringify(blob), 'utf8');
-    await rename(tmp, target);
+    await ensureDbSchema();
+    await getDb()
+      .insert(familyBlobs)
+      .values({
+        familyId,
+        kind: syncSessionKind(account.accountId),
+        version: 'enc-1',
+        ivBase64: blob.ivBase64,
+        ciphertextBase64: blob.ciphertextBase64,
+        updatedAt,
+      })
+      .onConflictDoUpdate({
+        target: [familyBlobs.familyId, familyBlobs.kind],
+        set: {
+          ivBase64: blob.ivBase64,
+          ciphertextBase64: blob.ciphertextBase64,
+          updatedAt,
+        },
+      });
     return NextResponse.json({ ok: true, blob });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Errore';
@@ -104,9 +126,15 @@ export async function DELETE(_request: Request, context: Ctx) {
     if (!account) {
       return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
     }
-    await unlink(syncSessionPath(familyId, account.accountId)).catch(
-      () => undefined
-    );
+    await ensureDbSchema();
+    await getDb()
+      .delete(familyBlobs)
+      .where(
+        and(
+          eq(familyBlobs.familyId, familyId),
+          eq(familyBlobs.kind, syncSessionKind(account.accountId))
+        )
+      );
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Errore';

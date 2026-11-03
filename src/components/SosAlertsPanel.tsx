@@ -117,17 +117,17 @@ export function SosAlertsPanel({
         className="flex items-center gap-2 font-display text-lg font-black text-[var(--brand-danger)]"
       >
         <MessageSquareWarning className="size-6" aria-hidden />
-        Avvisi SOS (SMS / WhatsApp)
+        Avvisi di soccorso (SMS / WhatsApp)
       </h2>
       <p className="mt-1 text-sm text-zinc-700">
-        Invia un messaggio ai contatti ICE. Provider attivo:{' '}
+        Invia un messaggio ai contatti di emergenza. Provider attivo:{' '}
         <strong>{provider}</strong> (configurabile sull’host senza SDK a
         pagamento — vedi README).
       </p>
 
       {contacts.length === 0 ? (
         <p className="mt-3 font-semibold text-amber-950">
-          Nessun contatto ICE con telefono nelle schede Emergenza.
+          Nessun contatto di emergenza con telefono nelle schede Emergenza.
         </p>
       ) : (
         <ul className="mt-3 space-y-1 text-sm">
@@ -189,7 +189,7 @@ export function SosAlertsPanel({
             ) : (
               <MessageSquareWarning className="size-5" aria-hidden />
             )}
-            Invia SOS
+            Invia avviso di soccorso
           </button>
         </div>
       </div>

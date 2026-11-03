@@ -32,8 +32,8 @@ const STEPS = [
     icon: PlugZap,
   },
   {
-    title: 'Emergenza (ICE)',
-    body: 'Schede sanitarie per il soccorso 118/112, più mobile e abbonamenti personali. In stampa le parti sanitarie restano sotto la linguetta privacy.',
+    title: 'Emergenza e soccorso',
+    body: 'Schede sanitarie per il soccorso 118/112, più mobile e abbonamenti personali. Ogni campo è compilabile a mano; la guida rapida è opzionale. In stampa le parti sanitarie restano sotto la linguetta privacy.',
     icon: ShieldAlert,
   },
   {

@@ -5,8 +5,8 @@ import type {
   TextareaHTMLAttributes,
 } from 'react';
 
-const fieldClass =
-  'w-full min-h-12 rounded-md border-2 border-zinc-900 bg-white px-3 py-3 text-base text-zinc-950 placeholder:text-zinc-500 focus:outline-none focus:ring-4 focus:ring-amber-400';
+/** Campi Material: token tema chiaro/scuro, touch ≥48px. */
+const fieldClass = 'md-field';
 
 /**
  * Campo testo touch-friendly (≥48px) ad alto contrasto.
@@ -48,7 +48,7 @@ export function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className={`mb-1 block text-sm font-bold uppercase tracking-wide text-zinc-900 ${className}`}
+      className={`mb-1 block text-sm font-bold uppercase tracking-wide text-[var(--md-on-surface)] ${className}`}
     >
       {children}
     </label>

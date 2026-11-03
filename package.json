@@ -1,6 +1,6 @@
 {
   "name": "domusafe",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
   "scripts": {
@@ -9,12 +9,15 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "db:ensure": "tsx --tsconfig tsconfig.json -e \"import { ensureDbSchema, closeDb } from './src/db/client.ts'; await ensureDbSchema(); await closeDb();\"",
     "smoke": "tsx --tsconfig tsconfig.json scripts/smoke.mts",
     "verify": "pnpm lint && pnpm typecheck && pnpm smoke && pnpm build"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.4",
     "lucide-react": "^1.66.0",
     "next": "16.4.4",
+    "postgres": "^4.0.0",
     "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -22,9 +25,12 @@
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^18.0.9",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.4",
     "tailwindcss": "^4",

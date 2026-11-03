@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { Loader2, LogIn, UserPlus } from 'lucide-react';
 import { DomuSafeLogo } from '@/components/DomuSafeLogo';
+import { ThemeSelector } from '@/components/ThemeSelector';
 import { TouchField } from '@/components/TouchField';
 import { useSession } from '@/lib/session-context';
 
@@ -51,6 +52,9 @@ export function AuthScreen() {
       />
 
       <main className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:max-w-xl">
+        <div className="mb-4 flex justify-end">
+          <ThemeSelector compact />
+        </div>
         <div className="mb-6 flex flex-col items-center text-center sm:mb-8">
           <DomuSafeLogo size={88} className="mb-4 drop-shadow-lg" />
           <h1 className="font-display text-4xl font-black tracking-tight text-white sm:text-5xl">

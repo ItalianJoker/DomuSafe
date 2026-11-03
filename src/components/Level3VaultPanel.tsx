@@ -464,7 +464,9 @@ function VaultEditor({
       <>
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-lg font-bold">Mutui e CPI</h3>
+          <h3 className="text-lg font-bold">
+            Mutui e copertura assicurativa sul credito
+          </h3>
           <button
             type="button"
             className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold hover:bg-zinc-100"
@@ -484,11 +486,13 @@ function VaultEditor({
             }
           >
             <Plus className="size-5" aria-hidden />
-            Aggiungi mutuo / CPI
+            Aggiungi mutuo o copertura
           </button>
         </div>
         {(payload.mortgages ?? []).length === 0 ? (
-          <p className="text-sm text-zinc-700">Nessun mutuo/CPI inserito.</p>
+          <p className="text-sm text-zinc-700">
+            Nessun mutuo o copertura sul credito inserita.
+          </p>
         ) : (
           <ul className="space-y-3">
             {(payload.mortgages ?? []).map((item, index) => (
@@ -542,7 +546,9 @@ function VaultEditor({
                       }}
                     >
                       <option value="MUTUO">Mutuo</option>
-                      <option value="CPI">CPI</option>
+                      <option value="CPI">
+                        Copertura assicurativa sul credito
+                      </option>
                       <option value="ALTRO">Altro</option>
                     </TouchSelect>
                   </div>
@@ -672,7 +678,9 @@ function VaultEditor({
                         onChange({ ...payload, lifeInsurances });
                       }}
                     >
-                      <option value="TCM">TCM</option>
+                      <option value="TCM">
+                        Vita temporanea caso morte
+                      </option>
                       <option value="VITA_RISPARMIO">Vita risparmio</option>
                       <option value="INFORTUNI">Infortuni</option>
                     </TouchSelect>
@@ -732,7 +740,9 @@ function VaultEditor({
             />
           </div>
           <div>
-            <FieldLabel>Collocazione TFR</FieldLabel>
+            <FieldLabel>
+              Dove è il trattamento di fine rapporto
+            </FieldLabel>
             <TouchSelect
               value={payload.laborAndPension.tfrStorageLocation}
               onChange={(e) =>

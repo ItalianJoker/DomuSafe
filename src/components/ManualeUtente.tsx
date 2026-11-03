@@ -17,23 +17,27 @@ const SECTIONS = [
   },
   {
     title: 'Casa (livello 1)',
-    body: 'Annota le chiusure di emergenza (acqua, gas, quadro), il Wi‑Fi (copia + QR), citofono/cancello/pacchi e house-sitting. Vista ospite/sitter o tecnica. I contratti Famiglia non stanno qui: usa la sezione Utenze.',
+    body: 'Annota le chiusure di emergenza (acqua, gas, quadro), il Wi‑Fi (copia + QR), citofono/cancello/pacchi e house-sitting. Ogni campo si compila a mano; la guida rapida è opzionale. Vista ospite/sitter o tecnica. I contratti Famiglia non stanno qui: usa la sezione Utenze.',
   },
   {
     title: 'Utenze (Famiglia)',
-    body: 'Nella sezione Utenze del menu gestisci Luce, Gas, Internet, Acqua, TARI, abbonamenti familiari e scadenze (es. controllo caldaia). Restano protetti con i dati della casa. I conti bancari Famiglia invece sono in Cassaforte (PIN).',
+    body: 'Nella sezione Utenze del menu gestisci Luce, Gas, Internet, Acqua, tassa sui rifiuti, abbonamenti familiari e scadenze (es. controllo caldaia). Restano protetti con i dati della casa. I conti bancari Famiglia invece sono in Cassaforte (codice di sblocco).',
   },
   {
     title: 'QR emergenza senza login',
-    body: 'In Stampa / QR puoi pubblicare un QR break-glass: chi lo inquadra apre Casa + schede ICE senza account, dopo un disclaimer, con tasto 118. L’accesso viene registrato. Aggiorna il QR dopo modifiche importanti.',
+    body: 'In Stampa / QR puoi pubblicare un QR di emergenza: chi lo inquadra apre Casa + schede di emergenza senza account, dopo un avviso, con tasto 118. L’accesso viene registrato. Aggiorna il QR dopo modifiche importanti.',
   },
   {
-    title: 'Emergenza ICE (livello 2)',
-    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Sulla scheda chiusa trovi i chip «Mobile · Abbonamenti», «Conti personali» e «Tasse IT»: aprono la sezione giusta. In stampa le parti sanitarie restano sotto la linguetta da piegare.',
+    title: 'Emergenza e soccorso (livello 2)',
+    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Ogni campo è modificabile a mano sulla scheda. Sulla scheda chiusa trovi i collegamenti a mobile, abbonamenti, conti e tasse. In stampa le parti sanitarie restano sotto la linguetta da piegare.',
   },
   {
     title: 'Tasse italiane (scheda residente)',
-    body: 'Con Premium (o durante la prova) su ogni scheda residente trovi la checklist annuale (CU, precompilata, 730, ISEE, IMU, TARI, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
+    body: 'Con Premium (o durante la prova) su ogni scheda residente trovi la checklist annuale (Certificazione Unica, dichiarazione precompilata, modello 730, indicatore economico, imposta sugli immobili, tassa rifiuti, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
+  },
+  {
+    title: 'Tema chiaro / scuro',
+    body: 'Dall’intestazione puoi scegliere tema chiaro, scuro o sistema. La scelta viene salvata sul tuo account.',
   },
   {
     title: 'Conti bancari',

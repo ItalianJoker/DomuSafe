@@ -5,8 +5,7 @@
  * checklists, Premium pack, PWA shell, Docker/self-host docs, copy piani IT.
  */
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, existsSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -164,8 +163,9 @@ function record(name: string, fn: () => void | Promise<void>) {
   })();
 }
 
-const dataDir = mkdtempSync(resolve(tmpdir(), 'domusafe-app-'));
-process.env.DOMUSAFE_DATA_DIR = dataDir;
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL?.trim() ||
+  'postgres://domusafe:domusafe@127.0.0.1:5432/domusafe_test';
 
 await record('licensing: default tier is FREE', () => {
   assert.equal(DEFAULT_TIER, 'FREE');
@@ -237,7 +237,7 @@ await record('trial: 30-day Premium once per account', () => {
   assert.equal((caught as Error).message, TRIAL_ALREADY_USED_MESSAGE);
 });
 
-await record('account server: register/login/family/invite (filesystem)', async () => {
+await record('account server: register/login/family/invite (postgres)', async () => {
   await resetAppDataForTests();
   const cryptoMaterial = await prepareRegistrationCrypto('password-ok-12');
   const account = await registerAccount({
@@ -589,9 +589,13 @@ await record('print CSS + branding + responsive shell assets', () => {
   assert.match(css, /\.ice-privacy-flap/);
   const globals = readFileSync(resolve('src/app/globals.css'), 'utf8');
   assert.match(globals, /--brand-ink/);
+  assert.match(globals, /data-theme/);
+  assert.match(globals, /--md-primary/);
   assert.match(globals, /print\.css/);
   assert.match(globals, /safe-area-inset/);
   assert.match(globals, /app-shell-main/);
+  assert.equal(existsSync(resolve('src/db/schema.ts')), true);
+  assert.equal(existsSync(resolve('src/lib/theme.ts')), true);
   assert.equal(existsSync(resolve('public/domusafe-logo.svg')), true);
   assert.equal(existsSync(resolve('src/components/DomuSafeLogo.tsx')), true);
   assert.equal(
@@ -654,10 +658,15 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   assert.equal(readme.includes('DOMUSAFE_SOS_PROVIDER'), false);
   const selfHost = readFileSync(resolve('SELF-HOST.md'), 'utf8');
   assert.match(selfHost, /Dockerfile/);
+  assert.match(selfHost, /DATABASE_URL/);
+  assert.match(selfHost, /Postgres|postgres/i);
   assert.match(selfHost, /DOMUSAFE_SOS_PROVIDER/);
   assert.match(selfHost, /ghcr\.io/);
   assert.equal(existsSync(resolve('docker-compose.yml')), true);
   assert.equal(existsSync(resolve('Dockerfile')), true);
+  const compose = readFileSync(resolve('docker-compose.yml'), 'utf8');
+  assert.match(compose, /DATABASE_URL/);
+  assert.match(compose, /postgres/);
   const license = readFileSync(resolve('LICENSE.md'), 'utf8');
   assert.match(license, /Business Source License 1\.1/);
   assert.match(license, /Use Limitation/);
@@ -939,15 +948,13 @@ await record('sync: E2EE family-scoped envelope + QR pairing', async () => {
   );
   assert.equal(envelope.familyId, familyId);
   assert.equal(envelopeLooksEncrypted(envelope), true);
-  const tmp = mkdtempSync(resolve(tmpdir(), 'domusafe-sync-'));
-  process.env.DOMUSAFE_SYNC_DIR = tmp;
   const written = await writeEnvelope(syncId, envelope);
   assert.equal(written.ok, true);
   const stored = await readEnvelope(syncId);
   assert.ok(stored);
   assert.equal(stored!.familyId, familyId);
-  const disk = readFileSync(resolve(tmp, `${syncId}.json`), 'utf8');
-  assert.equal(disk.includes('Villa Segreta'), false);
+  assert.equal(JSON.stringify(stored).includes('Villa Segreta'), false);
+  assert.equal(envelopeLooksEncrypted(stored!), true);
   const roundTrip = await decryptHouseCollection(envelope, {
     keyBytes: usedKey,
   });
@@ -1001,8 +1008,6 @@ await record('sync: E2EE family-scoped envelope + QR pairing', async () => {
     'Villa Segreta Sync'
   );
 
-  rmSync(tmp, { recursive: true, force: true });
-  delete process.env.DOMUSAFE_SYNC_DIR;
 });
 
 await record('engagement: progressive casa→residenti→emergenza→utenze→L3', () => {
@@ -1141,9 +1146,6 @@ await record('emergency pack: seal/open + strip personal', async () => {
   const url = buildEmergencyUrl('https://example.test', 'tok', key);
   assert.match(url, /\/e\/tok#k=/);
 });
-
-rmSync(dataDir, { recursive: true, force: true });
-delete process.env.DOMUSAFE_DATA_DIR;
 
 const failed = results.filter((r) => !r.ok);
 console.log(

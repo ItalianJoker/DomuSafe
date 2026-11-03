@@ -33,6 +33,7 @@ import {
   applySaasLicenseApi,
   startPremiumTrialApi,
   unlockWithPassword,
+  updateThemePreferenceApi,
 } from '@/lib/auth-client';
 import {
   inviteCodeFromPayload,
@@ -40,6 +41,8 @@ import {
 } from '@/lib/family';
 import { effectiveTierFromLicense } from '@/lib/trial';
 import type { LicenseTier } from '@/types/domus';
+import type { ThemePreference } from '@/lib/theme';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 type SessionStatus =
   | 'loading'
@@ -76,6 +79,7 @@ interface SessionContextValue {
   startTrial: () => Promise<void>;
   applySaasLicense: (saasToken: string) => Promise<void>;
   refreshAccount: () => Promise<void>;
+  setThemePreference: (preference: ThemePreference) => Promise<void>;
   peekInviteFromHash: () => string | null;
 }
 
@@ -314,6 +318,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const setThemePreference = useCallback(async (preference: ThemePreference) => {
+    const next = await updateThemePreferenceApi(preference);
+    setAccount(next);
+  }, []);
+
   const effectiveTier = useMemo(
     () =>
       account
@@ -341,11 +350,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     startTrial,
     applySaasLicense,
     refreshAccount,
+    setThemePreference,
     peekInviteFromHash,
   };
 
   return (
-    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
+    <ThemeProvider
+      accountPreference={account?.themePreference ?? null}
+      onPersistAccount={
+        status === 'ready' ||
+        status === 'needs_family' ||
+        status === 'needs_unlock'
+          ? setThemePreference
+          : undefined
+      }
+    >
+      <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
+    </ThemeProvider>
   );
 }
 

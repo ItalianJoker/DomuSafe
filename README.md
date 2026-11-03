@@ -1,7 +1,7 @@
 # DomuSafe
 
 ![Licenza](https://img.shields.io/badge/licenza-BSL%201.1-blue)
-![Versione](https://img.shields.io/badge/versione-0.12.0-green)
+![Versione](https://img.shields.io/badge/versione-0.13.0-green)
 ![Dispositivi](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 ![PWA](https://img.shields.io/badge/PWA-installabile-teal)
 
@@ -9,7 +9,9 @@
 
 Lo usi dal telefono, dal tablet o dal computer: stessi contenuti, pulsanti ampi, linguaggio semplice. Ti registri, crei la **Famiglia**, invitì chi vive con te (anche con un QR), annoti dove chiudere acqua e gas, prepari le schede per il soccorso e — se vuoi — i documenti più riservati dietro un PIN.
 
-I dati appartengono al tuo **account** (per **Famiglia** o per **Residente**) e vengono protetti sul dispositivo prima del salvataggio. Non dipendono dalla sola memoria del browser.
+I dati appartengono al tuo **account** (per **Famiglia** o per **Residente**) e vengono protetti sul dispositivo prima del salvataggio. Sul servizio restano in un database sicuro, già cifrati. Non dipendono dalla sola memoria del browser.
+
+Puoi compilare **ogni campo a mano** nelle sezioni Casa, Utenze, Emergenza e Cassaforte. La **guida rapida** è solo un aiuto opzionale. Tema chiaro o scuro: scegli dall’intestazione (salvato sul tuo account).
 
 ## Come iniziare
 
@@ -26,7 +28,7 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 | **Panoramica** | Tre colonne Casa / Residenti / Emergenza con %, scadenze, QR emergenza in 1 tap, ultimo accesso break-glass |
 | **Casa** | Chiusure di emergenza con foto, Wi‑Fi, rifiuti, artigiani; anteprima ospite |
 | **Utenze** | Luce, Gas, Internet, Acqua, TARI, abbonamenti Famiglia e scadenze (es. caldaia) |
-| **Emergenza (ICE)** | Schede 118 / 112, modalità soccorso a schermo intero; mobile, bollo/auto, conti personali, tasse IT |
+| **Emergenza** | Schede per il soccorso 118 / 112, modalità soccorso a schermo intero; mobile, bollo/auto, conti personali, tasse e adempimenti |
 | **Cassaforte** | Documenti Famiglia (anche conti bancari Famiglia) protetti da PIN (Advanced+) · kit eredità (Premium) |
 | **Stampa / QR** | Foglio A4, stampa solo emergenza A5, QR break-glass senza login |
 | **Premium** | Registro scan, SOS SMS/WhatsApp, marchio host |

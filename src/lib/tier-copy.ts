@@ -24,7 +24,7 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
     audience: 'Per iniziare da soli, con una sola persona in casa.',
     includes: [
       'Casa (chiusure, Wi‑Fi, rifiuti, artigiani) e utenze/abbonamenti/scadenze Famiglia',
-      'Schede Emergenza ICE con mobile e abbonamenti personali standard',
+      'Schede Emergenza con mobile e abbonamenti personali standard',
       'Una scheda residente',
       'Stampa A4 e QR (con Watermark DomuSafe)',
       'Solo i campi previsti dall’app (campi standard)',
@@ -54,13 +54,13 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
     includes: [
       'Tutto di Basic',
       'Cassaforte (Livello 3): documenti Famiglia (archivio bollette, eredità digitale, conti bancari Famiglia) protetti da PIN',
-      'Stampa A4 senza Watermark DomuSafe (resta la linguetta Privacy per l’ICE)',
+      'Stampa A4 senza Watermark DomuSafe (resta la linguetta Privacy per l’emergenza)',
       'Fino a 3 abitazioni',
       'Solo campi standard',
     ],
     limits: [
       'Niente patrimonio personale (polizze, lavoro) né conti bancari personali',
-      'Niente checklist tasse / ISEE sulle schede residenti',
+      'Niente checklist tasse e adempimenti sulle schede residenti',
       'Niente checklist successione Famiglia, sync tra dispositivi né campi personalizzati',
     ],
   },
@@ -75,7 +75,7 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
       'Checklist successione per tutta la Famiglia e kit eredità da stampare',
       'Sync cifrato tra i tuoi dispositivi (QR)',
       'Campi e servizi personalizzati oltre a quelli standard',
-      'Registro accessi (scan), avvisi SOS, marchio host personalizzato',
+      'Registro accessi (scan), avvisi di soccorso, marchio host personalizzato',
       'Abitazioni senza limite pratico',
     ],
     limits: [],
@@ -89,7 +89,7 @@ export const TIER_SUMMARY: Record<LicenseTier, string> = {
   ADVANCED:
     'Come Basic + Cassaforte Famiglia (conti Famiglia) · senza Watermark · senza tasse / conti personali / sync',
   PREMIUM:
-    'Tutto: tasse, conti personali, patrimonio, successione, sync, campi personalizzati, registro, SOS, marchio host',
+    'Tutto: tasse, conti personali, patrimonio, successione, sync, campi personalizzati, registro, avvisi di soccorso, marchio host',
 };
 
 /** Prova Premium — testo fisso per UI. */
