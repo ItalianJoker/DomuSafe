@@ -108,7 +108,7 @@ export function HomeDashboard({
   const publishOneTap = useCallback(async () => {
     if (
       !window.confirm(
-        'Pubblicare il QR emergenza con i dati Casa + ICE attuali? Chi lo inquadra apre le schede senza login.'
+        'Pubblicare il QR emergenza con i dati Casa e schede di emergenza attuali? Chi lo inquadra apre le schede senza login.'
       )
     ) {
       return;
@@ -257,7 +257,7 @@ export function HomeDashboard({
 
       {lastBreakGlass ? (
         <p className="rounded-md border-2 border-zinc-900 bg-white px-4 py-3 text-sm font-semibold text-zinc-800">
-          Ultimo accesso break-glass:{' '}
+          Ultimo accesso emergenza senza login:{' '}
           {new Date(lastBreakGlass.at).toLocaleString('it-IT')}
           {lastBreakGlass.actorLabel
             ? ` · ${lastBreakGlass.actorLabel}`
@@ -265,7 +265,7 @@ export function HomeDashboard({
         </p>
       ) : (
         <p className="text-sm text-zinc-600">
-          Nessun accesso break-glass registrato finora.
+          Nessun accesso emergenza senza login registrato finora.
         </p>
       )}
 
@@ -324,7 +324,7 @@ export function HomeDashboard({
         <DashCard
           icon={<Printer className="size-7" aria-hidden />}
           title="Stampa e QR"
-          body="A4 completo, A5 solo emergenza, QR break-glass."
+          body="A4 completo, A5 solo emergenza, QR emergenza senza login."
           cta="Apri Stampa / QR"
           onClick={() => onGo('stampa')}
         />

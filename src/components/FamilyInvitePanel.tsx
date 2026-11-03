@@ -118,7 +118,7 @@ export function FamilyInvitePanel({
         <ul className="mt-1 list-disc space-y-1 pl-5">
           <li>
             <strong>Ospite / sitter:</strong> Wi‑Fi, accessi, chiusure e foto
-            valvole — niente schede ICE né cassaforte.
+            valvole — niente schede di emergenza né cassaforte.
           </li>
           <li>
             <strong>Membro Famiglia (invito QR):</strong> dashboard condivisa

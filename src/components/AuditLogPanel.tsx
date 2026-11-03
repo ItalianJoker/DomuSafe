@@ -212,8 +212,14 @@ export function AuditLogPanel({
               key={entry.id}
               className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm"
             >
-              <span className="font-bold uppercase tracking-wide text-[var(--brand-forest)]">
-                {entry.kind}
+              <span className="font-bold tracking-wide text-[var(--brand-forest)]">
+                {entry.kind === 'SOS'
+                  ? 'Avviso di soccorso'
+                  : entry.kind === 'SCAN'
+                    ? 'Scansione QR'
+                    : entry.kind === 'BREAK_GLASS'
+                      ? 'Emergenza senza login'
+                      : 'Annotazione manuale'}
               </span>
               <span className="mx-2 text-zinc-400">·</span>
               <time dateTime={entry.at}>

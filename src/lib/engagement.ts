@@ -104,8 +104,8 @@ export function buildEngagementSteps(
     {
       id: 'emergenza',
       title: 'Dati utili al soccorso',
-      blurb: 'Allergie, farmaci salvavita o un contatto ICE.',
-      cta: 'Completa ICE',
+      blurb: 'Allergie, farmaci salvavita o un contatto di emergenza.',
+      cta: 'Completa Emergenza',
       target: 'ice',
       done: hasEmergenza(doc),
       available: true,

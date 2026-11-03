@@ -159,7 +159,7 @@ export function BreakGlassViewer({ token }: BreakGlassViewerProps) {
       <div className="mx-auto max-w-2xl space-y-5">
         <header className="rounded-lg border-4 border-red-800 bg-red-50 p-4">
           <p className="text-xs font-black uppercase tracking-widest text-red-800">
-            Break-glass · senza login
+            Emergenza · senza login
           </p>
           <h1 className="mt-1 text-2xl font-black">
             {pack.houseName || 'Manuale emergenza'}
@@ -175,7 +175,7 @@ export function BreakGlassViewer({ token }: BreakGlassViewerProps) {
             className="mt-4 flex min-h-16 items-center justify-center gap-3 rounded-lg border-4 border-red-900 bg-red-700 text-xl font-black text-white"
           >
             <Phone className="size-7" aria-hidden />
-            SOS · Chiama 118
+            Chiama 118
           </a>
         </header>
 
@@ -220,7 +220,9 @@ export function BreakGlassViewer({ token }: BreakGlassViewerProps) {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-black text-red-900">Schede ICE</h2>
+          <h2 className="text-lg font-black text-red-900">
+            Schede di emergenza
+          </h2>
           {pack.level2.residents.length === 0 ? (
             <p className="text-sm text-zinc-700">Nessun residente pubblicato.</p>
           ) : (
@@ -284,7 +286,7 @@ export function BreakGlassViewer({ token }: BreakGlassViewerProps) {
                         className="flex min-h-14 items-center justify-between gap-2 rounded-md border-2 border-zinc-900 bg-emerald-50 px-3 font-bold"
                       >
                         <span>
-                          ICE {c.priority}: {c.name} ({c.relationship})
+                          Emergenza {c.priority}: {c.name} ({c.relationship})
                         </span>
                         <Phone className="size-5 shrink-0" aria-hidden />
                       </a>

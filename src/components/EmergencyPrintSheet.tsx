@@ -76,7 +76,7 @@ export function EmergencyPrintSheet({
 
       <section className="ice-privacy-flap ice-privacy-flap-a5 text-[10px]">
         <h2 className="mb-1 text-xs font-black uppercase text-red-800">
-          ICE — aprire solo per soccorso
+          Emergenza — aprire solo per soccorso
         </h2>
         {ice.residents.length === 0 ? (
           <p>Nessun residente.</p>
@@ -96,7 +96,7 @@ export function EmergencyPrintSheet({
                     .join(' · ') || '—'}
                 </p>
                 <p>
-                  ICE:{' '}
+                  Contatti di emergenza:{' '}
                   {r.iceContacts
                     .map((c) => `${c.priority}. ${c.name} ${c.phoneNumber}`)
                     .join(' · ') || '—'}

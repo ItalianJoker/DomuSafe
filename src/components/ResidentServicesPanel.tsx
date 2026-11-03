@@ -110,7 +110,7 @@ export function ResidentServicesPanel({
             <FieldLabel>Note</FieldLabel>
             <TouchInput
               value={plan.notes ?? ''}
-              placeholder="PIN SIM, PUK, dove è il contratto…"
+              placeholder="Codice SIM, codice di sblocco SIM, dove è il contratto…"
               onChange={(e) =>
                 onMobilePlanChange({ ...plan, notes: e.target.value })
               }
@@ -264,10 +264,12 @@ export function BankAccountsEditor({
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <FieldLabel>Riferimento IBAN (parziale)</FieldLabel>
+                  <FieldLabel>
+                    Coordinate bancarie (riferimento parziale)
+                  </FieldLabel>
                   <TouchInput
                     value={account.ibanHint ?? ''}
-                    placeholder="Ultime cifre o dove trovi l’IBAN completo"
+                    placeholder="Ultime cifre o dove trovi il numero completo"
                     onChange={(e) => {
                       const next = [...accounts];
                       next[index] = { ...account, ibanHint: e.target.value };

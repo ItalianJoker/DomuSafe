@@ -29,7 +29,6 @@ import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
 import { FeatureGate } from '@/components/FeatureGate';
 import { PhotoCaptureField } from '@/components/PhotoCaptureField';
-import { EmptyStateCta } from '@/components/EmptyStateCta';
 import { enforcePublicHouseForTier } from '@/lib/vault-policy';
 import { generateQrSvg } from '@/lib/qr';
 
@@ -55,7 +54,6 @@ export function Level1PublicPanel({
   const [view, setView] = useState<HouseView>('guest');
   const [wifiQr, setWifiQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [editingEmpty, setEditingEmpty] = useState(false);
   const isEmpty =
     !data.houseName.trim() &&
     !data.utilities.waterCutoff.location.trim() &&
@@ -138,19 +136,28 @@ export function Level1PublicPanel({
         </div>
       </header>
 
-      {isEmpty && !editingEmpty ? (
-        <EmptyStateCta
-          title="Casa ancora vuota"
-          body="Parti dal nome abitazione e dalle chiusure acqua/gas/luce. Poi aggiungi foto valvole e Wi‑Fi."
-          cta={onStartWizard ? 'Avvia compilazione rapida' : 'Inizia a compilare'}
-          onAction={() => {
-            if (onStartWizard) onStartWizard();
-            else setEditingEmpty(true);
-          }}
-        />
+      {isEmpty ? (
+        <aside className="space-y-3 rounded-lg border-2 border-[var(--md-outline)] bg-[var(--md-surface-container)] p-4">
+          <p className="text-lg font-black text-[var(--md-on-surface)]">
+            Casa ancora vuota
+          </p>
+          <p className="text-sm text-[var(--md-on-surface-variant)]">
+            Compila qui sotto nome, chiusure e Wi‑Fi — ogni campo è modificabile
+            in qualsiasi momento. La guida rapida è solo un aiuto opzionale.
+          </p>
+          {onStartWizard ? (
+            <button
+              type="button"
+              className="inline-flex min-h-12 items-center gap-2 rounded-[var(--md-radius-sm)] border-2 border-[var(--md-outline)] bg-white px-4 font-bold"
+              onClick={onStartWizard}
+            >
+              Guida rapida (opzionale)
+            </button>
+          ) : null}
+        </aside>
       ) : null}
 
-      {(!isEmpty || editingEmpty) && view === 'guest' ? (
+      {view === 'guest' ? (
         <aside className="space-y-3 rounded-lg border-2 border-emerald-800 bg-emerald-50 p-4">
           <p className="text-sm font-bold uppercase tracking-widest text-emerald-900">
             Anteprima ospite / sitter
@@ -200,7 +207,6 @@ export function Level1PublicPanel({
         </aside>
       ) : null}
 
-      {(!isEmpty || editingEmpty) ? (
       <>
       <div>
         <FieldLabel htmlFor="house-name">Nome abitazione</FieldLabel>
@@ -751,7 +757,6 @@ export function Level1PublicPanel({
         />
       </FeatureGate>
       </>
-      ) : null}
     </section>
   );
 }

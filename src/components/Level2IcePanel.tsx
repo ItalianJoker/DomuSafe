@@ -72,7 +72,7 @@ export function Level2IcePanel({
     <section aria-labelledby="level2-title" className="space-y-8">
       <header>
         <p className="text-sm font-bold uppercase tracking-widest text-red-800">
-          Livello 2 · ICE Emergenza
+          Livello 2 · Emergenza e soccorso
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
           <a
@@ -80,7 +80,7 @@ export function Level2IcePanel({
             className="inline-flex min-h-14 items-center gap-2 rounded-md border-2 border-red-900 bg-red-700 px-5 font-black text-white"
           >
             <Phone className="size-5" aria-hidden />
-            SOS · Chiama 118
+            Chiama 118
           </a>
           {onOpenRescue && residents.length > 0 ? (
             <button
@@ -129,20 +129,30 @@ export function Level2IcePanel({
         </div>
 
         {residents.length === 0 ? (
-          <EmptyStateCta
-            title="Nessun residente"
-            body={
-              Number.isFinite(maxResidents)
-                ? `Aggiungi fino a ${maxResidents} schede ICE (nome, allergie, contatti).`
-                : 'Aggiungi la prima scheda ICE: nome, allergie e un contatto.'
-            }
-            cta={onStartWizard ? 'Scheda rapida ≤90s' : 'Aggiungi residente'}
-            tone="danger"
-            onAction={() => {
-              if (onStartWizard) onStartWizard();
-              else onResidentsChange([...residents, createEmptyResident()]);
-            }}
-          />
+          <div className="space-y-3 rounded-lg border-2 border-red-900 bg-rose-50 p-4">
+            <EmptyStateCta
+              title="Nessun residente"
+              body={
+                Number.isFinite(maxResidents)
+                  ? `Aggiungi fino a ${maxResidents} schede di emergenza (nome, allergie, contatti). Compila i campi a mano, oppure usa la guida rapida se preferisci.`
+                  : 'Aggiungi la prima scheda di emergenza: nome, allergie e un contatto. Ogni campo è modificabile senza guida.'
+              }
+              cta="Aggiungi residente"
+              tone="danger"
+              onAction={() =>
+                onResidentsChange([...residents, createEmptyResident()])
+              }
+            />
+            {onStartWizard ? (
+              <button
+                type="button"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border-2 border-red-900 bg-white px-4 font-bold text-red-950"
+                onClick={onStartWizard}
+              >
+                Guida rapida (opzionale)
+              </button>
+            ) : null}
+          </div>
         ) : (
           <ul className="space-y-6">
             {residents.map((resident, index) => {
@@ -200,7 +210,10 @@ export function Level2IcePanel({
                           anchor: 'services' as const,
                           label: 'Conti personali ★',
                         },
-                        { anchor: 'tax' as const, label: 'Tasse IT ★' },
+                        {
+                          anchor: 'tax' as const,
+                          label: 'Tasse e adempimenti ★',
+                        },
                       ]
                     ).map((chip) => (
                       <button
@@ -487,7 +500,17 @@ export function Level2IcePanel({
                 </div>
 
                 <div id={`resident-tax-${resident.id}`}>
-                  <FeatureGate tier={tier} feature="allowResidentTax">
+                  <FeatureGate
+                    tier={tier}
+                    feature="allowResidentTax"
+                    fallback={
+                      <p className="rounded-md border-2 border-amber-800 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950">
+                        Checklist tasse e adempimenti italiani: inclusa in
+                        Premium (o durante la prova). Apri Piano per attivarla.
+                        I campi restano comunque sulla scheda residente.
+                      </p>
+                    }
+                  >
                     <ResidentTaxChecklist
                       taxChecklist={resident.taxChecklist}
                       onChange={(taxChecklist) =>
@@ -522,7 +545,7 @@ export function Level2IcePanel({
                 ) : (
                   <p className="text-sm text-zinc-700">
                     Scheda chiusa — tocca il nome per aprire (allergie, farmaci,
-                    ICE).
+                    contatti di emergenza).
                   </p>
                 )}
               </li>
@@ -820,7 +843,7 @@ function IceContactsEditor({
   return (
     <div className="space-y-2 border-t-2 border-red-200 pt-3">
       <div className="flex items-center justify-between gap-2">
-        <FieldLabel>Contatti ICE</FieldLabel>
+        <FieldLabel>Contatti di emergenza</FieldLabel>
         <button
           type="button"
           className="inline-flex min-h-12 items-center gap-1 rounded-md border-2 border-zinc-900 bg-white px-3 font-bold"

@@ -1,4 +1,4 @@
-# DomuSafe — immagine di produzione self-host (Next.js standalone)
+# DomuSafe — immagine di produzione SaaS (Next.js standalone + Postgres)
 FROM node:22-alpine AS deps
 WORKDIR /app
 RUN corepack enable
@@ -20,14 +20,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-# Account/Famiglia (ciphertext) + envelope sync E2EE. Montare volumi in produzione.
-ENV DOMUSAFE_SYNC_DIR=/app/data/sync
-ENV DOMUSAFE_DATA_DIR=/app/data/app
 
 RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs \
-  && mkdir -p /app/data/sync /app/data/app \
-  && chown -R nextjs:nodejs /app/data
+  && adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -35,5 +30,5 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
-VOLUME ["/app/data/app", "/app/data/sync"]
+# Richiede DATABASE_URL verso Postgres (vedi docker-compose).
 CMD ["node", "server.js"]

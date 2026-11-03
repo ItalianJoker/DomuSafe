@@ -1,12 +1,12 @@
 /**
- * Store account/Famiglia self-host (filesystem) — unica fonte di verità.
- * Zero IndexedDB/localStorage per dati durevoli. Blobs sensibili: solo ciphertext.
+ * Store account/Famiglia SaaS (Postgres) — unica fonte di verità.
+ * Zero filesystem/`DOMUSAFE_DATA_DIR` come SoT. Blob sensibili: solo ciphertext.
  *
- * Dir: `DOMUSAFE_DATA_DIR` oppure `./data/app`.
+ * Connessione: `DATABASE_URL` (vedi docker-compose / README).
  */
-import { mkdir, readFile, writeFile, rename, readdir, unlink } from 'node:fs/promises';
-import path from 'node:path';
+
 import { createHash, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
+import { and, eq } from 'drizzle-orm';
 import type {
   AccountLicenseState,
   DomuFamily,
@@ -17,8 +17,16 @@ import type {
 import type { AuditLogDocument, AuditLogEntry, FamilyBranding } from '@/types/premium';
 import { createInitialLicense } from '@/lib/trial';
 import { resolveConfiguredTier } from '@/lib/licensing';
+import { ensureDbSchema, getDb, resetDatabaseForTests } from '@/db/client';
+import {
+  accounts,
+  auditLogs,
+  families,
+  familyBlobs,
+  sessions,
+} from '@/db/schema';
 
-/** Cap audit log: evita crescita illimitata su disco. */
+/** Cap audit log: evita crescita illimitata. */
 const AUDIT_LOG_MAX_ENTRIES = 500;
 
 const PBKDF2_ITERATIONS = 100_000;
@@ -32,13 +40,13 @@ export interface ServerAccount {
   displayName: string;
   passwordSaltHex: string;
   passwordHashHex: string;
-  /** Wrapping material client: salt/iv/ciphertext della data-key (opaco al server). */
   dataKeySaltBase64: string;
   wrappedDataKeyBase64: string;
   wrappedDataKeyIvBase64: string;
   familyId: string | null;
   license: AccountLicenseState;
   tutorialCompleted: boolean;
+  themePreference?: 'light' | 'dark' | 'system';
   createdAt: string;
   updatedAt: string;
 }
@@ -58,55 +66,7 @@ interface SessionRecord {
   expiresAt: string;
 }
 
-export function getAppDataDir(): string {
-  const fromEnv = process.env.DOMUSAFE_DATA_DIR?.trim();
-  if (fromEnv) {
-    // Path runtime (volumi Docker / test tmp): non tracciare l’intero progetto.
-    return path.resolve(/* turbopackIgnore: true */ fromEnv);
-  }
-  return path.join(process.cwd(), 'data', 'app');
-}
-
-function accountsDir(): string {
-  return path.join(getAppDataDir(), 'accounts');
-}
-function familiesDir(): string {
-  return path.join(getAppDataDir(), 'families');
-}
-function sessionsDir(): string {
-  return path.join(getAppDataDir(), 'sessions');
-}
-function blobsDir(): string {
-  return path.join(getAppDataDir(), 'blobs');
-}
-
-export async function ensureAppDataDirs(): Promise<void> {
-  await mkdir(accountsDir(), { recursive: true });
-  await mkdir(familiesDir(), { recursive: true });
-  await mkdir(sessionsDir(), { recursive: true });
-  await mkdir(blobsDir(), { recursive: true });
-}
-
-async function writeJsonAtomic(filePath: string, value: unknown): Promise<void> {
-  await mkdir(path.dirname(filePath), { recursive: true });
-  const tmp = `${filePath}.${process.pid}.${Date.now()}.tmp`;
-  await writeFile(tmp, JSON.stringify(value), 'utf8');
-  await rename(tmp, filePath);
-}
-
-async function readJson<T>(filePath: string): Promise<T | null> {
-  try {
-    const raw = await readFile(filePath, 'utf8');
-    return JSON.parse(raw) as T;
-  } catch (error) {
-    const code =
-      error && typeof error === 'object' && 'code' in error
-        ? (error as { code?: string }).code
-        : undefined;
-    if (code === 'ENOENT') return null;
-    throw error;
-  }
-}
+type BlobKind = 'houses' | 'succession' | 'emergency';
 
 function createId(): string {
   return randomBytes(16).toString('hex');
@@ -133,58 +93,104 @@ function verifyPassword(
   return timingSafeEqual(a, b);
 }
 
-function sessionFile(token: string): string {
-  const dig = createHash('sha256').update(token).digest('hex');
-  return path.join(sessionsDir(), `${dig}.json`);
+function rowToAccount(row: typeof accounts.$inferSelect): ServerAccount {
+  return {
+    version: '1.0.0',
+    accountId: row.accountId,
+    email: row.email,
+    displayName: row.displayName,
+    passwordSaltHex: row.passwordSaltHex,
+    passwordHashHex: row.passwordHashHex,
+    dataKeySaltBase64: row.dataKeySaltBase64,
+    wrappedDataKeyBase64: row.wrappedDataKeyBase64,
+    wrappedDataKeyIvBase64: row.wrappedDataKeyIvBase64,
+    familyId: row.familyId,
+    license: row.license as AccountLicenseState,
+    tutorialCompleted: row.tutorialCompleted,
+    themePreference: (row.themePreference as ServerAccount['themePreference']) ?? 'system',
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
 }
 
-function accountFile(accountId: string): string {
-  return path.join(accountsDir(), `${accountId}.json`);
+/** @deprecated filesystem path — no-op; schema DB. */
+export async function ensureAppDataDirs(): Promise<void> {
+  await ensureDbSchema();
 }
 
-function familyFile(familyId: string): string {
-  return path.join(familiesDir(), `${familyId}.json`);
-}
-
-function housesBlobFile(familyId: string): string {
-  return path.join(blobsDir(), `${familyId}.houses.json`);
-}
-
-function successionBlobFile(familyId: string): string {
-  return path.join(blobsDir(), `${familyId}.succession.json`);
-}
-
-function emergencyBlobFile(familyId: string): string {
-  return path.join(blobsDir(), `${familyId}.emergency.json`);
-}
-
-function auditLogFile(familyId: string): string {
-  return path.join(blobsDir(), `${familyId}.audit.json`);
+/** @deprecated — DB URL replaces data dir. Kept for smoke compatibility. */
+export function getAppDataDir(): string {
+  return process.env.DATABASE_URL?.trim()
+    ? 'postgres://(DATABASE_URL)'
+    : '(DATABASE_URL missing)';
 }
 
 export async function findAccountByEmail(
   email: string
 ): Promise<ServerAccount | null> {
-  await ensureAppDataDirs();
+  await ensureDbSchema();
   const normalized = email.trim().toLowerCase();
-  const files = await readdir(accountsDir()).catch(() => [] as string[]);
-  for (const file of files) {
-    if (!file.endsWith('.json')) continue;
-    const acc = await readJson<ServerAccount>(path.join(accountsDir(), file));
-    if (acc?.email === normalized) return acc;
-  }
-  return null;
+  const rows = await getDb()
+    .select()
+    .from(accounts)
+    .where(eq(accounts.email, normalized))
+    .limit(1);
+  const row = rows[0];
+  return row ? rowToAccount(row) : null;
 }
 
 export async function getAccountById(
   accountId: string
 ): Promise<ServerAccount | null> {
-  return readJson<ServerAccount>(accountFile(accountId));
+  await ensureDbSchema();
+  const rows = await getDb()
+    .select()
+    .from(accounts)
+    .where(eq(accounts.accountId, accountId))
+    .limit(1);
+  const row = rows[0];
+  return row ? rowToAccount(row) : null;
 }
 
 export async function saveAccount(account: ServerAccount): Promise<void> {
-  await ensureAppDataDirs();
-  await writeJsonAtomic(accountFile(account.accountId), account);
+  await ensureDbSchema();
+  const db = getDb();
+  const values = {
+    accountId: account.accountId,
+    email: account.email,
+    displayName: account.displayName,
+    passwordSaltHex: account.passwordSaltHex,
+    passwordHashHex: account.passwordHashHex,
+    dataKeySaltBase64: account.dataKeySaltBase64,
+    wrappedDataKeyBase64: account.wrappedDataKeyBase64,
+    wrappedDataKeyIvBase64: account.wrappedDataKeyIvBase64,
+    familyId: account.familyId,
+    license: account.license,
+    tutorialCompleted: account.tutorialCompleted,
+    themePreference: account.themePreference ?? 'system',
+    createdAt: account.createdAt,
+    updatedAt: account.updatedAt,
+  };
+  await db
+    .insert(accounts)
+    .values(values)
+    .onConflictDoUpdate({
+      target: accounts.accountId,
+      set: {
+        email: values.email,
+        displayName: values.displayName,
+        passwordSaltHex: values.passwordSaltHex,
+        passwordHashHex: values.passwordHashHex,
+        dataKeySaltBase64: values.dataKeySaltBase64,
+        wrappedDataKeyBase64: values.wrappedDataKeyBase64,
+        wrappedDataKeyIvBase64: values.wrappedDataKeyIvBase64,
+        familyId: values.familyId,
+        license: values.license,
+        tutorialCompleted: values.tutorialCompleted,
+        themePreference: values.themePreference,
+        updatedAt: values.updatedAt,
+      },
+    });
 }
 
 export type PublicAccount = Omit<
@@ -204,6 +210,7 @@ export function toPublicAccount(account: ServerAccount): PublicAccount {
     familyId: account.familyId,
     license: account.license,
     tutorialCompleted: account.tutorialCompleted,
+    themePreference: account.themePreference ?? 'system',
     createdAt: account.createdAt,
     updatedAt: account.updatedAt,
   };
@@ -240,6 +247,7 @@ export async function registerAccount(input: {
     familyId: null,
     license: createInitialLicense(resolveConfiguredTier()),
     tutorialCompleted: false,
+    themePreference: 'system',
     createdAt: now,
     updatedAt: now,
   };
@@ -252,14 +260,17 @@ export async function authenticateAccount(
   password: string
 ): Promise<ServerAccount> {
   const account = await findAccountByEmail(email);
-  if (!account || !verifyPassword(password, account.passwordSaltHex, account.passwordHashHex)) {
+  if (
+    !account ||
+    !verifyPassword(password, account.passwordSaltHex, account.passwordHashHex)
+  ) {
     throw new Error('Email o password non validi');
   }
   return account;
 }
 
 export async function createSession(accountId: string): Promise<SessionRecord> {
-  await ensureAppDataDirs();
+  await ensureDbSchema();
   const now = Date.now();
   const session: SessionRecord = {
     sessionToken: randomBytes(32).toString('base64url'),
@@ -267,7 +278,7 @@ export async function createSession(accountId: string): Promise<SessionRecord> {
     createdAt: new Date(now).toISOString(),
     expiresAt: new Date(now + SESSION_TTL_MS).toISOString(),
   };
-  await writeJsonAtomic(sessionFile(session.sessionToken), session);
+  await getDb().insert(sessions).values(session);
   return session;
 }
 
@@ -275,7 +286,13 @@ export async function getSession(
   token: string | undefined | null
 ): Promise<SessionRecord | null> {
   if (!token) return null;
-  const session = await readJson<SessionRecord>(sessionFile(token));
+  await ensureDbSchema();
+  const rows = await getDb()
+    .select()
+    .from(sessions)
+    .where(eq(sessions.sessionToken, token))
+    .limit(1);
+  const session = rows[0];
   if (!session) return null;
   if (Date.parse(session.expiresAt) <= Date.now()) {
     await destroySession(token);
@@ -285,22 +302,44 @@ export async function getSession(
 }
 
 export async function destroySession(token: string): Promise<void> {
-  try {
-    await unlink(sessionFile(token));
-  } catch {
-    /* absent ok */
-  }
+  await ensureDbSchema();
+  await getDb().delete(sessions).where(eq(sessions.sessionToken, token));
 }
 
-export async function getFamily(
-  familyId: string
-): Promise<DomuFamily | null> {
-  return readJson<DomuFamily>(familyFile(familyId));
+export async function getFamily(familyId: string): Promise<DomuFamily | null> {
+  await ensureDbSchema();
+  const rows = await getDb()
+    .select()
+    .from(families)
+    .where(eq(families.familyId, familyId))
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  return row.document as DomuFamily;
 }
 
 export async function saveFamily(family: DomuFamily): Promise<void> {
-  await ensureAppDataDirs();
-  await writeJsonAtomic(familyFile(family.familyId), family);
+  await ensureDbSchema();
+  const values = {
+    familyId: family.familyId,
+    document: family,
+    scanToken: family.scanToken ?? null,
+    emergencyToken: family.emergencyToken ?? null,
+    createdAt: family.createdAt,
+    updatedAt: family.updatedAt,
+  };
+  await getDb()
+    .insert(families)
+    .values(values)
+    .onConflictDoUpdate({
+      target: families.familyId,
+      set: {
+        document: values.document,
+        scanToken: values.scanToken,
+        emergencyToken: values.emergencyToken,
+        updatedAt: values.updatedAt,
+      },
+    });
 }
 
 export async function createFamilyOnServer(input: {
@@ -337,12 +376,7 @@ export async function createFamilyOnServer(input: {
 export async function createInviteOnServer(input: {
   familyId: string;
   createdByAccountId: string;
-  /** Seal client della family-key (obbligatorio per workspace condiviso). */
   sealedFamilyKey: SealedKeyBlob;
-  /**
-   * Token scelto dal client (così può suggellare la family-key prima del POST).
-   * Deve essere opaco e abbastanza lungo (≥16 char).
-   */
   clientToken: string;
 }): Promise<{ family: DomuFamily; invite: FamilyInvite; inviteCode: string }> {
   const family = await getFamily(input.familyId);
@@ -385,10 +419,6 @@ export async function createInviteOnServer(input: {
   };
 }
 
-/**
- * Registra/aggiorna il wrap della family-key per un membro.
- * Il server non apre il blob — solo persistenza opaca.
- */
 export async function putMemberKeyWrapOnServer(input: {
   familyId: string;
   accountId: string;
@@ -417,7 +447,6 @@ export async function putMemberKeyWrapOnServer(input: {
   return next;
 }
 
-/** Restituisce il seal family-key di un invito ancora valido (per il join client). */
 export function findOpenInviteSeal(
   family: DomuFamily,
   token: string
@@ -491,58 +520,99 @@ export async function assertFamilyMember(
   return family;
 }
 
+async function readBlob(
+  familyId: string,
+  kind: BlobKind
+): Promise<EncryptedAccountBlob | null> {
+  await ensureDbSchema();
+  const rows = await getDb()
+    .select()
+    .from(familyBlobs)
+    .where(
+      and(eq(familyBlobs.familyId, familyId), eq(familyBlobs.kind, kind))
+    )
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    version: 'enc-1',
+    ivBase64: row.ivBase64,
+    ciphertextBase64: row.ciphertextBase64,
+    updatedAt: row.updatedAt,
+  };
+}
+
+async function writeBlob(
+  familyId: string,
+  kind: BlobKind,
+  blob: EncryptedAccountBlob
+): Promise<void> {
+  await ensureDbSchema();
+  const updatedAt = blob.updatedAt || new Date().toISOString();
+  await getDb()
+    .insert(familyBlobs)
+    .values({
+      familyId,
+      kind,
+      version: blob.version || 'enc-1',
+      ivBase64: blob.ivBase64,
+      ciphertextBase64: blob.ciphertextBase64,
+      updatedAt,
+    })
+    .onConflictDoUpdate({
+      target: [familyBlobs.familyId, familyBlobs.kind],
+      set: {
+        version: blob.version || 'enc-1',
+        ivBase64: blob.ivBase64,
+        ciphertextBase64: blob.ciphertextBase64,
+        updatedAt,
+      },
+    });
+}
+
 export async function readHousesBlob(
   familyId: string
 ): Promise<EncryptedAccountBlob | null> {
-  return readJson<EncryptedAccountBlob>(housesBlobFile(familyId));
+  return readBlob(familyId, 'houses');
 }
 
 export async function writeHousesBlob(
   familyId: string,
   blob: EncryptedAccountBlob
 ): Promise<void> {
-  await ensureAppDataDirs();
-  await writeJsonAtomic(housesBlobFile(familyId), blob);
+  await writeBlob(familyId, 'houses', blob);
 }
 
 export async function readSuccessionBlob(
   familyId: string
 ): Promise<EncryptedAccountBlob | null> {
-  return readJson<EncryptedAccountBlob>(successionBlobFile(familyId));
+  return readBlob(familyId, 'succession');
 }
 
 export async function writeSuccessionBlob(
   familyId: string,
   blob: EncryptedAccountBlob
 ): Promise<void> {
-  await ensureAppDataDirs();
-  await writeJsonAtomic(successionBlobFile(familyId), blob);
+  await writeBlob(familyId, 'succession', blob);
 }
 
-/** Blob break-glass L1+L2 (ciphertext opaco — chiave solo nel QR fragment). */
 export async function readEmergencyBlob(
   familyId: string
 ): Promise<EncryptedAccountBlob | null> {
-  return readJson<EncryptedAccountBlob>(emergencyBlobFile(familyId));
+  return readBlob(familyId, 'emergency');
 }
 
 export async function writeEmergencyBlob(
   familyId: string,
   blob: EncryptedAccountBlob
 ): Promise<void> {
-  await ensureAppDataDirs();
-  await writeJsonAtomic(emergencyBlobFile(familyId), blob);
+  await writeBlob(familyId, 'emergency', blob);
 }
 
-/**
- * Pubblica / aggiorna il token break-glass Famiglia e il blob cifrato.
- * Restituisce il token pubblico (la chiave resta solo al client).
- */
 export async function publishEmergencyPackOnServer(input: {
   familyId: string;
   accountId: string;
   blob: EncryptedAccountBlob;
-  /** Se assente, genera un nuovo token (ruota QR). */
   rotateToken?: boolean;
 }): Promise<{ family: DomuFamily; token: string }> {
   const family = await assertFamilyMember(input.familyId, input.accountId);
@@ -565,17 +635,16 @@ export async function findFamilyByEmergencyToken(
 ): Promise<DomuFamily | null> {
   const normalized = token.trim();
   if (!normalized) return null;
-  await ensureAppDataDirs();
-  const files = await readdir(familiesDir()).catch(() => [] as string[]);
-  for (const file of files) {
-    if (!file.endsWith('.json')) continue;
-    const family = await readJson<DomuFamily>(path.join(familiesDir(), file));
-    if (family?.emergencyToken === normalized) return family;
-  }
-  return null;
+  await ensureDbSchema();
+  const rows = await getDb()
+    .select()
+    .from(families)
+    .where(eq(families.emergencyToken, normalized))
+    .limit(1);
+  const row = rows[0];
+  return row ? (row.document as DomuFamily) : null;
 }
 
-/** Garantisce un scanToken sulla Famiglia (lazy per Famiglie create prima di Premium pack). */
 export async function ensureFamilyScanToken(
   familyId: string
 ): Promise<DomuFamily> {
@@ -596,14 +665,14 @@ export async function findFamilyByScanToken(
 ): Promise<DomuFamily | null> {
   const normalized = token.trim();
   if (!normalized) return null;
-  await ensureAppDataDirs();
-  const files = await readdir(familiesDir()).catch(() => [] as string[]);
-  for (const file of files) {
-    if (!file.endsWith('.json')) continue;
-    const family = await readJson<DomuFamily>(path.join(familiesDir(), file));
-    if (family?.scanToken === normalized) return family;
-  }
-  return null;
+  await ensureDbSchema();
+  const rows = await getDb()
+    .select()
+    .from(families)
+    .where(eq(families.scanToken, normalized))
+    .limit(1);
+  const row = rows[0];
+  return row ? (row.document as DomuFamily) : null;
 }
 
 export async function updateFamilyBranding(
@@ -627,7 +696,13 @@ export async function updateFamilyBranding(
 export async function readAuditLog(
   familyId: string
 ): Promise<AuditLogDocument> {
-  const existing = await readJson<AuditLogDocument>(auditLogFile(familyId));
+  await ensureDbSchema();
+  const rows = await getDb()
+    .select()
+    .from(auditLogs)
+    .where(eq(auditLogs.familyId, familyId))
+    .limit(1);
+  const existing = rows[0]?.document as AuditLogDocument | undefined;
   if (existing?.version === '1.0.0') return existing;
   return {
     version: '1.0.0',
@@ -637,10 +712,6 @@ export async function readAuditLog(
   };
 }
 
-/**
- * Ultimo accesso break-glass (metadati) — disponibile a ogni membro Famiglia
- * senza gate Premium (tranquillità Panoramica).
- */
 export async function getLastBreakGlassAccess(familyId: string): Promise<{
   at: string;
   actorLabel: string;
@@ -656,15 +727,11 @@ export async function getLastBreakGlassAccess(familyId: string): Promise<{
   };
 }
 
-/**
- * Appende una voce all’audit log Famiglia (cap FIFO).
- * Metadati di accesso — non contiene ICE/vault in chiaro.
- */
 export async function appendAuditEntry(
   familyId: string,
   entry: Omit<AuditLogEntry, 'id' | 'at'> & { id?: string; at?: string }
 ): Promise<AuditLogDocument> {
-  await ensureAppDataDirs();
+  await ensureDbSchema();
   const current = await readAuditLog(familyId);
   const full: AuditLogEntry = {
     id: entry.id ?? createId(),
@@ -682,32 +749,34 @@ export async function appendAuditEntry(
     entries,
     updatedAt: new Date().toISOString(),
   };
-  await writeJsonAtomic(auditLogFile(familyId), next);
+  await getDb()
+    .insert(auditLogs)
+    .values({
+      familyId,
+      document: next,
+      updatedAt: next.updatedAt,
+    })
+    .onConflictDoUpdate({
+      target: auditLogs.familyId,
+      set: {
+        document: next,
+        updatedAt: next.updatedAt,
+      },
+    });
   return next;
 }
 
-/** Hash privacy-safe di un indirizzo (mai persistito in chiaro). */
-export function hashIpForAudit(ip: string | null | undefined): string | undefined {
+export function hashIpForAudit(
+  ip: string | null | undefined
+): string | undefined {
   if (!ip) return undefined;
-  return createHash('sha256').update(`domusafe-audit:${ip}`).digest('hex').slice(0, 16);
+  return createHash('sha256')
+    .update(`domusafe-audit:${ip}`)
+    .digest('hex')
+    .slice(0, 16);
 }
 
-/** Helper smoke/test: svuota directory dati. */
+/** Helper smoke/test: svuota tabelle Postgres. */
 export async function resetAppDataForTests(): Promise<void> {
-  const dir = getAppDataDir();
-  await mkdir(/* turbopackIgnore: true */ dir, { recursive: true });
-  for (const sub of ['accounts', 'families', 'sessions', 'blobs'] as const) {
-    const p = path.join(/* turbopackIgnore: true */ dir, sub);
-    await mkdir(/* turbopackIgnore: true */ p, { recursive: true });
-    const files = await readdir(/* turbopackIgnore: true */ p).catch(
-      () => [] as string[]
-    );
-    await Promise.all(
-      files.map((f) =>
-        unlink(path.join(/* turbopackIgnore: true */ p, f)).catch(
-          () => undefined
-        )
-      )
-    );
-  }
+  await resetDatabaseForTests();
 }

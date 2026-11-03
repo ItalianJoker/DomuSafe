@@ -18,7 +18,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: 'DomuSafe — Manuale casa e hub emergenza',
   description:
-    'Manuale digitale della casa per la Famiglia: utenze, schede ICE, cassaforte e stampa A4. Dati protetti sull’account.',
+    'Manuale digitale della casa per la Famiglia: utenze, schede di emergenza, cassaforte e stampa A4. Dati protetti sull’account.',
   applicationName: 'DomuSafe',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
@@ -39,12 +39,28 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0b1f17',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#0b1f17' },
+    { media: '(prefers-color-scheme: dark)', color: '#06110c' },
+  ],
   width: 'device-width',
   initialScale: 1,
   /* Zoom consentito: accessibilità + tablet/phone non tecnici. */
   viewportFit: 'cover',
 };
+
+/** Anti-FOUC: applica tema da localStorage prima del paint. */
+const themeBootScript = `
+(function(){
+  try {
+    var p = localStorage.getItem('domusafe-theme-preference') || 'system';
+    var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var mode = p === 'dark' || (p === 'system' && dark) ? 'dark' : 'light';
+    document.documentElement.dataset.theme = mode;
+    document.documentElement.style.colorScheme = mode;
+  } catch (e) {}
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -55,8 +71,12 @@ export default function RootLayout({
     <html
       lang="it"
       className={`${sourceSans.variable} ${sourceSerif.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
+      <body className="flex min-h-full flex-col font-sans">
         {children}
         <PwaRegister />
       </body>

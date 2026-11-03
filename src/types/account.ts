@@ -1,8 +1,11 @@
 import type { LicenseTier } from '@/types/domus';
 import type { FamilyBranding } from '@/types/premium';
+import type { ThemePreference } from '@/lib/theme';
 
 /** Ruolo membro nella Famiglia (workspace condiviso). */
 export type FamilyRole = 'OWNER' | 'MEMBER';
+
+export type { ThemePreference };
 
 /**
  * Stato licenza per account.
@@ -40,6 +43,8 @@ export interface DomuAccount {
   familyId: string | null;
   license: AccountLicenseState;
   tutorialCompleted: boolean;
+  /** Tema UI Material: chiaro / scuro / sistema (default system). */
+  themePreference?: ThemePreference;
   createdAt: string;
   updatedAt: string;
 }

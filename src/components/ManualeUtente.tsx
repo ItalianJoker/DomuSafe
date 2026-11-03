@@ -17,23 +17,27 @@ const SECTIONS = [
   },
   {
     title: 'Casa (livello 1)',
-    body: 'Annota le chiusure di emergenza (acqua, gas, quadro), il Wi‑Fi (copia + QR), citofono/cancello/pacchi e house-sitting. Vista ospite/sitter o tecnica. I contratti Famiglia non stanno qui: usa la sezione Utenze.',
+    body: 'Annota le chiusure di emergenza (acqua, gas, quadro), il Wi‑Fi (copia + QR), citofono/cancello/pacchi e house-sitting. Ogni campo si compila a mano; la guida rapida è opzionale. Vista ospite/sitter o tecnica. I contratti Famiglia non stanno qui: usa la sezione Utenze.',
   },
   {
     title: 'Utenze (Famiglia)',
-    body: 'Nella sezione Utenze del menu gestisci Luce, Gas, Internet, Acqua, TARI, abbonamenti familiari e scadenze (es. controllo caldaia). Restano protetti con i dati della casa. I conti bancari Famiglia invece sono in Cassaforte (PIN).',
+    body: 'Nella sezione Utenze del menu gestisci Luce, Gas, Internet, Acqua, tassa sui rifiuti, abbonamenti familiari e scadenze (es. controllo caldaia). Restano protetti con i dati della casa. I conti bancari Famiglia invece sono in Cassaforte (codice di sblocco).',
   },
   {
     title: 'QR emergenza senza login',
-    body: 'In Stampa / QR puoi pubblicare un QR break-glass: chi lo inquadra apre Casa + schede ICE senza account, dopo un disclaimer, con tasto 118. L’accesso viene registrato. Aggiorna il QR dopo modifiche importanti.',
+    body: 'In Stampa / QR puoi pubblicare un QR di emergenza: chi lo inquadra apre Casa + schede di emergenza senza account, dopo un avviso, con tasto 118. L’accesso viene registrato. Aggiorna il QR dopo modifiche importanti.',
   },
   {
-    title: 'Emergenza ICE (livello 2)',
-    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Sulla scheda chiusa trovi i chip «Mobile · Abbonamenti», «Conti personali» e «Tasse IT»: aprono la sezione giusta. In stampa le parti sanitarie restano sotto la linguetta da piegare.',
+    title: 'Emergenza e soccorso (livello 2)',
+    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Ogni campo è modificabile a mano sulla scheda. Sulla scheda chiusa trovi i collegamenti a mobile, abbonamenti, conti e tasse. In stampa le parti sanitarie restano sotto la linguetta da piegare.',
   },
   {
     title: 'Tasse italiane (scheda residente)',
-    body: 'Con Premium (o durante la prova) su ogni scheda residente trovi la checklist annuale (CU, precompilata, 730, ISEE, IMU, TARI, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
+    body: 'Con Premium (o durante la prova) su ogni scheda residente trovi la checklist annuale (Certificazione Unica, dichiarazione precompilata, modello 730, indicatore economico, imposta sugli immobili, tassa rifiuti, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
+  },
+  {
+    title: 'Tema chiaro / scuro',
+    body: 'Dall’intestazione puoi scegliere tema chiaro, scuro o sistema. La scelta viene salvata sul tuo account.',
   },
   {
     title: 'Conti bancari',
@@ -72,8 +76,8 @@ const SECTIONS = [
     body: 'Con Premium, nella sezione Premium trovi il registro di chi ha inquadrato il QR di monitoraggio per gli ospiti e quando. Puoi anche annotare accessi a mano. Non mostra dati sanitari né cassaforte.',
   },
   {
-    title: 'Avvisi SOS',
-    body: 'Premium può inviare SMS o WhatsApp ai contatti ICE. Chi gestisce l’installazione sceglie come far partire i messaggi. Usa «Prova» nell’app prima di un invio reale.',
+    title: 'Avvisi di soccorso',
+    body: 'Premium può inviare SMS o WhatsApp ai contatti di emergenza. Chi gestisce l’installazione sceglie come far partire i messaggi. Usa «Prova» nell’app prima di un invio reale.',
   },
   {
     title: 'Marchio host',
@@ -85,7 +89,7 @@ const SECTIONS = [
   },
   {
     title: 'Piani: Free, Basic, Advanced, Premium',
-    body: 'Free: Casa + Emergenza (utenze/abbonamenti standard), una scheda residente, Watermark in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN, conti Famiglia) e stampa senza Watermark; niente tasse, conti/patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse e conti personali sulle schede residenti, patrimonio personale in cassaforte, successione Famiglia, sync, campi/servizi personalizzati, registro accessi, SOS, marchio host).',
+    body: 'Free: Casa + Emergenza (utenze/abbonamenti standard), una scheda residente, marchio DomuSafe in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN, conti Famiglia) e stampa senza marchio DomuSafe; niente tasse, conti/patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse e conti personali sulle schede residenti, patrimonio personale in cassaforte, successione Famiglia, sync, campi/servizi personalizzati, registro accessi, avvisi di soccorso, marchio host).',
   },
   {
     title: 'Prova Premium',

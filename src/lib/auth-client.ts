@@ -301,6 +301,20 @@ export async function markTutorialCompletedApi(): Promise<DomuAccount> {
   return data.account;
 }
 
+/** Salva preferenza tema Material sull’account. */
+export async function updateThemePreferenceApi(
+  themePreference: 'light' | 'dark' | 'system'
+): Promise<DomuAccount> {
+  const res = await fetch('/api/account/preferences', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ themePreference }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  const data = (await res.json()) as { account: DomuAccount };
+  return data.account;
+}
+
 /** Avvia prova Premium — il server applica startPremiumTrial (no spoof). */
 export async function startPremiumTrialApi(): Promise<DomuAccount> {
   const res = await fetch('/api/account/license', {

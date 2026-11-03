@@ -3,9 +3,11 @@
 /**
  * Checklist tasse IT annuale — parte della scheda residente (Livello 2).
  * Note sensibili restano nel runbook cifrato a riposo.
+ * Compilazione manuale completa; wizard opzionale.
  */
 
-import { Receipt } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight, Receipt } from 'lucide-react';
 import type { ResidentTaxBlock } from '@/types/domus';
 import {
   TAX_CATALOG,
@@ -22,10 +24,19 @@ interface ResidentTaxChecklistProps {
 export function ResidentTaxChecklist({
   taxChecklist,
   onChange,
-  year = new Date().getFullYear(),
+  year: initialYear = new Date().getFullYear(),
 }: ResidentTaxChecklistProps) {
+  const [year, setYear] = useState(initialYear);
   const block = ensureResidentTaxYear(taxChecklist, year);
   const yearState = block.years.find((y) => y.year === year)!;
+
+  const switchYear = (nextYear: number) => {
+    const ensured = ensureResidentTaxYear(block, nextYear);
+    setYear(nextYear);
+    if (ensured !== block) {
+      onChange(ensured);
+    }
+  };
 
   const patchItem = (
     catalogId: string,
@@ -46,13 +57,34 @@ export function ResidentTaxChecklist({
 
   return (
     <div className="rounded-md border-2 border-amber-900/40 bg-amber-50/80 p-3">
-      <h5 className="mb-2 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-amber-950">
-        <Receipt className="size-5" aria-hidden />
-        Tasse e adempimenti {year}
-      </h5>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h5 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-amber-950">
+          <Receipt className="size-5" aria-hidden />
+          Tasse e adempimenti {year}
+        </h5>
+        <div className="inline-flex items-center gap-1">
+          <button
+            type="button"
+            aria-label="Anno precedente"
+            className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-md border-2 border-amber-900 bg-white"
+            onClick={() => switchYear(year - 1)}
+          >
+            <ChevronLeft className="size-5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            aria-label="Anno successivo"
+            className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-md border-2 border-amber-900 bg-white"
+            onClick={() => switchYear(year + 1)}
+          >
+            <ChevronRight className="size-5" aria-hidden />
+          </button>
+        </div>
+      </div>
       <p className="mb-3 text-xs text-amber-950/80">
-        Checklist annuale per questo residente (730, ISEE, IMU…). Le note restano
-        cifrate sul dispositivo.
+        Checklist annuale per questo residente (modello 730, indicatore
+        economico, imposta sugli immobili…). Segna «fatto» per anno. Le note
+        restano cifrate sul dispositivo.
       </p>
       <ul className="space-y-3">
         {TAX_CATALOG.map((catalog) => {
