@@ -154,6 +154,10 @@ function successionBlobFile(familyId: string): string {
   return path.join(blobsDir(), `${familyId}.succession.json`);
 }
 
+function emergencyBlobFile(familyId: string): string {
+  return path.join(blobsDir(), `${familyId}.emergency.json`);
+}
+
 function auditLogFile(familyId: string): string {
   return path.join(blobsDir(), `${familyId}.audit.json`);
 }
@@ -513,6 +517,62 @@ export async function writeSuccessionBlob(
 ): Promise<void> {
   await ensureAppDataDirs();
   await writeJsonAtomic(successionBlobFile(familyId), blob);
+}
+
+/** Blob break-glass L1+L2 (ciphertext opaco — chiave solo nel QR fragment). */
+export async function readEmergencyBlob(
+  familyId: string
+): Promise<EncryptedAccountBlob | null> {
+  return readJson<EncryptedAccountBlob>(emergencyBlobFile(familyId));
+}
+
+export async function writeEmergencyBlob(
+  familyId: string,
+  blob: EncryptedAccountBlob
+): Promise<void> {
+  await ensureAppDataDirs();
+  await writeJsonAtomic(emergencyBlobFile(familyId), blob);
+}
+
+/**
+ * Pubblica / aggiorna il token break-glass Famiglia e il blob cifrato.
+ * Restituisce il token pubblico (la chiave resta solo al client).
+ */
+export async function publishEmergencyPackOnServer(input: {
+  familyId: string;
+  accountId: string;
+  blob: EncryptedAccountBlob;
+  /** Se assente, genera un nuovo token (ruota QR). */
+  rotateToken?: boolean;
+}): Promise<{ family: DomuFamily; token: string }> {
+  const family = await assertFamilyMember(input.familyId, input.accountId);
+  const token =
+    !input.rotateToken && family.emergencyToken
+      ? family.emergencyToken
+      : randomBytes(18).toString('base64url');
+  const next: DomuFamily = {
+    ...family,
+    emergencyToken: token,
+    updatedAt: new Date().toISOString(),
+  };
+  await saveFamily(next);
+  await writeEmergencyBlob(input.familyId, input.blob);
+  return { family: next, token };
+}
+
+export async function findFamilyByEmergencyToken(
+  token: string
+): Promise<DomuFamily | null> {
+  const normalized = token.trim();
+  if (!normalized) return null;
+  await ensureAppDataDirs();
+  const files = await readdir(familiesDir()).catch(() => [] as string[]);
+  for (const file of files) {
+    if (!file.endsWith('.json')) continue;
+    const family = await readJson<DomuFamily>(path.join(familiesDir(), file));
+    if (family?.emergencyToken === normalized) return family;
+  }
+  return null;
 }
 
 /** Garantisce un scanToken sulla Famiglia (lazy per Famiglie create prima di Premium pack). */

@@ -12,8 +12,16 @@ const SECTIONS = [
     body: 'Il primo utente crea la Famiglia. Gli altri entrano con un invito (link o QR): l’invito porta anche la chiave protetta del workspace, così tutti i membri vedono le stesse case e checklist. Case, residenti e successione appartengono alla Famiglia; le tasse restano sulla scheda Residente.',
   },
   {
+    title: 'Panoramica (dashboard)',
+    body: 'La Home mostra la Famiglia in un colpo d’occhio e propone un solo «prossimo passo» (casa → residenti → emergenza → utenze → cassaforte), senza riempire lo schermo. La checklist completa resta nascosta finché non la apri. C’è anche la compilazione rapida guidata.',
+  },
+  {
     title: 'Casa (livello 1)',
-    body: 'Annota dove chiudere acqua, gas ed elettricità, il Wi‑Fi, i rifiuti e i contatti degli artigiani. Qui trovi anche utenze (Luce, Gas, Internet, Acqua, TARI), abbonamenti familiari e scadenze (es. controllo caldaia). Sono informazioni pensate anche per gli ospiti; i contratti restano protetti con i dati della casa.',
+    body: 'Annota dove chiudere acqua, gas ed elettricità, il Wi‑Fi (copia + QR), citofono/cancello/pacchi, house-sitting e utenze (Luce, Gas, Internet, Acqua, TARI) con scadenze. Vista ospite/sitter o tecnica. I contratti restano protetti con i dati della casa.',
+  },
+  {
+    title: 'QR emergenza senza login',
+    body: 'In Stampa / QR puoi pubblicare un QR break-glass: chi lo inquadra apre Casa + schede ICE senza account, dopo un disclaimer, con tasto 118. L’accesso viene registrato. Aggiorna il QR dopo modifiche importanti.',
   },
   {
     title: 'Emergenza ICE (livello 2)',

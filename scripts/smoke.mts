@@ -118,6 +118,7 @@ import type { DomusHouseCollection } from '../src/lib/storage';
 import {
   createEmptyPublicHouse,
   createEmptyResident,
+  createEmptyRunbook,
   createEmptyVaultPayload,
 } from '../src/lib/defaults';
 import {
@@ -126,6 +127,17 @@ import {
   addCustomServiceEntry,
   ensureFamilyServices,
 } from '../src/lib/service-catalog';
+import {
+  buildEngagementSteps,
+  engagementProgress,
+} from '../src/lib/engagement';
+import { buildEmergencyPack } from '../src/lib/emergency-pack';
+import {
+  buildEmergencyUrl,
+  createEmergencyKeyRaw,
+  openEmergencyPack,
+  sealEmergencyPack,
+} from '../src/lib/crypto-emergency';
 import { bytesToBase64 } from '../src/lib/crypto-bytes';
 
 const results: Array<{ name: string; ok: boolean; detail?: string }> = [];
@@ -983,6 +995,71 @@ await record('sync: E2EE family-scoped envelope + QR pairing', async () => {
 
   rmSync(tmp, { recursive: true, force: true });
   delete process.env.DOMUSAFE_SYNC_DIR;
+});
+
+await record('engagement: progressive casa→residenti→emergenza→utenze→L3', () => {
+  const empty = createEmptyRunbook();
+  const steps0 = buildEngagementSteps(empty, 'FREE');
+  assert.equal(steps0[0]?.id, 'casa');
+  assert.equal(steps0.find((s) => s.id === 'l3')?.available, false);
+  const prog0 = engagementProgress(steps0);
+  assert.ok(prog0.next?.id === 'casa');
+  assert.equal(prog0.done, 0);
+
+  empty.level1_public.houseName = 'Casa Test';
+  empty.level1_public.utilities.waterCutoff.location = 'Sotto lavello';
+  empty.level2_ice.residents = [
+    {
+      ...createEmptyResident(),
+      fullName: 'Ada',
+      allergies: ['Penicillina'],
+      iceContacts: [
+        {
+          priority: 1,
+          name: 'Marco',
+          relationship: 'Coniuge',
+          phoneNumber: '+39333',
+          hasHouseKeys: true,
+        },
+      ],
+    },
+  ];
+  empty.level1_public.familyServices = ensureFamilyServices(undefined);
+  empty.level1_public.familyServices.utilities[0]!.provider = 'Enel';
+  const mid = buildEngagementSteps(empty, 'ADVANCED');
+  const prog = engagementProgress(mid);
+  assert.ok(prog.done >= 3);
+  assert.equal(mid.find((s) => s.id === 'l3')?.available, true);
+  assert.ok(
+    prog.next?.id === 'l3' || prog.next?.id === 'utenze' || prog.done >= 4
+  );
+});
+
+await record('emergency pack: seal/open + strip personal', async () => {
+  const doc = createEmptyRunbook();
+  doc.level1_public.houseName = 'Via Roma';
+  doc.level2_ice.residents = [
+    {
+      ...createEmptyResident(),
+      fullName: 'Ada',
+      personalBankAccounts: [
+        {
+          id: 'x',
+          institution: 'Secret',
+          accountType: 'C',
+          ownershipDetails: 'no',
+        },
+      ],
+    },
+  ];
+  const pack = buildEmergencyPack({ familyName: 'Rossi', document: doc });
+  assert.equal(pack.level2.residents[0]?.personalBankAccounts, undefined);
+  const key = createEmergencyKeyRaw();
+  const sealed = await sealEmergencyPack(pack, key);
+  const opened = await openEmergencyPack(sealed, key);
+  assert.equal(opened.houseName, 'Via Roma');
+  const url = buildEmergencyUrl('https://example.test', 'tok', key);
+  assert.match(url, /\/e\/tok#k=/);
 });
 
 rmSync(dataDir, { recursive: true, force: true });

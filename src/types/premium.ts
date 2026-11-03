@@ -4,7 +4,7 @@
  */
 
 /** Evento di accesso/scansione (chi e quando). */
-export type AuditEventKind = 'SCAN' | 'MANUAL' | 'SOS';
+export type AuditEventKind = 'SCAN' | 'MANUAL' | 'SOS' | 'BREAK_GLASS';
 
 export interface AuditLogEntry {
   id: string;

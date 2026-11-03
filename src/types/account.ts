@@ -90,6 +90,11 @@ export interface DomuFamily {
   memberKeyWraps?: Record<string, SealedKeyBlob>;
   /** Token pubblico per QR di monitoraggio scan (Premium audit log). */
   scanToken?: string;
+  /**
+   * Token pubblico break-glass L1/L2 (consultazione emergenza senza login).
+   * Il ciphertext è in blob separato; la chiave sta solo nel fragment QR.
+   */
+  emergencyToken?: string;
   /** White-label host (Premium customBranding). */
   branding?: FamilyBranding;
   createdAt: string;

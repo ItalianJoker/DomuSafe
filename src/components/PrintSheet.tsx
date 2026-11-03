@@ -1,7 +1,5 @@
 /**
- * Foglio A4 stampabile: Livello 1 in chiaro + Livello 2 sotto linguetta privacy.
- * Classe `.ice-privacy-flap` attiva il messaggio di piega solo in @media print.
- * Premium customBranding: nome/logo host al posto del wordmark DomuSafe.
+ * Foglio A4 stampabile: box L1 + ICE sotto linguetta + QR app + QR rosso 118.
  */
 
 import type { DomusRunbookDocument } from '@/types/domus';
@@ -13,10 +11,16 @@ import { DomuSafeLogo } from '@/components/DomuSafeLogo';
 interface PrintSheetProps {
   document: DomusRunbookDocument;
   qrSvg?: string | null;
+  qr118Svg?: string | null;
   branding?: FamilyBranding | null;
 }
 
-export function PrintSheet({ document, qrSvg, branding }: PrintSheetProps) {
+export function PrintSheet({
+  document,
+  qrSvg,
+  qr118Svg,
+  branding,
+}: PrintSheetProps) {
   const house = document.level1_public;
   const ice = document.level2_ice;
   const brandName = branding?.hostDisplayName?.trim() || 'DomuSafe';
@@ -58,45 +62,56 @@ export function PrintSheet({ document, qrSvg, branding }: PrintSheetProps) {
             ) : null}
           </div>
         </div>
-        {qrSvg ? (
-          <div
-            className="size-24 shrink-0 [&_svg]:size-full"
-            dangerouslySetInnerHTML={{ __html: qrSvg }}
-          />
-        ) : null}
+        <div className="flex shrink-0 gap-2">
+          {qrSvg ? (
+            <div className="text-center">
+              <div
+                className="size-20 [&_svg]:size-full"
+                dangerouslySetInnerHTML={{ __html: qrSvg }}
+              />
+              <p className="text-[8px] font-bold">App</p>
+            </div>
+          ) : null}
+          {qr118Svg ? (
+            <div className="text-center">
+              <div
+                className="size-20 rounded border-2 border-red-700 p-0.5 [&_svg]:size-full"
+                dangerouslySetInnerHTML={{ __html: qr118Svg }}
+              />
+              <p className="text-[8px] font-black text-red-800">118</p>
+            </div>
+          ) : null}
+        </div>
       </header>
 
       <section className="mb-3">
-        <h2 className="mb-1 text-sm font-black uppercase">Livello 1 — Casa</h2>
+        <h2 className="mb-2 text-sm font-black uppercase">Livello 1 — Casa</h2>
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <p>
-            <strong>Acqua:</strong> {house.utilities.waterCutoff.location} —{' '}
+          <PrintBox title="Acqua">
+            {house.utilities.waterCutoff.location} —{' '}
             {house.utilities.waterCutoff.instructions}
-          </p>
-          <p>
-            <strong>Gas:</strong> {house.utilities.gasCutoff.location} —{' '}
+          </PrintBox>
+          <PrintBox title="Gas">
+            {house.utilities.gasCutoff.location} —{' '}
             {house.utilities.gasCutoff.instructions}
-          </p>
-          <p>
-            <strong>Elettrico:</strong>{' '}
+          </PrintBox>
+          <PrintBox title="Luce / quadro">
             {house.utilities.electricPanel.breakerLocation} / contatore{' '}
             {house.utilities.electricPanel.externalMeterLocation}
-          </p>
-          <p>
-            <strong>Caldaia:</strong> {house.utilities.heatingBoiler.location}{' '}
+          </PrintBox>
+          <PrintBox title="Caldaia">
+            {house.utilities.heatingBoiler.location}
             {house.utilities.heatingBoiler.notes
-              ? `— ${house.utilities.heatingBoiler.notes}`
+              ? ` — ${house.utilities.heatingBoiler.notes}`
               : ''}
-          </p>
-          <p>
-            <strong>Wi‑Fi:</strong> {house.wifi.ssid} / {house.wifi.password}
-          </p>
-          <p>
-            <strong>Rifiuti:</strong>{' '}
-            {house.wasteSchedule
-              .map((w) => `${w.day}: ${w.fractions.join('+')}`)
-              .join('; ') || '—'}
-          </p>
+          </PrintBox>
+          <PrintBox title="Wi‑Fi">
+            {house.wifi.ssid} / {house.wifi.password}
+          </PrintBox>
+          <PrintBox title="Accessi">
+            Citofono: {house.access?.intercom || '—'} · Cancello:{' '}
+            {house.access?.gate || '—'} · Pacchi: {house.access?.parcels || '—'}
+          </PrintBox>
         </div>
         {house.artisanContacts.length > 0 ? (
           <p className="mt-1 text-xs">
@@ -119,60 +134,65 @@ export function PrintSheet({ document, qrSvg, branding }: PrintSheetProps) {
           Livello 2 — ICE (solo soccorso)
         </h2>
         {ice.residents.length === 0 ? (
-          <p>Nessuna scheda residente.</p>
+          <p>Nessun residente compilato.</p>
         ) : (
-          ice.residents.map((r) => (
-            <div key={r.id} className="mb-2 border-t border-red-200 pt-1">
-              <p className="font-bold">
-                {r.fullName || 'Residente'} · {r.birthYear} ·{' '}
-                {BLOOD_GROUP_LABELS[r.bloodGroup]} ·{' '}
-                {MOBILITY_LABELS[r.mobilityStatus]} · Camera: {r.sleepingRoom}
-              </p>
-              <p>
-                Allergie: {r.allergies.join(', ') || '—'} · Patologie:{' '}
-                {r.chronicConditions.join(', ') || '—'} · Dispositivi:{' '}
-                {r.medicalDevices.join(', ') || '—'}
-              </p>
-              {r.lifesavingMedicines.length > 0 ? (
-                <p>
-                  Farmaci:{' '}
-                  {r.lifesavingMedicines
-                    .map(
-                      (m) =>
-                        `${m.name} (${m.dosageSchedule}) @ ${m.physicalLocationInHouse}`
-                    )
-                    .join('; ')}
+          <ul className="space-y-2">
+            {ice.residents.map((r) => (
+              <li key={r.id} className="border border-red-300 p-2">
+                <p className="font-black">
+                  {r.fullName || 'Residente'} · {BLOOD_GROUP_LABELS[r.bloodGroup]}{' '}
+                  · {MOBILITY_LABELS[r.mobilityStatus]}
                 </p>
-              ) : null}
-              {r.iceContacts.length > 0 ? (
+                <p>Allergie: {r.allergies.join(', ') || '—'}</p>
+                <p>Patologie: {r.chronicConditions.join(', ') || '—'}</p>
+                <p>Dispositivi: {r.medicalDevices.join(', ') || '—'}</p>
+                <p>Camera: {r.sleepingRoom || '—'}</p>
+                {r.lifesavingMedicines.map((m, i) => (
+                  <p key={`${r.id}-m-${i}`}>
+                    Farmaco: {m.name} — {m.dosageSchedule} @{' '}
+                    {m.physicalLocationInHouse}
+                  </p>
+                ))}
                 <p>
-                  Contatti:{' '}
+                  ICE:{' '}
                   {r.iceContacts
                     .map(
                       (c) =>
-                        `#${c.priority} ${c.name} (${c.relationship}) ${c.phoneNumber}${
-                          c.hasHouseKeys ? ' [chiavi]' : ''
-                        }`
+                        `${c.priority}. ${c.name} ${c.phoneNumber}${c.hasHouseKeys ? ' (chiavi)' : ''}`
                     )
-                    .join(' · ')}
+                    .join(' · ') || '—'}
                 </p>
-              ) : null}
-            </div>
-          ))
+              </li>
+            ))}
+          </ul>
         )}
         {ice.pets.length > 0 ? (
-          <div className="mt-2 border-t border-red-200 pt-1">
+          <div className="mt-2">
             <p className="font-bold">Animali</p>
             {ice.pets.map((p, i) => (
-              <p key={`print-pet-${i}`}>
-                {p.name} ({p.species}) — nascondigli: {p.panicHideouts} — vet:{' '}
-                {p.vetEmergencyH24.clinicName} {p.vetEmergencyH24.phone}{' '}
-                {p.vetEmergencyH24.address}
+              <p key={`pet-${i}`}>
+                {p.name} ({p.species}) — nascondigli: {p.panicHideouts || '—'} —
+                vet {p.vetEmergencyH24.clinicName} {p.vetEmergencyH24.phone}
               </p>
             ))}
           </div>
         ) : null}
       </section>
     </article>
+  );
+}
+
+function PrintBox({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded border border-zinc-800 bg-zinc-50 p-2">
+      <p className="font-black uppercase tracking-wide">{title}</p>
+      <p>{children || '—'}</p>
+    </div>
   );
 }

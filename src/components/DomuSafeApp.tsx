@@ -68,8 +68,13 @@ import { AuditLogPanel } from '@/components/AuditLogPanel';
 import { SosAlertsPanel } from '@/components/SosAlertsPanel';
 import { BrandingPanel } from '@/components/BrandingPanel';
 import { InheritanceKitPanel } from '@/components/InheritanceKitPanel';
+import { HomeDashboard } from '@/components/HomeDashboard';
+import { QuickCompileWizard } from '@/components/QuickCompileWizard';
+import { EmergencyPublishPanel } from '@/components/EmergencyPublishPanel';
+import { JsonBackupPanel } from '@/components/JsonBackupPanel';
 
 type Tab =
+  | 'home'
   | 'casa'
   | 'ice'
   | 'cassaforte'
@@ -153,11 +158,13 @@ function AuthenticatedApp() {
   const [succession, setSuccession] = useState<SuccessionChecklist | null>(
     null
   );
-  const [tab, setTab] = useState<Tab>('casa');
+  const [tab, setTab] = useState<Tab>('home');
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [qrSvg, setQrSvg] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
+  const [qr118Svg, setQr118Svg] = useState<string | null>(null);
   /** Override locale dopo salvataggio branding; altrimenti da Famiglia. */
   const [brandingOverride, setBrandingOverride] = useState<
     FamilyBranding | null | undefined
@@ -213,6 +220,21 @@ function AuthenticatedApp() {
 
   const handleQrReady = useCallback((svg: string) => {
     setQrSvg(svg);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void import('@/lib/qr')
+      .then(({ generateQrSvg }) => generateQrSvg('tel:118', 120))
+      .then((svg) => {
+        if (!cancelled) setQr118Svg(svg);
+      })
+      .catch(() => {
+        if (!cancelled) setQr118Svg(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const setDocument = (next: DomusRunbookDocument) => {
@@ -360,6 +382,20 @@ function AuthenticatedApp() {
         />
       ) : null}
 
+      {showWizard ? (
+        <QuickCompileWizard
+          document={liveDoc}
+          onChange={(next) => {
+            setDocument(next);
+            void persist(next);
+          }}
+          onClose={() => {
+            setShowWizard(false);
+            setTab('home');
+          }}
+        />
+      ) : null}
+
       <header className="no-print border-b-4 border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -370,14 +406,7 @@ function AuthenticatedApp() {
                 DomuSafe
               </p>
               <p className="truncate text-xs text-emerald-100 sm:text-sm">
-                {family.name} · {account.displayName} ·{' '}
-                {effectiveTier === 'FREE'
-                  ? 'Free'
-                  : effectiveTier === 'BASIC'
-                    ? 'Basic'
-                    : effectiveTier === 'ADVANCED'
-                      ? 'Advanced'
-                      : 'Premium'}
+                Dashboard Famiglia · {family.name} · {account.displayName}
               </p>
             </div>
           </div>
@@ -461,6 +490,16 @@ function AuthenticatedApp() {
             }
           }}
         />
+
+        {tab === 'home' ? (
+          <HomeDashboard
+            familyName={family.name}
+            document={liveDoc}
+            tier={effectiveTier}
+            onGo={(target) => setTab(target)}
+            onStartWizard={() => setShowWizard(true)}
+          />
+        ) : null}
 
         {tab === 'casa' ? (
           <Level1PublicPanel
@@ -566,6 +605,12 @@ function AuthenticatedApp() {
 
         {tab === 'stampa' ? (
           <div className="no-print space-y-6">
+            <EmergencyPublishPanel
+              familyId={family.familyId}
+              familyName={family.name}
+              document={liveDoc}
+              onStatus={setStatus}
+            />
             <QrPanel payload={qrPayload} onSvgReady={handleQrReady} />
             <div className="flex flex-wrap gap-3">
               <button
@@ -586,7 +631,8 @@ function AuthenticatedApp() {
               </button>
             </div>
             <p className="text-sm text-zinc-700">
-              In stampa, i dati ICE restano sotto la linguetta da piegare.
+              In stampa: box acqua/gas/luce, QR app + QR rosso 118; i dati ICE
+              restano sotto la linguetta da piegare.
               {effectiveTier === 'FREE' || effectiveTier === 'BASIC'
                 ? ' Piano Free/Basic: watermark DomuSafe.'
                 : ' Piano Advanced/Premium: senza watermark.'}
@@ -594,6 +640,17 @@ function AuthenticatedApp() {
                 ? ` Marchio host: ${branding.hostDisplayName}.`
                 : ''}
             </p>
+            <JsonBackupPanel
+              collection={collection}
+              onImport={async (imported) => {
+                const saved = await replaceHouseCollection(
+                  imported,
+                  storageCtx
+                );
+                setCollection(saved);
+              }}
+              onStatus={setStatus}
+            />
           </div>
         ) : null}
 
@@ -647,7 +704,12 @@ function AuthenticatedApp() {
 
         {tab === 'manuale' ? <ManualeUtente /> : null}
 
-        <PrintSheet document={liveDoc} qrSvg={qrSvg} branding={branding} />
+        <PrintSheet
+          document={liveDoc}
+          qrSvg={qrSvg}
+          qr118Svg={qr118Svg}
+          branding={branding}
+        />
       </main>
 
       <footer className="no-print mb-[calc(4.75rem+var(--safe-bottom))] border-t-2 border-zinc-900 bg-white px-4 py-6 text-center text-sm text-zinc-600 md:mb-0">
@@ -672,15 +734,61 @@ const TAB_ITEMS: Array<{
   short: string;
   icon: ReactNode;
 }> = [
+  {
+    id: 'home',
+    label: 'Panoramica',
+    short: 'Home',
+    icon: <Sparkles className="size-5" aria-hidden />,
+  },
   { id: 'casa', label: 'Casa', short: 'Casa', icon: <Home className="size-5" aria-hidden /> },
-  { id: 'ice', label: 'Emergenza', short: 'ICE', icon: <ShieldAlert className="size-5" aria-hidden /> },
-  { id: 'cassaforte', label: 'Cassaforte', short: 'Cassa', icon: <ShieldCheck className="size-5" aria-hidden /> },
-  { id: 'sync', label: 'Altri telefoni', short: 'Sync', icon: <Cloud className="size-5" aria-hidden /> },
-  { id: 'stampa', label: 'Stampa / QR', short: 'Stampa', icon: <Printer className="size-5" aria-hidden /> },
-  { id: 'premium', label: 'Premium', short: 'Premium', icon: <Sparkles className="size-5" aria-hidden /> },
-  { id: 'famiglia', label: 'Famiglia', short: 'Famiglia', icon: <Users className="size-5" aria-hidden /> },
-  { id: 'licenze', label: 'Piano', short: 'Piano', icon: <BadgeCheck className="size-5" aria-hidden /> },
-  { id: 'manuale', label: 'Guida', short: 'Guida', icon: <BookOpen className="size-5" aria-hidden /> },
+  {
+    id: 'ice',
+    label: 'Emergenza',
+    short: 'ICE',
+    icon: <ShieldAlert className="size-5" aria-hidden />,
+  },
+  {
+    id: 'famiglia',
+    label: 'Famiglia',
+    short: 'Famiglia',
+    icon: <Users className="size-5" aria-hidden />,
+  },
+  {
+    id: 'stampa',
+    label: 'Stampa / QR',
+    short: 'Stampa',
+    icon: <Printer className="size-5" aria-hidden />,
+  },
+  {
+    id: 'cassaforte',
+    label: 'Cassaforte',
+    short: 'Cassa',
+    icon: <ShieldCheck className="size-5" aria-hidden />,
+  },
+  {
+    id: 'sync',
+    label: 'Altri telefoni',
+    short: 'Sync',
+    icon: <Cloud className="size-5" aria-hidden />,
+  },
+  {
+    id: 'premium',
+    label: 'Extra',
+    short: 'Extra',
+    icon: <Receipt className="size-5" aria-hidden />,
+  },
+  {
+    id: 'licenze',
+    label: 'Piano',
+    short: 'Piano',
+    icon: <BadgeCheck className="size-5" aria-hidden />,
+  },
+  {
+    id: 'manuale',
+    label: 'Guida',
+    short: 'Guida',
+    icon: <BookOpen className="size-5" aria-hidden />,
+  },
 ];
 
 function AppTabs({
