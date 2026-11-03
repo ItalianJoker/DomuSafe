@@ -33,6 +33,8 @@ export function createEmptyPublicHouse(): PublicHouseData {
     wifi: { ssid: '', password: '' },
     wasteSchedule: [],
     artisanContacts: [],
+    access: { intercom: '', gate: '', parcels: '' },
+    houseSitting: { animalsNotes: '', plantsNotes: '' },
     familyServices: createEmptyFamilyServices(),
   };
 }
@@ -77,6 +79,7 @@ export function createEmptyPet(): PetRecord {
 export function createEmptyVaultPayload(): EncryptedVaultPayload {
   return {
     bankAccounts: [],
+    mortgages: [],
     lifeInsurances: [],
     laborAndPension: {
       socialSecurityInstitution: '',

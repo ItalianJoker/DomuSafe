@@ -464,6 +464,123 @@ function VaultEditor({
       <>
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-bold">Mutui e CPI</h3>
+          <button
+            type="button"
+            className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold hover:bg-zinc-100"
+            onClick={() =>
+              onChange({
+                ...payload,
+                mortgages: [
+                  ...(payload.mortgages ?? []),
+                  {
+                    institution: '',
+                    kind: 'MUTUO',
+                    propertyRef: '',
+                    notes: '',
+                  },
+                ],
+              })
+            }
+          >
+            <Plus className="size-5" aria-hidden />
+            Aggiungi mutuo / CPI
+          </button>
+        </div>
+        {(payload.mortgages ?? []).length === 0 ? (
+          <p className="text-sm text-zinc-700">Nessun mutuo/CPI inserito.</p>
+        ) : (
+          <ul className="space-y-3">
+            {(payload.mortgages ?? []).map((item, index) => (
+              <li
+                key={`mortgage-${index}`}
+                className="space-y-3 rounded-md border-2 border-amber-900/40 bg-white p-3"
+              >
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    aria-label={`Rimuovi mutuo ${index + 1}`}
+                    className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-md border-2 border-red-800 bg-white text-red-900"
+                    onClick={() =>
+                      onChange({
+                        ...payload,
+                        mortgages: (payload.mortgages ?? []).filter(
+                          (_, i) => i !== index
+                        ),
+                      })
+                    }
+                  >
+                    <Trash2 className="size-5" aria-hidden />
+                  </button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <FieldLabel>Istituto</FieldLabel>
+                    <TouchInput
+                      value={item.institution}
+                      onChange={(e) => {
+                        const mortgages = [...(payload.mortgages ?? [])];
+                        mortgages[index] = {
+                          ...item,
+                          institution: e.target.value,
+                        };
+                        onChange({ ...payload, mortgages });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>Tipo</FieldLabel>
+                    <TouchSelect
+                      value={item.kind}
+                      onChange={(e) => {
+                        const mortgages = [...(payload.mortgages ?? [])];
+                        mortgages[index] = {
+                          ...item,
+                          kind: e.target.value as 'MUTUO' | 'CPI' | 'ALTRO',
+                        };
+                        onChange({ ...payload, mortgages });
+                      }}
+                    >
+                      <option value="MUTUO">Mutuo</option>
+                      <option value="CPI">CPI</option>
+                      <option value="ALTRO">Altro</option>
+                    </TouchSelect>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <FieldLabel>Riferimento immobile</FieldLabel>
+                    <TouchInput
+                      value={item.propertyRef}
+                      placeholder="Es. Via Roma 12 · contratto in cassetto"
+                      onChange={(e) => {
+                        const mortgages = [...(payload.mortgages ?? [])];
+                        mortgages[index] = {
+                          ...item,
+                          propertyRef: e.target.value,
+                        };
+                        onChange({ ...payload, mortgages });
+                      }}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <FieldLabel>Note</FieldLabel>
+                    <TouchTextarea
+                      value={item.notes ?? ''}
+                      onChange={(e) => {
+                        const mortgages = [...(payload.mortgages ?? [])];
+                        mortgages[index] = { ...item, notes: e.target.value };
+                        onChange({ ...payload, mortgages });
+                      }}
+                    />
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-bold">Assicurazioni vita</h3>
           <button
             type="button"

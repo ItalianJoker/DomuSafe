@@ -149,6 +149,10 @@ export interface ResidentHealthRecord {
   mobilityStatus: EvacuationMobility;
   sleepingRoom: string;
   iceContacts: EmergencyContact[];
+  /** Riferimento documento ID (metadati: dove si trova, non scansione completa). */
+  idDocumentHint?: string;
+  /** Foto riconoscitiva opzionale (data URL compressa). */
+  photoDataUrl?: string;
   /** Adempimenti fiscali IT per questo residente (730, ISEE, IMU…). Premium. */
   taxChecklist?: ResidentTaxBlock;
   /** Tariffa / piano mobile personale. */
@@ -177,13 +181,42 @@ export interface PetRecord {
   customFields?: CustomField[];
 }
 
+/** Accesso fisico casa (citofono, cancello, pacchi). */
+export interface HouseAccessInfo {
+  intercom: string;
+  gate: string;
+  parcels: string;
+}
+
+/** Note house-sitting: animali e piante (oltre alle schede ICE pets). */
+export interface HouseSittingInfo {
+  animalsNotes: string;
+  plantsNotes: string;
+}
+
 export interface PublicHouseData {
   houseName: string;
   utilities: {
-    waterCutoff: { location: string; instructions: string };
-    gasCutoff: { location: string; instructions: string };
-    electricPanel: { breakerLocation: string; externalMeterLocation: string };
-    heatingBoiler: { location: string; notes?: string };
+    waterCutoff: {
+      location: string;
+      instructions: string;
+      photoDataUrl?: string;
+    };
+    gasCutoff: {
+      location: string;
+      instructions: string;
+      photoDataUrl?: string;
+    };
+    electricPanel: {
+      breakerLocation: string;
+      externalMeterLocation: string;
+      photoDataUrl?: string;
+    };
+    heatingBoiler: {
+      location: string;
+      notes?: string;
+      photoDataUrl?: string;
+    };
   };
   wifi: {
     ssid: string;
@@ -191,6 +224,10 @@ export interface PublicHouseData {
   };
   wasteSchedule: Array<{ day: string; fractions: string[] }>;
   artisanContacts: Array<{ trade: string; name: string; phone: string }>;
+  /** Citofono, cancello, consegna pacchi. */
+  access?: HouseAccessInfo;
+  /** Istruzioni house-sitting animali/piante. */
+  houseSitting?: HouseSittingInfo;
   /**
    * Utenze (Luce/Gas/Internet…), abbonamenti e scadenze Famiglia.
    * Cifrati a riposo col runbook (account → Famiglia).
@@ -198,6 +235,22 @@ export interface PublicHouseData {
   familyServices?: FamilyServicesBlock;
   /** Solo Premium (+ trial): campi oltre allo schema standard. */
   customFields?: CustomField[];
+}
+
+/**
+ * Pacchetto break-glass L1+L2 per QR pubblico (senza login).
+ * Solo metadati utili al soccorso — mai vault/PIN/password.
+ */
+export interface EmergencyBreakGlassPack {
+  version: '1.0.0';
+  familyName: string;
+  houseName: string;
+  publishedAt: string;
+  level1: PublicHouseData;
+  level2: {
+    residents: ResidentHealthRecord[];
+    pets: PetRecord[];
+  };
 }
 
 export interface EncryptedVaultPayload {
@@ -210,6 +263,13 @@ export interface EncryptedVaultPayload {
     accountType: string;
     ownershipDetails: string;
     ibanHint?: string;
+    notes?: string;
+  }>;
+  /** Mutui e CPI (metadati — no IBAN completo / password). Premium personale. */
+  mortgages?: Array<{
+    institution: string;
+    kind: 'MUTUO' | 'CPI' | 'ALTRO';
+    propertyRef: string;
     notes?: string;
   }>;
   lifeInsurances: Array<{

@@ -6,8 +6,21 @@
  * Campi personalizzati: solo Premium (+ trial) via allowCustomFields.
  */
 
-import type { ReactNode } from 'react';
-import { Plus, Trash2, Wifi, Droplets, Flame, Zap, Thermometer, Recycle, Wrench } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+import {
+  Plus,
+  Trash2,
+  Wifi,
+  Droplets,
+  Flame,
+  Zap,
+  Thermometer,
+  Recycle,
+  Wrench,
+  Copy,
+  KeyRound,
+  Leaf,
+} from 'lucide-react';
 import type { LicenseTier, PublicHouseData } from '@/types/domus';
 import { canAccessFeature } from '@/lib/licensing';
 import { WEEKDAYS } from '@/lib/labels';
@@ -16,6 +29,7 @@ import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
 import { FamilyServicesPanel } from '@/components/FamilyServicesPanel';
 import { FeatureGate } from '@/components/FeatureGate';
 import { enforcePublicHouseForTier } from '@/lib/vault-policy';
+import { generateQrSvg } from '@/lib/qr';
 
 interface Level1PublicPanelProps {
   tier: LicenseTier;
@@ -23,12 +37,17 @@ interface Level1PublicPanelProps {
   onChange: (next: PublicHouseData) => void;
 }
 
+type HouseView = 'guest' | 'tech';
+
 export function Level1PublicPanel({
   tier,
   data,
   onChange,
 }: Level1PublicPanelProps) {
   const allowCustom = canAccessFeature(tier, 'allowCustomFields');
+  const [view, setView] = useState<HouseView>('guest');
+  const [wifiQr, setWifiQr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const update = (patch: Partial<PublicHouseData>) => {
     // Free/Basic/Advanced: strip custom fields / servizi personalizzati.
@@ -38,9 +57,34 @@ export function Level1PublicPanel({
     );
   };
 
+  useEffect(() => {
+    const ssid = data.wifi.ssid.trim();
+    const password = data.wifi.password;
+    let cancelled = false;
+    if (!ssid) {
+      void Promise.resolve().then(() => {
+        if (!cancelled) setWifiQr(null);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+    const payload = `WIFI:T:WPA;S:${ssid.replace(/([\\;,])/g, '\\$1')};P:${password.replace(/([\\;,])/g, '\\$1')};;`;
+    generateQrSvg(payload, 140)
+      .then((svg) => {
+        if (!cancelled) setWifiQr(svg);
+      })
+      .catch(() => {
+        if (!cancelled) setWifiQr(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [data.wifi.ssid, data.wifi.password]);
+
   return (
     <section aria-labelledby="level1-title" className="space-y-8">
-      <header>
+      <header className="space-y-3">
         <p className="text-sm font-bold uppercase tracking-widest text-emerald-800">
           Livello 1 · Pubblico
         </p>
@@ -51,6 +95,34 @@ export function Level1PublicPanel({
           Informazioni sicure per ospiti e vicini: utenze, Wi‑Fi, rifiuti e
           contatti degli artigiani.
         </p>
+        <div
+          className="inline-flex rounded-md border-2 border-zinc-900 bg-white p-1"
+          role="group"
+          aria-label="Vista manuale casa"
+        >
+          <button
+            type="button"
+            className={`min-h-12 rounded px-4 font-bold ${
+              view === 'guest'
+                ? 'bg-[var(--brand-ink)] text-white'
+                : 'bg-transparent text-zinc-950'
+            }`}
+            onClick={() => setView('guest')}
+          >
+            Vista ospite / sitter
+          </button>
+          <button
+            type="button"
+            className={`min-h-12 rounded px-4 font-bold ${
+              view === 'tech'
+                ? 'bg-[var(--brand-ink)] text-white'
+                : 'bg-transparent text-zinc-950'
+            }`}
+            onClick={() => setView('tech')}
+          >
+            Vista tecnica
+          </button>
+        </div>
       </header>
 
       <div>
@@ -224,8 +296,129 @@ export function Level1PublicPanel({
             autoComplete="off"
           />
         </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold"
+            onClick={async () => {
+              const text = `${data.wifi.ssid}\n${data.wifi.password}`;
+              await navigator.clipboard.writeText(text);
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 2000);
+            }}
+          >
+            <Copy className="size-5" aria-hidden />
+            {copied ? 'Copiato' : 'Copia SSID + password'}
+          </button>
+          {wifiQr ? (
+            <div
+              className="w-28 [&_svg]:h-full [&_svg]:w-full"
+              title="QR connessione Wi‑Fi"
+              dangerouslySetInnerHTML={{ __html: wifiQr }}
+            />
+          ) : null}
+        </div>
       </div>
 
+      <div className="rounded-lg border-2 border-zinc-900 bg-white p-4">
+        <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-zinc-950">
+          <KeyRound className="size-6" aria-hidden />
+          Accessi (citofono / cancello / pacchi)
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div>
+            <FieldLabel>Citofono</FieldLabel>
+            <TouchInput
+              value={data.access?.intercom ?? ''}
+              placeholder="Es. 2° piano · Rossi"
+              onChange={(e) =>
+                update({
+                  access: {
+                    intercom: e.target.value,
+                    gate: data.access?.gate ?? '',
+                    parcels: data.access?.parcels ?? '',
+                  },
+                })
+              }
+            />
+          </div>
+          <div>
+            <FieldLabel>Cancello / codice</FieldLabel>
+            <TouchInput
+              value={data.access?.gate ?? ''}
+              onChange={(e) =>
+                update({
+                  access: {
+                    intercom: data.access?.intercom ?? '',
+                    gate: e.target.value,
+                    parcels: data.access?.parcels ?? '',
+                  },
+                })
+              }
+            />
+          </div>
+          <div>
+            <FieldLabel>Pacchi / Amazon</FieldLabel>
+            <TouchInput
+              value={data.access?.parcels ?? ''}
+              placeholder="Dove lasciare i pacchi"
+              onChange={(e) =>
+                update({
+                  access: {
+                    intercom: data.access?.intercom ?? '',
+                    gate: data.access?.gate ?? '',
+                    parcels: e.target.value,
+                  },
+                })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      {(view === 'guest' || view === 'tech') && (
+        <div className="rounded-lg border-2 border-zinc-900 bg-lime-50/80 p-4">
+          <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-zinc-950">
+            <Leaf className="size-6" aria-hidden />
+            House-sitting (animali / piante)
+          </h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <FieldLabel>Animali (note sitter)</FieldLabel>
+              <TouchTextarea
+                value={data.houseSitting?.animalsNotes ?? ''}
+                placeholder="Orari pasti, passeggio, allarmi…"
+                onChange={(e) =>
+                  update({
+                    houseSitting: {
+                      animalsNotes: e.target.value,
+                      plantsNotes: data.houseSitting?.plantsNotes ?? '',
+                    },
+                  })
+                }
+              />
+            </div>
+            <div>
+              <FieldLabel>Piante</FieldLabel>
+              <TouchTextarea
+                value={data.houseSitting?.plantsNotes ?? ''}
+                placeholder="Annaffiatura, terrazzo…"
+                onChange={(e) =>
+                  update({
+                    houseSitting: {
+                      animalsNotes: data.houseSitting?.animalsNotes ?? '',
+                      plantsNotes: e.target.value,
+                    },
+                  })
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {view === 'tech' ? (
+      <>
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h3 className="flex items-center gap-2 text-lg font-bold text-zinc-950">
@@ -390,13 +583,14 @@ export function Level1PublicPanel({
           ))}
         </ul>
       </div>
+      </>
+      ) : null}
 
       <FamilyServicesPanel
         tier={tier}
         value={data.familyServices}
         onChange={(familyServices) => update({ familyServices })}
       />
-
       <FeatureGate tier={tier} feature="allowCustomFields">
         <CustomFieldsEditor
           title="Campi personalizzati (casa)"

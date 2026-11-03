@@ -1,7 +1,7 @@
 # DomuSafe
 
 ![Licenza](https://img.shields.io/badge/licenza-BSL%201.1-blue)
-![Versione](https://img.shields.io/badge/versione-0.9.0-green)
+![Versione](https://img.shields.io/badge/versione-0.10.0-green)
 ![Dispositivi](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 ![PWA](https://img.shields.io/badge/PWA-installabile-teal)
 
@@ -23,6 +23,7 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 
 | Sezione | A cosa serve |
 | :--- | :--- |
+| **Panoramica** | Dashboard Famiglia: prossimi passi, casa, residenti, emergenza |
 | **Casa** | Chiusure utenze, Wi‑Fi, rifiuti, artigiani; contratti Luce/Gas/Internet e scadenze Famiglia |
 | **Emergenza (ICE)** | Schede per il 118 / 112; mobile e abbonamenti personali; conti personali (Premium) |
 | **Cassaforte** | Documenti Famiglia (anche conti bancari Famiglia) protetti da PIN (Advanced+) · kit eredità (Premium) |

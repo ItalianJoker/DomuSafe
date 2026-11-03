@@ -28,6 +28,8 @@ export function enforceVaultPayloadForTier(
   const next: EncryptedVaultPayload = {
     // Conti Famiglia: Advanced+ (non strippati).
     bankAccounts: payload.bankAccounts ?? [],
+    // Mutui/CPI: patrimonio personale → Premium.
+    mortgages: options.allowPersonal ? payload.mortgages ?? [] : [],
     lifeInsurances: options.allowPersonal ? payload.lifeInsurances : [],
     laborAndPension: options.allowPersonal
       ? payload.laborAndPension

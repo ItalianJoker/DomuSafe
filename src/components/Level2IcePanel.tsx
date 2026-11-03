@@ -5,7 +5,17 @@
  * Free: 1 residente; Basic+: illimitati. Tasse e custom fields: Premium (+ trial).
  */
 
-import { AlertTriangle, Cat, Plus, Trash2, UserRound } from 'lucide-react';
+import { useState } from 'react';
+import {
+  AlertTriangle,
+  Cat,
+  ChevronDown,
+  ChevronUp,
+  Phone,
+  Plus,
+  Trash2,
+  UserRound,
+} from 'lucide-react';
 import type {
   BloodGroup,
   EvacuationMobility,
@@ -23,6 +33,12 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { enforceResidentForTier } from '@/lib/vault-policy';
 import { canAccessFeature } from '@/lib/licensing';
 import type { LicenseTier } from '@/types/domus';
+import {
+  ALLERGY_PRESETS,
+  CONDITION_PRESETS,
+  DEVICE_PRESETS,
+  togglePreset,
+} from '@/lib/medical-presets';
 
 interface Level2IcePanelProps {
   tier: LicenseTier;
@@ -44,6 +60,7 @@ export function Level2IcePanel({
   const maxLabel = Number.isFinite(maxResidents)
     ? String(maxResidents)
     : 'illimitati';
+  const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
 
   return (
     <section aria-labelledby="level2-title" className="space-y-8">
@@ -51,6 +68,15 @@ export function Level2IcePanel({
         <p className="text-sm font-bold uppercase tracking-widest text-red-800">
           Livello 2 · ICE Emergenza
         </p>
+        <div className="mt-3">
+          <a
+            href="tel:118"
+            className="inline-flex min-h-14 items-center gap-2 rounded-md border-2 border-red-900 bg-red-700 px-5 font-black text-white"
+          >
+            <Phone className="size-5" aria-hidden />
+            SOS · Chiama 118
+          </a>
+        </div>
         <h2 id="level2-title" className="mt-1 text-2xl font-black text-zinc-950">
           Schede sanitarie
         </h2>
@@ -92,15 +118,35 @@ export function Level2IcePanel({
           </p>
         ) : (
           <ul className="space-y-6">
-            {residents.map((resident, index) => (
+            {residents.map((resident, index) => {
+              const open = openIds[resident.id] ?? index === 0;
+              return (
               <li
                 key={resident.id}
                 className="space-y-3 rounded-lg border-2 border-red-900 bg-rose-50 p-4"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <h4 className="text-base font-black text-zinc-950">
-                    Residente {index + 1}
-                  </h4>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    className="flex min-h-12 flex-1 items-center gap-2 text-left font-black text-zinc-950"
+                    aria-expanded={open}
+                    onClick={() =>
+                      setOpenIds((prev) => ({
+                        ...prev,
+                        [resident.id]: !open,
+                      }))
+                    }
+                  >
+                    {open ? (
+                      <ChevronUp className="size-5" aria-hidden />
+                    ) : (
+                      <ChevronDown className="size-5" aria-hidden />
+                    )}
+                    {resident.fullName || `Residente ${index + 1}`}
+                    <span className="text-xs font-semibold text-zinc-600">
+                      {BLOOD_GROUP_LABELS[resident.bloodGroup]}
+                    </span>
+                  </button>
                   <button
                     type="button"
                     aria-label={`Rimuovi residente ${index + 1}`}
@@ -115,6 +161,8 @@ export function Level2IcePanel({
                   </button>
                 </div>
 
+                {open ? (
+                <>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <FieldLabel>Nome completo</FieldLabel>
@@ -190,6 +238,22 @@ export function Level2IcePanel({
                       placeholder="Es. Camera matrimoniale, primo piano"
                     />
                   </div>
+                  <div className="sm:col-span-2">
+                    <FieldLabel>Documento ID (dove si trova)</FieldLabel>
+                    <TouchInput
+                      value={resident.idDocumentHint ?? ''}
+                      placeholder="Es. CI nel cassetto ingresso"
+                      onChange={(e) =>
+                        patchResident(
+                          residents,
+                          resident.id,
+                          { idDocumentHint: e.target.value },
+                          onResidentsChange,
+                          tier
+                        )
+                      }
+                    />
+                  </div>
                   <div>
                     <FieldLabel>Allergie (virgola)</FieldLabel>
                     <TouchInput
@@ -198,6 +262,19 @@ export function Level2IcePanel({
                         patchResident(residents, resident.id, {
                           allergies: splitList(e.target.value),
                         }, onResidentsChange, tier)
+                      }
+                    />
+                    <PresetRow
+                      presets={ALLERGY_PRESETS}
+                      selected={resident.allergies}
+                      onToggle={(preset) =>
+                        patchResident(
+                          residents,
+                          resident.id,
+                          { allergies: togglePreset(resident.allergies, preset) },
+                          onResidentsChange,
+                          tier
+                        )
                       }
                     />
                   </div>
@@ -211,6 +288,24 @@ export function Level2IcePanel({
                         }, onResidentsChange, tier)
                       }
                     />
+                    <PresetRow
+                      presets={CONDITION_PRESETS}
+                      selected={resident.chronicConditions}
+                      onToggle={(preset) =>
+                        patchResident(
+                          residents,
+                          resident.id,
+                          {
+                            chronicConditions: togglePreset(
+                              resident.chronicConditions,
+                              preset
+                            ),
+                          },
+                          onResidentsChange,
+                          tier
+                        )
+                      }
+                    />
                   </div>
                   <div className="sm:col-span-2">
                     <FieldLabel>Dispositivi medici (virgola)</FieldLabel>
@@ -222,6 +317,24 @@ export function Level2IcePanel({
                         }, onResidentsChange, tier)
                       }
                       placeholder="Es. Pacemaker, insulina pen"
+                    />
+                    <PresetRow
+                      presets={DEVICE_PRESETS}
+                      selected={resident.medicalDevices}
+                      onToggle={(preset) =>
+                        patchResident(
+                          residents,
+                          resident.id,
+                          {
+                            medicalDevices: togglePreset(
+                              resident.medicalDevices,
+                              preset
+                            ),
+                          },
+                          onResidentsChange,
+                          tier
+                        )
+                      }
                     />
                   </div>
                 </div>
@@ -316,8 +429,16 @@ export function Level2IcePanel({
                     }
                   />
                 </FeatureGate>
+                </>
+                ) : (
+                  <p className="text-sm text-zinc-700">
+                    Scheda chiusa — tocca il nome per aprire (allergie, farmaci,
+                    ICE).
+                  </p>
+                )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </div>
@@ -690,6 +811,40 @@ function IceContactsEditor({
           </button>
         </div>
       ))}
+    </div>
+  );
+}
+
+function PresetRow({
+  presets,
+  selected,
+  onToggle,
+}: {
+  presets: readonly string[];
+  selected: string[];
+  onToggle: (preset: string) => void;
+}) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {presets.map((preset) => {
+        const active = selected.some(
+          (s) => s.trim().toLowerCase() === preset.toLowerCase()
+        );
+        return (
+          <button
+            key={preset}
+            type="button"
+            className={`min-h-10 rounded-md border-2 px-3 text-xs font-bold ${
+              active
+                ? 'border-red-900 bg-red-800 text-white'
+                : 'border-zinc-400 bg-white text-zinc-900'
+            }`}
+            onClick={() => onToggle(preset)}
+          >
+            {preset}
+          </button>
+        );
+      })}
     </div>
   );
 }
