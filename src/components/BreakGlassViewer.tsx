@@ -159,7 +159,7 @@ export function BreakGlassViewer({ token }: BreakGlassViewerProps) {
       <div className="mx-auto max-w-2xl space-y-5">
         <header className="rounded-lg border-4 border-red-800 bg-red-50 p-4">
           <p className="text-xs font-black uppercase tracking-widest text-red-800">
-            Break-glass · senza login
+            Emergenza · senza login
           </p>
           <h1 className="mt-1 text-2xl font-black">
             {pack.houseName || 'Manuale emergenza'}

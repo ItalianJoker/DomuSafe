@@ -18,7 +18,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: 'DomuSafe — Manuale casa e hub emergenza',
   description:
-    'Manuale digitale della casa per la Famiglia: utenze, schede ICE, cassaforte e stampa A4. Dati protetti sull’account.',
+    'Manuale digitale della casa per la Famiglia: utenze, schede di emergenza, cassaforte e stampa A4. Dati protetti sull’account.',
   applicationName: 'DomuSafe',
   manifest: '/manifest.webmanifest',
   appleWebApp: {

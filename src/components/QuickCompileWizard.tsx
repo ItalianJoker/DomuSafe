@@ -790,9 +790,9 @@ export function QuickCompileWizard({
                         (i) => i.catalogId === id
                       );
                       const labels: Record<string, string> = {
-                        'tax-cu': 'CU ricevuta',
-                        'tax-730': '730 inviato',
-                        'tax-imu': 'IMU versata',
+                        'tax-cu': 'Certificazione Unica ricevuta',
+                        'tax-730': 'Modello 730 inviato',
+                        'tax-imu': 'Imposta sugli immobili versata',
                       };
                       return (
                         <label

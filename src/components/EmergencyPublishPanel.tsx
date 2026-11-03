@@ -117,7 +117,7 @@ export function EmergencyPublishPanel({
           QR emergenza (senza login)
         </h2>
         <p className="mt-1 text-sm text-red-950/80">
-          Chi inquadra apre Casa + schede ICE sul telefono, senza account. Serve
+          Chi inquadra apre Casa e schede di emergenza sul telefono, senza account. Serve
           per il soccorso. Pubblica di nuovo dopo modifiche importanti.
         </p>
       </header>

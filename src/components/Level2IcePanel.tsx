@@ -545,7 +545,7 @@ export function Level2IcePanel({
                 ) : (
                   <p className="text-sm text-zinc-700">
                     Scheda chiusa — tocca il nome per aprire (allergie, farmaci,
-                    ICE).
+                    contatti di emergenza).
                   </p>
                 )}
               </li>

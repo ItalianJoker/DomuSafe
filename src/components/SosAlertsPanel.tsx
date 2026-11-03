@@ -42,7 +42,7 @@ export function SosAlertsPanel({
 }: SosAlertsPanelProps) {
   const contacts = useMemo(() => collectIceContacts(residents), [residents]);
   const [message, setMessage] = useState(
-    `SOS DomuSafe${houseName ? ` · ${houseName}` : ''}: richiesta di aiuto. Contatta subito la famiglia.`
+    `DomuSafe${houseName ? ` · ${houseName}` : ''}: richiesta di aiuto. Contatta subito la famiglia.`
   );
   const [sms, setSms] = useState(true);
   const [whatsapp, setWhatsapp] = useState(false);
@@ -97,8 +97,8 @@ export function SosAlertsPanel({
       setLastResult(data.result ?? null);
       onStatus?.(
         dryRun
-          ? 'Prova SOS completata (nessun messaggio reale se provider=log).'
-          : `SOS inviato · ${data.result?.delivered ?? 0} recapiti ok`
+          ? 'Prova avviso di soccorso completata (nessun messaggio reale se provider=log).'
+          : `Avviso di soccorso inviato · ${data.result?.delivered ?? 0} recapiti ok`
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Errore');
@@ -176,7 +176,7 @@ export function SosAlertsPanel({
             onClick={() => void send(true)}
             className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold disabled:opacity-60"
           >
-            Prova (dry-run)
+            Prova (senza invio reale)
           </button>
           <button
             type="button"
@@ -202,7 +202,7 @@ export function SosAlertsPanel({
       {lastResult ? (
         <p className="mt-3 text-sm font-semibold text-zinc-800" role="status">
           Provider {lastResult.provider}
-          {lastResult.dryRun ? ' · dry-run' : ''} · inviati{' '}
+          {lastResult.dryRun ? ' · prova senza invio' : ''} · inviati{' '}
           {lastResult.delivered}, errori {lastResult.failed}
         </p>
       ) : null}

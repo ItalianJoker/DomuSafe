@@ -425,10 +425,12 @@ function VaultEditor({
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <FieldLabel>Riferimento IBAN (parziale)</FieldLabel>
+                    <FieldLabel>
+                      Coordinate bancarie (riferimento parziale)
+                    </FieldLabel>
                     <TouchInput
                       value={account.ibanHint ?? ''}
-                      placeholder="Ultime cifre o dove trovi l’IBAN completo"
+                      placeholder="Ultime cifre o dove trovi il numero completo"
                       onChange={(e) => {
                         const bankAccounts = [...payload.bankAccounts];
                         bankAccounts[index] = {

@@ -276,7 +276,7 @@ export async function dispatchSos(
           phoneNumber: '',
           channel: 'sms',
           status: 'error',
-          detail: 'Messaggio SOS vuoto',
+          detail: 'Messaggio di soccorso vuoto',
         },
       ],
     };
@@ -293,7 +293,7 @@ export async function dispatchSos(
           phoneNumber: '',
           channel: 'sms',
           status: 'skipped',
-          detail: 'Nessun contatto ICE con telefono',
+          detail: 'Nessun contatto di emergenza con telefono',
         },
       ],
     };

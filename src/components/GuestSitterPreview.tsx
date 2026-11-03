@@ -94,7 +94,7 @@ export function GuestSitterPreview({
             />
           ) : null}
           <p className="rounded-md border-2 border-amber-800 bg-amber-50 p-3 font-semibold text-amber-950">
-            Non vedono: schede ICE, allergie, farmaci, cassaforte, conti,
+            Non vedono: schede di emergenza, allergie, farmaci, cassaforte, conti,
             scadenze Famiglia complete.
           </p>
         </div>

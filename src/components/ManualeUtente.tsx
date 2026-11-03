@@ -76,8 +76,8 @@ const SECTIONS = [
     body: 'Con Premium, nella sezione Premium trovi il registro di chi ha inquadrato il QR di monitoraggio per gli ospiti e quando. Puoi anche annotare accessi a mano. Non mostra dati sanitari né cassaforte.',
   },
   {
-    title: 'Avvisi SOS',
-    body: 'Premium può inviare SMS o WhatsApp ai contatti ICE. Chi gestisce l’installazione sceglie come far partire i messaggi. Usa «Prova» nell’app prima di un invio reale.',
+    title: 'Avvisi di soccorso',
+    body: 'Premium può inviare SMS o WhatsApp ai contatti di emergenza. Chi gestisce l’installazione sceglie come far partire i messaggi. Usa «Prova» nell’app prima di un invio reale.',
   },
   {
     title: 'Marchio host',
@@ -89,7 +89,7 @@ const SECTIONS = [
   },
   {
     title: 'Piani: Free, Basic, Advanced, Premium',
-    body: 'Free: Casa + Emergenza (utenze/abbonamenti standard), una scheda residente, Watermark in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN, conti Famiglia) e stampa senza Watermark; niente tasse, conti/patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse e conti personali sulle schede residenti, patrimonio personale in cassaforte, successione Famiglia, sync, campi/servizi personalizzati, registro accessi, SOS, marchio host).',
+    body: 'Free: Casa + Emergenza (utenze/abbonamenti standard), una scheda residente, marchio DomuSafe in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN, conti Famiglia) e stampa senza marchio DomuSafe; niente tasse, conti/patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse e conti personali sulle schede residenti, patrimonio personale in cassaforte, successione Famiglia, sync, campi/servizi personalizzati, registro accessi, avvisi di soccorso, marchio host).',
   },
   {
     title: 'Prova Premium',

@@ -79,8 +79,8 @@ export async function POST(request: Request) {
       kind: 'SOS',
       actorLabel: account.displayName || account.email,
       note: result.dryRun
-        ? `Prova SOS (${result.provider})`
-        : `SOS inviato via ${result.provider} · ${result.delivered} ok / ${result.failed} errori`,
+        ? `Prova avviso di soccorso (${result.provider})`
+        : `Avviso di soccorso inviato via ${result.provider} · ${result.delivered} ok / ${result.failed} errori`,
       houseName: body.houseName,
     });
 

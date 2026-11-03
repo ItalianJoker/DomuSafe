@@ -131,7 +131,7 @@ export function PrintSheet({
 
       <section className="ice-privacy-flap text-xs">
         <h2 className="mb-2 text-sm font-black uppercase text-red-800">
-          Livello 2 — ICE (solo soccorso)
+          Livello 2 — Emergenza (solo soccorso)
         </h2>
         {ice.residents.length === 0 ? (
           <p>Nessun residente compilato.</p>
@@ -154,7 +154,7 @@ export function PrintSheet({
                   </p>
                 ))}
                 <p>
-                  ICE:{' '}
+                  Contatti di emergenza:{' '}
                   {r.iceContacts
                     .map(
                       (c) =>
