@@ -169,9 +169,9 @@ describe('phase 2 vectors', () => {
   it('encodes and decodes the recovery phrase and derives its material', async () => {
     const entropy = fromHex(VECTORS.recovery.entropy);
     expect(recoveryPhraseFromEntropy(entropy)).toBe(VECTORS.recovery.phrase);
-    expect(recoveryEntropyFromPhrase(`  ${VECTORS.recovery.phrase.toUpperCase().replaceAll(' ', '\n ')} `)).toEqual(
-      entropy,
-    );
+    expect(
+      recoveryEntropyFromPhrase(`  ${VECTORS.recovery.phrase.toUpperCase().replaceAll(' ', '\n ')} `),
+    ).toEqual(entropy);
     const material = await deriveRecoveryMaterial(entropy);
     expect(toHex(material.accountKeyKek)).toBe(VECTORS.recovery.accountKeyKek);
     expect(toHex(material.privateKeyKek)).toBe(VECTORS.recovery.privateKeyKek);
@@ -263,7 +263,9 @@ describe('formats', () => {
     const sealed = await sealEnvelope(key, utf8('x'), aad.file('a'));
     sealed[0] = 2;
     await expect(openEnvelope(key, sealed, aad.file('a'))).rejects.toBeInstanceOf(CryptoFormatError);
-    await expect(openEnvelope(key, sealed.slice(0, 20), aad.file('a'))).rejects.toBeInstanceOf(CryptoFormatError);
+    await expect(openEnvelope(key, sealed.slice(0, 20), aad.file('a'))).rejects.toBeInstanceOf(
+      CryptoFormatError,
+    );
   });
 
   it('round-trips streams across chunk boundaries and detects truncation', async () => {
@@ -274,9 +276,9 @@ describe('formats', () => {
       expect(await openStream(key, sealed, aad.file('f'))).toEqual(data);
     }
     const twoChunks = await sealStream(key, randomBytes(1_048_577), aad.file('f'));
-    await expect(openStream(key, twoChunks.slice(0, 12 + 1_048_576 + 16), aad.file('f'))).rejects.toBeInstanceOf(
-      DecryptionError,
-    );
+    await expect(
+      openStream(key, twoChunks.slice(0, 12 + 1_048_576 + 16), aad.file('f')),
+    ).rejects.toBeInstanceOf(DecryptionError);
   });
 
   it('rejects associated-data components with separators', () => {
@@ -296,7 +298,9 @@ describe('key hierarchy', () => {
 
     const deviceKey = await generateDeviceKey();
     const wrapped = await wrapAccountKeyForDevice(deviceKey, secrets.accountKey, accountId, deviceId);
-    expect(await openAccountKeyForDevice(deviceKey, wrapped, accountId, deviceId)).toEqual(secrets.accountKey);
+    expect(await openAccountKeyForDevice(deviceKey, wrapped, accountId, deviceId)).toEqual(
+      secrets.accountKey,
+    );
     await expect(openAccountKeyForDevice(deviceKey, wrapped, accountId, uuidv7())).rejects.toBeInstanceOf(
       DecryptionError,
     );

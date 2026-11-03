@@ -50,7 +50,11 @@ function build(prefix: string, parts: readonly string[]): Bytes {
  */
 export const aad = {
   record: (table: string, recordId: string, version: number): Bytes =>
-    build('domusafe/v1/record', [component(table, 'table'), component(recordId, 'recordId'), integer(version, 'version')]),
+    build('domusafe/v1/record', [
+      component(table, 'table'),
+      component(recordId, 'recordId'),
+      integer(version, 'version'),
+    ]),
   dek: (table: string, recordId: string, scopeId: string, scopeVersion: number): Bytes =>
     build('domusafe/v1/dek', [
       component(table, 'table'),
@@ -69,9 +73,15 @@ export const aad = {
   accountPrivateKey: (accountId: string): Bytes =>
     build('domusafe/v1/account-private-key', [component(accountId, 'accountId')]),
   deviceAccountKey: (accountId: string, deviceId: string): Bytes =>
-    build('domusafe/v1/device-account-key', [component(accountId, 'accountId'), component(deviceId, 'deviceId')]),
+    build('domusafe/v1/device-account-key', [
+      component(accountId, 'accountId'),
+      component(deviceId, 'deviceId'),
+    ]),
   vaultPrivateKey: (accountId: string, pinGeneration: number): Bytes =>
-    build('domusafe/v1/vault-private-key', [component(accountId, 'accountId'), integer(pinGeneration, 'pinGeneration')]),
+    build('domusafe/v1/vault-private-key', [
+      component(accountId, 'accountId'),
+      integer(pinGeneration, 'pinGeneration'),
+    ]),
   recoveryAccountKey: (accountId: string): Bytes =>
     build('domusafe/v1/recovery-account-key', [component(accountId, 'accountId')]),
   recoveryPrivateKey: (accountId: string): Bytes =>
@@ -90,9 +100,13 @@ export const aad = {
     ]),
   pairing: (channelId: string, deviceId: string): Bytes =>
     build('domusafe/v1/pairing', [component(channelId, 'channelId'), component(deviceId, 'deviceId')]),
-  backup: (headerSha256Hex: string): Bytes => build('domusafe/v1/backup', [component(headerSha256Hex, 'header')]),
+  backup: (headerSha256Hex: string): Bytes =>
+    build('domusafe/v1/backup', [component(headerSha256Hex, 'header')]),
   cache: (accountId: string, queryHashHex: string): Bytes =>
     build('domusafe/v1/cache', [component(accountId, 'accountId'), component(queryHashHex, 'queryHash')]),
   serverSecret: (table: string, column: string, rowId: string): Bytes =>
-    build('domusafe/s1', [`${component(table, 'table')}.${component(column, 'column')}`, component(rowId, 'rowId')]),
+    build('domusafe/s1', [
+      `${component(table, 'table')}.${component(column, 'column')}`,
+      component(rowId, 'rowId'),
+    ]),
 } as const;

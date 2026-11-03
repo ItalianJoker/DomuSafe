@@ -1,0 +1,48 @@
+{
+  "name": "@domusafe/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DomuSafe REST API (Fastify, OpenAPI 3.1) and authentication.",
+  "exports": {
+    ".": {
+      "@domusafe/source": "./src/app.ts",
+      "types": "./dist/app.d.ts",
+      "default": "./dist/app.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src test scripts",
+    "test": "vitest run",
+    "dev": "tsx watch --conditions=@domusafe/source src/server.ts",
+    "start": "node dist/server.js",
+    "openapi:write": "tsx --conditions=@domusafe/source scripts/openapi.ts write",
+    "openapi:check": "tsx --conditions=@domusafe/source scripts/openapi.ts check"
+  },
+  "dependencies": {
+    "@domusafe/contracts": "workspace:*",
+    "@domusafe/crypto": "workspace:*",
+    "@domusafe/db": "workspace:*",
+    "@domusafe/plans": "workspace:*",
+    "@fastify/helmet": "13.2.0",
+    "@fastify/rate-limit": "11.2.2",
+    "@fastify/swagger": "9.9.3",
+    "@fastify/swagger-ui": "6.1.3",
+    "@node-rs/argon2": "2.2.2",
+    "better-auth": "1.7.16",
+    "drizzle-orm": "0.45.4",
+    "fastify": "5.12.8",
+    "fastify-plugin": "6.0.1",
+    "fastify-type-provider-zod": "7.0.0",
+    "ioredis": "6.0.0",
+    "openapi-types": "12.1.3",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@domusafe/config": "workspace:*",
+    "@types/pg": "8.23.1"
+  }
+}

@@ -1,4 +1,5 @@
-# Pubblica l'immagine DomuSafe su GHCR (ghcr.io/<owner>/domusafe).
+# Pubblica l'immagine dell'applicazione storica (legacy/next-app) su GHCR (ghcr.io/<owner>/domusafe).
+# Resta attiva finché DomuSafe Suite non pubblica le proprie immagini.
 # Richiede permesso packages:write sul token del workflow.
 name: Publish GHCR
 
@@ -46,7 +47,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: legacy/next-app
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

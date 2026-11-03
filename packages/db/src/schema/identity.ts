@@ -1,10 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { boolean, char, inet, jsonb, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
+import { boolean, char, inet, integer, jsonb, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
 import { citext, instant } from '../columns.js';
 
 /** Better Auth `user` model (`auth_users`). Property names follow Better Auth field names. */
 export const authUsers = pgTable('auth_users', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   name: text('name').notNull(),
   email: citext('email').notNull(),
   emailVerified: boolean('email_verified').notNull().default(false),
@@ -16,7 +18,9 @@ export const authUsers = pgTable('auth_users', {
 
 /** Better Auth `session` model (`auth_sessions`). */
 export const authSessions = pgTable('auth_sessions', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   userId: uuid('user_id')
     .notNull()
     .references(() => authUsers.id, { onDelete: 'cascade' }),
@@ -32,7 +36,9 @@ export const authSessions = pgTable('auth_sessions', {
 
 /** Better Auth `account` model (`auth_accounts`): credential and provider links. */
 export const authAccounts = pgTable('auth_accounts', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   userId: uuid('user_id')
     .notNull()
     .references(() => authUsers.id, { onDelete: 'cascade' }),
@@ -51,7 +57,9 @@ export const authAccounts = pgTable('auth_accounts', {
 
 /** Better Auth `verification` model (`auth_verifications`). */
 export const authVerifications = pgTable('auth_verifications', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: instant('expires_at').notNull(),
@@ -61,12 +69,17 @@ export const authVerifications = pgTable('auth_verifications', {
 
 /** Better Auth two-factor plugin model (`auth_two_factors`). */
 export const authTwoFactors = pgTable('auth_two_factors', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   userId: uuid('user_id')
     .notNull()
     .references(() => authUsers.id, { onDelete: 'cascade' }),
   secret: text('secret').notNull(),
   backupCodes: text('backup_codes').notNull(),
+  verified: boolean('verified').notNull().default(true),
+  failedVerificationCount: integer('failed_verification_count').notNull().default(0),
+  lockedUntil: instant('locked_until'),
 });
 
 /** Domain profile of an account (`account_profiles`, RLS model A). */
@@ -90,7 +103,9 @@ export const accountProfiles = pgTable('account_profiles', {
 
 /** Security events with IP address (`security_events`, partitioned monthly, 90-day retention). */
 export const securityEvents = pgTable('security_events', {
-  id: uuid('id').notNull().default(sql`uuidv7()`),
+  id: uuid('id')
+    .notNull()
+    .default(sql`uuidv7()`),
   occurredAt: instant('occurred_at').notNull().defaultNow(),
   accountId: uuid('account_id'),
   kind: text('kind', {

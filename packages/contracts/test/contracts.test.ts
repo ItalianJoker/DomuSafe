@@ -70,9 +70,13 @@ describe('permission matrix', () => {
 
   it('gives every role an explicit entry for every permission', () => {
     for (const permission of PERMISSIONS) {
-      expect(Object.keys(PERMISSION_MATRIX[permission]).sort()).toEqual(
-        ['admin', 'caregiver', 'child', 'guest', 'parent'],
-      );
+      expect(Object.keys(PERMISSION_MATRIX[permission]).sort()).toEqual([
+        'admin',
+        'caregiver',
+        'child',
+        'guest',
+        'parent',
+      ]);
     }
     for (const permission of KIOSK_PERMISSIONS.elderly) {
       expect(PERMISSIONS).toContain(permission);
@@ -114,9 +118,9 @@ describe('conventions', () => {
   it('applies defaults and strictness to request bodies', () => {
     const parsed = createFamilyRequestSchema.parse({ name: 'Rossi', firstHouse: { name: 'Casa al mare' } });
     expect(parsed).toMatchObject({ timezone: 'Europe/Rome', baseCurrency: 'EUR', locale: 'it' });
-    expect(createFamilyRequestSchema.safeParse({ name: 'Rossi', firstHouse: { name: 'x' }, extra: 1 }).success).toBe(
-      false,
-    );
+    expect(
+      createFamilyRequestSchema.safeParse({ name: 'Rossi', firstHouse: { name: 'x' }, extra: 1 }).success,
+    ).toBe(false);
     expect(updateHouseRequestSchema.safeParse({}).success).toBe(false);
   });
 });

@@ -95,7 +95,12 @@ export class ServerSecretBox {
     if (key === undefined) {
       throw new CryptoFormatError('Active master key unavailable');
     }
-    return sealS1(key, this.#activeVersion, plaintext, aad.serverSecret(location.table, location.column, location.rowId));
+    return sealS1(
+      key,
+      this.#activeVersion,
+      plaintext,
+      aad.serverSecret(location.table, location.column, location.rowId),
+    );
   }
 
   /**

@@ -79,9 +79,18 @@ export async function generateDeviceKey(): Promise<CryptoKey> {
  * @param additionalData - Associated data bound to the ciphertext.
  * @returns Ciphertext followed by the tag.
  */
-export async function aesGcmEncrypt(key: CryptoKey, iv: Bytes, plaintext: Bytes, additionalData: Bytes): Promise<Bytes> {
+export async function aesGcmEncrypt(
+  key: CryptoKey,
+  iv: Bytes,
+  plaintext: Bytes,
+  additionalData: Bytes,
+): Promise<Bytes> {
   return new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData, tagLength: TAG_LENGTH * 8 }, key, plaintext),
+    await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv, additionalData, tagLength: TAG_LENGTH * 8 },
+      key,
+      plaintext,
+    ),
   );
 }
 
@@ -103,7 +112,11 @@ export async function aesGcmDecrypt(
 ): Promise<Bytes> {
   try {
     return new Uint8Array(
-      await crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData, tagLength: TAG_LENGTH * 8 }, key, ciphertext),
+      await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv, additionalData, tagLength: TAG_LENGTH * 8 },
+        key,
+        ciphertext,
+      ),
     );
   } catch {
     throw new DecryptionError('Authenticated decryption failed');

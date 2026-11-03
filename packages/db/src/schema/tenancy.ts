@@ -13,7 +13,9 @@ import { authUsers } from './identity.js';
 
 /** Families (tenants). */
 export const families = pgTable('families', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   name: text('name').notNull(),
   ownerAccountId: uuid('owner_account_id')
     .notNull()
@@ -33,7 +35,9 @@ export const families = pgTable('families', {
 
 /** Account membership in a family with role and scope. */
 export const memberships = pgTable('memberships', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   familyId: uuid('family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),
@@ -54,7 +58,9 @@ export const memberships = pgTable('memberships', {
 
 /** Houses of a family. */
 export const houses = pgTable('houses', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   familyId: uuid('family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),
@@ -78,7 +84,9 @@ export const houses = pgTable('houses', {
 
 /** Residents (people, with or without an account). */
 export const residents = pgTable('residents', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   familyId: uuid('family_id')
     .notNull()
     .references(() => families.id, { onDelete: 'cascade' }),

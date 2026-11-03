@@ -20,7 +20,12 @@ import {
   importAesKey,
   importPrivateKey,
 } from './primitives.js';
-import { generateRecoveryEntropy, publicKeyFingerprint, recoveryEntropyFromPhrase, recoveryPhraseFromEntropy } from './words.js';
+import {
+  generateRecoveryEntropy,
+  publicKeyFingerprint,
+  recoveryEntropyFromPhrase,
+  recoveryPhraseFromEntropy,
+} from './words.js';
 
 /** Server-side copy of an account's key material (`account_keys` without the vault columns). */
 export interface AccountKeyBundle {
@@ -91,14 +96,19 @@ export async function createAccountKeys(
     exportPrivateKey(general.privateKey),
     exportPrivateKey(recovery.privateKey),
   ]);
-  const [wrappedPrivateKey, recoveryWrappedPrivateKey, recoveryWrappedAccountKey, recoveryVerifierSha256, fingerprint] =
-    await Promise.all([
-      wrapWith(await deriveAccountPrivateKeyKek(accountKey), generalPkcs8, aad.accountPrivateKey(accountId)),
-      wrapWith(material.privateKeyKek, recoveryPkcs8, aad.recoveryPrivateKey(accountId)),
-      wrapWith(material.accountKeyKek, accountKey, aad.recoveryAccountKey(accountId)),
-      recoveryVerifierDigest(material.verifier),
-      publicKeyFingerprint(publicKey),
-    ]);
+  const [
+    wrappedPrivateKey,
+    recoveryWrappedPrivateKey,
+    recoveryWrappedAccountKey,
+    recoveryVerifierSha256,
+    fingerprint,
+  ] = await Promise.all([
+    wrapWith(await deriveAccountPrivateKeyKek(accountKey), generalPkcs8, aad.accountPrivateKey(accountId)),
+    wrapWith(material.privateKeyKek, recoveryPkcs8, aad.recoveryPrivateKey(accountId)),
+    wrapWith(material.accountKeyKek, accountKey, aad.recoveryAccountKey(accountId)),
+    recoveryVerifierDigest(material.verifier),
+    publicKeyFingerprint(publicKey),
+  ]);
   return {
     bundle: {
       publicKey,
@@ -130,7 +140,11 @@ export async function openAccountPrivateKey(
   wrappedPrivateKey: Bytes,
   accountId: string,
 ): Promise<CryptoKey> {
-  const pkcs8 = await unwrapWith(await deriveAccountPrivateKeyKek(accountKey), wrappedPrivateKey, aad.accountPrivateKey(accountId));
+  const pkcs8 = await unwrapWith(
+    await deriveAccountPrivateKeyKek(accountKey),
+    wrappedPrivateKey,
+    aad.accountPrivateKey(accountId),
+  );
   return importPrivateKey(pkcs8);
 }
 
@@ -189,7 +203,11 @@ export async function recoverWithPhrase(
     unwrapWith(material.accountKeyKek, bundle.recoveryWrappedAccountKey, aad.recoveryAccountKey(accountId)),
     unwrapWith(material.privateKeyKek, bundle.recoveryWrappedPrivateKey, aad.recoveryPrivateKey(accountId)),
   ]);
-  return { accountKey, recoveryPrivateKey: await importPrivateKey(recoveryPkcs8), verifier: material.verifier };
+  return {
+    accountKey,
+    recoveryPrivateKey: await importPrivateKey(recoveryPkcs8),
+    verifier: material.verifier,
+  };
 }
 
 /**
@@ -258,7 +276,11 @@ export async function openVaultPrivateKey(
   extractable = false,
 ): Promise<CryptoKey> {
   const unlockKey = await deriveVaultUnlockKey(await deriveVaultSecret(input.accountKey), input.serverShare);
-  const pkcs8 = await unwrapWith(unlockKey, input.wrappedVaultPrivateKey, aad.vaultPrivateKey(input.accountId, input.pinGeneration));
+  const pkcs8 = await unwrapWith(
+    unlockKey,
+    input.wrappedVaultPrivateKey,
+    aad.vaultPrivateKey(input.accountId, input.pinGeneration),
+  );
   return importPrivateKey(pkcs8, extractable);
 }
 
@@ -353,8 +375,16 @@ export async function sealRecord(input: {
 }): Promise<SealedRecord> {
   const dekBytes = randomBytes(KEY_LENGTH);
   const [payload, dek] = await Promise.all([
-    wrapWith(dekBytes, utf8(JSON.stringify(input.payload)), aad.record(input.table, input.recordId, input.version)),
-    wrapWith(input.scopeKey, dekBytes, aad.dek(input.table, input.recordId, input.scopeId, input.scopeVersion)),
+    wrapWith(
+      dekBytes,
+      utf8(JSON.stringify(input.payload)),
+      aad.record(input.table, input.recordId, input.version),
+    ),
+    wrapWith(
+      input.scopeKey,
+      dekBytes,
+      aad.dek(input.table, input.recordId, input.scopeId, input.scopeVersion),
+    ),
   ]);
   return { scopeId: input.scopeId, keyVersion: input.scopeVersion, dek, payload };
 }
@@ -377,6 +407,10 @@ export async function openRecord(input: {
     input.sealed.dek,
     aad.dek(input.table, input.recordId, input.sealed.scopeId, input.sealed.keyVersion),
   );
-  const plaintext = await unwrapWith(dekBytes, input.sealed.payload, aad.record(input.table, input.recordId, input.version));
+  const plaintext = await unwrapWith(
+    dekBytes,
+    input.sealed.payload,
+    aad.record(input.table, input.recordId, input.version),
+  );
   return JSON.parse(fromUtf8(plaintext)) as unknown;
 }

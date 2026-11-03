@@ -50,7 +50,11 @@ export function decodePairingQr(text: string): PairingQr {
   const channelId = parts[2] ?? '';
   const publicKey = fromBase64Url(parts[3] ?? '');
   const secret = fromBase64Url(parts[4] ?? '');
-  if (!UUID.test(channelId) || publicKey.length !== P256_PUBLIC_KEY_LENGTH || secret.length !== PAIRING_SECRET_LENGTH) {
+  if (
+    !UUID.test(channelId) ||
+    publicKey.length !== P256_PUBLIC_KEY_LENGTH ||
+    secret.length !== PAIRING_SECRET_LENGTH
+  ) {
     throw new CryptoFormatError('Malformed pairing code');
   }
   return { channelId, publicKey, secret };
@@ -71,8 +75,13 @@ export async function derivePairingMaterial(input: {
 }): Promise<PairingMaterial> {
   const keys = [input.existingDevicePublicKey, input.newDevicePublicKey] as const;
   const [sas, transferKey] = await Promise.all([
-    hkdf(input.sharedSecret, hkdfInfo(HKDF_LABELS.pairingSas, ...keys), { salt: input.pairingSecret, length: 6 }),
-    hkdf(input.sharedSecret, hkdfInfo(HKDF_LABELS.pairingTransferKey, ...keys), { salt: input.pairingSecret }),
+    hkdf(input.sharedSecret, hkdfInfo(HKDF_LABELS.pairingSas, ...keys), {
+      salt: input.pairingSecret,
+      length: 6,
+    }),
+    hkdf(input.sharedSecret, hkdfInfo(HKDF_LABELS.pairingTransferKey, ...keys), {
+      salt: input.pairingSecret,
+    }),
   ]);
   return { verificationWords: bytesToWords(sas, PAIRING_WORD_COUNT), transferKey };
 }

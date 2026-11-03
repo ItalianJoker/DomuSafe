@@ -68,7 +68,11 @@ export async function openEnvelope(key: CryptoKey, envelope: Bytes, additionalDa
   return aesGcmDecrypt(key, envelope.slice(1, 1 + IV_LENGTH), envelope.slice(1 + IV_LENGTH), additionalData);
 }
 
-async function grantKek(sharedSecret: Bytes, ephemeralPublic: Bytes, recipientPublic: Bytes): Promise<CryptoKey> {
+async function grantKek(
+  sharedSecret: Bytes,
+  ephemeralPublic: Bytes,
+  recipientPublic: Bytes,
+): Promise<CryptoKey> {
   const kek = await hkdf(sharedSecret, hkdfInfo(HKDF_LABELS.grant, ephemeralPublic, recipientPublic));
   return importAesKey(kek);
 }
@@ -81,7 +85,11 @@ async function grantKek(sharedSecret: Bytes, ephemeralPublic: Bytes, recipientPu
  * @param additionalData - Associated data from `aad.grant` or `aad.recoveryVaultKey`.
  * @returns `0x01 ‖ ephemeral public key(65) ‖ DS-ENV v1`.
  */
-export async function sealGrant(recipientPublicKey: Bytes, secret: Bytes, additionalData: Bytes): Promise<Bytes> {
+export async function sealGrant(
+  recipientPublicKey: Bytes,
+  secret: Bytes,
+  additionalData: Bytes,
+): Promise<Bytes> {
   const recipient = await importPublicKey(recipientPublicKey);
   const ephemeral = await generateEcdhKeyPair();
   const ephemeralPublic = await exportPublicKey(ephemeral.publicKey);
@@ -139,7 +147,9 @@ export async function sealStream(key: CryptoKey, plaintext: Bytes, additionalDat
   const parts: Bytes[] = [concatBytes(STREAM_MAGIC, Uint8Array.of(STREAM_VERSION), prefix)];
   for (let index = 0; index < chunkCount; index += 1) {
     const chunk = plaintext.slice(index * STREAM_CHUNK_SIZE, (index + 1) * STREAM_CHUNK_SIZE);
-    parts.push(await aesGcmEncrypt(key, streamNonce(prefix, index, index === chunkCount - 1), chunk, additionalData));
+    parts.push(
+      await aesGcmEncrypt(key, streamNonce(prefix, index, index === chunkCount - 1), chunk, additionalData),
+    );
   }
   return concatBytes(...parts);
 }
@@ -181,7 +191,12 @@ export async function openStream(key: CryptoKey, data: Bytes, additionalData: By
       throw new CryptoFormatError('Truncated stream chunk');
     }
     parts.push(
-      await aesGcmDecrypt(key, streamNonce(prefix, index, last), data.slice(offset, offset + length), additionalData),
+      await aesGcmDecrypt(
+        key,
+        streamNonce(prefix, index, last),
+        data.slice(offset, offset + length),
+        additionalData,
+      ),
     );
     offset += length;
   }

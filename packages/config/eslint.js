@@ -36,6 +36,8 @@ export function domusafeEslint({ rootDir }) {
         '@typescript-eslint/no-floating-promises': 'error',
         '@typescript-eslint/no-misused-promises': 'error',
         '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+        // Fastify plugins and hooks are async by contract even when they do not await.
+        '@typescript-eslint/require-await': 'off',
         '@typescript-eslint/switch-exhaustiveness-check': 'error',
         eqeqeq: ['error', 'always'],
         'no-console': 'error',

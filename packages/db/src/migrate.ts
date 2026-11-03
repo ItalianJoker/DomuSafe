@@ -5,6 +5,7 @@ import pg from 'pg';
 const MIGRATIONS_DIR = new URL('../migrations/', import.meta.url);
 const BOOTSTRAP_FILE = new URL('../sql/bootstrap-roles.sql', import.meta.url);
 const LOCK_KEY = 7_406_216_731;
+const ROLES_LOCK_KEY = 7_406_216_732;
 
 /** Options of `migrate`. */
 export interface MigrateOptions {
@@ -28,7 +29,11 @@ async function loadMigrations(): Promise<MigrationFile[]> {
   return Promise.all(
     names.map(async (name) => {
       const sql = await readFile(new URL(name, MIGRATIONS_DIR), 'utf8');
-      return { id: name.replace(/\.sql$/, ''), sql, checksum: createHash('sha256').update(sql).digest('hex') };
+      return {
+        id: name.replace(/\.sql$/, ''),
+        sql,
+        checksum: createHash('sha256').update(sql).digest('hex'),
+      };
     }),
   );
 }
@@ -40,9 +45,14 @@ async function loadMigrations(): Promise<MigrationFile[]> {
  * @param appPassword - When set, the password of `domusafe_app` is (re)set to this value.
  */
 async function bootstrapRoles(client: pg.Client, appPassword: string | undefined): Promise<void> {
-  await client.query(await readFile(BOOTSTRAP_FILE, 'utf8'));
-  if (appPassword !== undefined) {
-    await client.query(`alter role domusafe_app password ${client.escapeLiteral(appPassword)}`);
+  await client.query('select pg_advisory_lock($1)', [ROLES_LOCK_KEY]);
+  try {
+    await client.query(await readFile(BOOTSTRAP_FILE, 'utf8'));
+    if (appPassword !== undefined) {
+      await client.query(`alter role domusafe_app password ${client.escapeLiteral(appPassword)}`);
+    }
+  } finally {
+    await client.query('select pg_advisory_unlock($1)', [ROLES_LOCK_KEY]);
   }
 }
 
@@ -74,7 +84,10 @@ export async function ensureRoles(connectionString: string, appPassword?: string
  * @throws Error when an applied migration was modified or a migration fails (that file is rolled back).
  */
 export async function migrate(options: MigrateOptions): Promise<string[]> {
-  const client = new pg.Client({ connectionString: options.connectionString, application_name: 'domusafe-migrate' });
+  const client = new pg.Client({
+    connectionString: options.connectionString,
+    application_name: 'domusafe-migrate',
+  });
   await client.connect();
   try {
     await bootstrapRoles(client, options.appPassword);
@@ -97,9 +110,11 @@ export async function migrate(options: MigrateOptions): Promise<string[]> {
         applied_at timestamptz not null default now()
       )`);
     const applied = new Map(
-      (await client.query<{ id: string; checksum: string }>('select id, checksum from public.schema_migrations')).rows.map(
-        (row) => [row.id, row.checksum],
-      ),
+      (
+        await client.query<{ id: string; checksum: string }>(
+          'select id, checksum from public.schema_migrations',
+        )
+      ).rows.map((row) => [row.id, row.checksum]),
     );
     const done: string[] = [];
     for (const migration of await loadMigrations()) {

@@ -1,16 +1,22 @@
 #!/usr/bin/env node
-import { migrate } from './migrate.js';
+import { ensureRoles, migrate } from './migrate.js';
 
-const USAGE = 'Usage: domusafe-db migrate   (env: DATABASE_MIGRATION_URL, optional DOMUSAFE_APP_DB_PASSWORD)';
+const USAGE = [
+  'Usage:',
+  '  domusafe-db roles     create domusafe_owner and domusafe_app (run once per cluster)',
+  '  domusafe-db migrate   apply pending migrations to the database of DATABASE_MIGRATION_URL',
+  'Environment: DATABASE_MIGRATION_URL (superuser or CREATEROLE), optional DOMUSAFE_APP_DB_PASSWORD',
+].join('\n');
 
 /**
- * Command-line entry point. `migrate` applies pending migrations using `DATABASE_MIGRATION_URL`.
+ * Command-line entry point for database administration.
  *
  * @param argv - Arguments after the script name.
  * @returns Process exit code.
  */
 async function main(argv: readonly string[]): Promise<number> {
-  if (argv[0] !== 'migrate') {
+  const command = argv[0];
+  if (command !== 'migrate' && command !== 'roles') {
     process.stderr.write(`${USAGE}\n`);
     return 2;
   }
@@ -19,13 +25,21 @@ async function main(argv: readonly string[]): Promise<number> {
     process.stderr.write(`DATABASE_MIGRATION_URL is required.\n${USAGE}\n`);
     return 2;
   }
-  const appPassword = process.env.DOMUSAFE_APP_DB_PASSWORD;
+  const password = process.env.DOMUSAFE_APP_DB_PASSWORD;
+  const appPassword = password === undefined || password === '' ? undefined : password;
+  if (command === 'roles') {
+    await ensureRoles(connectionString, appPassword);
+    process.stdout.write('roles domusafe_owner and domusafe_app are ready\n');
+    return 0;
+  }
   const applied = await migrate({
     connectionString,
-    ...(appPassword === undefined || appPassword === '' ? {} : { appPassword }),
+    ...(appPassword === undefined ? {} : { appPassword }),
     log: (line) => process.stdout.write(`${line}\n`),
   });
-  process.stdout.write(applied.length === 0 ? 'database is up to date\n' : `${String(applied.length)} migrations applied\n`);
+  process.stdout.write(
+    applied.length === 0 ? 'database is up to date\n' : `${String(applied.length)} migrations applied\n`,
+  );
   return 0;
 }
 

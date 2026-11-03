@@ -18,7 +18,8 @@ export const BACKUP_KDF_PARAMS: Argon2Params = { memoryKib: 65_536, iterations: 
 export const KDF_SALT_LENGTH = 16;
 
 /** Outcome of local PIN validation; the server never sees the PIN, so this check runs in the browser. */
-export type PinValidation = { readonly ok: true } | { readonly ok: false; readonly reason: 'too_short' | 'too_long' | 'trivial' };
+export type PinValidation =
+  { readonly ok: true } | { readonly ok: false; readonly reason: 'too_short' | 'too_long' | 'trivial' };
 
 const MIN_PIN_LENGTH = 6;
 const MAX_PIN_LENGTH = 64;
@@ -37,7 +38,10 @@ async function argon2(secret: string, salt: Bytes, params: Argon2Params): Promis
 }
 
 function graphemes(text: string): string[] {
-  return Array.from(new Intl.Segmenter('it', { granularity: 'grapheme' }).segment(text), (part) => part.segment);
+  return Array.from(
+    new Intl.Segmenter('it', { granularity: 'grapheme' }).segment(text),
+    (part) => part.segment,
+  );
 }
 
 function isSequential(pin: string): boolean {
@@ -45,8 +49,12 @@ function isSequential(pin: string): boolean {
     return false;
   }
   const digits = Array.from(pin, Number);
-  const ascending = digits.every((digit, index) => index === 0 || digit === ((digits[index - 1] ?? 0) + 1) % 10);
-  const descending = digits.every((digit, index) => index === 0 || digit === ((digits[index - 1] ?? 0) + 9) % 10);
+  const ascending = digits.every(
+    (digit, index) => index === 0 || digit === ((digits[index - 1] ?? 0) + 1) % 10,
+  );
+  const descending = digits.every(
+    (digit, index) => index === 0 || digit === ((digits[index - 1] ?? 0) + 9) % 10,
+  );
   return ascending || descending;
 }
 
@@ -83,7 +91,11 @@ export function validatePin(pin: string, forbidden: readonly string[] = []): Pin
  * @param params - Cost parameters stored with the account.
  * @returns The verifier.
  */
-export async function derivePinVerifier(pin: string, salt: Bytes, params: Argon2Params = PIN_KDF_PARAMS): Promise<Bytes> {
+export async function derivePinVerifier(
+  pin: string,
+  salt: Bytes,
+  params: Argon2Params = PIN_KDF_PARAMS,
+): Promise<Bytes> {
   return argon2(pin, salt, params);
 }
 

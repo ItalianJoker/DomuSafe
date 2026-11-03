@@ -39,7 +39,12 @@ export const PREMIUM_TRIAL_DAYS = 30;
 
 const DAY_MS = 86_400_000;
 
-const ADVANCED_FEATURES: readonly PlanFeature[] = ['finance', 'home_automation', 'integrations', 'vault_family'];
+const ADVANCED_FEATURES: readonly PlanFeature[] = [
+  'finance',
+  'home_automation',
+  'integrations',
+  'vault_family',
+];
 
 /** Plan catalogue: limits and features per tier. Bold values in phase 3 §9.1 come from the master prompt. */
 export const PLAN_DEFINITIONS: Readonly<Record<PlanTier, PlanDefinition>> = {

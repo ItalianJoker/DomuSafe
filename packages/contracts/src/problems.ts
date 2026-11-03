@@ -108,7 +108,10 @@ export const PROBLEM_TITLES: Readonly<Record<ProblemCode, { readonly it: string;
   plan_required: { it: 'Funzione non inclusa nel piano', en: 'Feature not included in the plan' },
   plan_limit_reached: { it: 'Limite del piano raggiunto', en: 'Plan limit reached' },
   plan_locked: { it: 'Dato in sola lettura con il piano attuale', en: 'Read-only with the current plan' },
-  reauthentication_required: { it: 'Conferma di nuovo la tua identità', en: 'Please confirm your identity again' },
+  reauthentication_required: {
+    it: 'Conferma di nuovo la tua identità',
+    en: 'Please confirm your identity again',
+  },
   two_factor_setup_required: {
     it: 'Attiva la verifica in due passaggi per continuare',
     en: 'Enable two-step verification to continue',

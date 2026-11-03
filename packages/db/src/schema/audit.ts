@@ -8,7 +8,9 @@ export type AuditMetadata = Record<string, string | number | boolean | null>;
 
 /** Append-only audit log (partitioned monthly, 24-month retention). */
 export const auditEvents = pgTable('audit_events', {
-  id: uuid('id').notNull().default(sql`uuidv7()`),
+  id: uuid('id')
+    .notNull()
+    .default(sql`uuidv7()`),
   occurredAt: instant('occurred_at').notNull().defaultNow(),
   familyId: uuid('family_id'),
   actorKind: actorKindEnum('actor_kind').notNull(),
@@ -22,7 +24,9 @@ export const auditEvents = pgTable('audit_events', {
 
 /** Append-only revisions of versioned resources. */
 export const revisions = pgTable('revisions', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   familyId: uuid('family_id').notNull(),
   houseId: uuid('house_id'),
   residentId: uuid('resident_id'),

@@ -54,10 +54,13 @@ create table public.auth_verifications (
 create index auth_verifications_identifier_idx on public.auth_verifications (identifier);
 
 create table public.auth_two_factors (
-  id           uuid primary key default uuidv7(),
-  user_id      uuid not null unique references public.auth_users(id) on delete cascade,
-  secret       text not null,
-  backup_codes text not null
+  id                        uuid primary key default uuidv7(),
+  user_id                   uuid not null unique references public.auth_users(id) on delete cascade,
+  secret                    text not null,
+  backup_codes              text not null,
+  verified                  boolean not null default true,
+  failed_verification_count integer not null default 0 check (failed_verification_count >= 0),
+  locked_until              timestamptz
 );
 
 create table public.account_profiles (

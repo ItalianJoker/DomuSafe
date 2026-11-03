@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import { PLAN_TIERS } from '@domusafe/plans';
 import { MEMBER_ROLES } from './access.js';
-import { currencySchema, instantSchema, localeSchema, pageSchema, timeZoneSchema, uuidSchema } from './common.js';
+import {
+  currencySchema,
+  instantSchema,
+  localeSchema,
+  pageSchema,
+  timeZoneSchema,
+  uuidSchema,
+} from './common.js';
 
 const nameSchema = z.string().trim().min(1).max(120);
 
@@ -70,7 +77,10 @@ export const updateFamilyRequestSchema = z
 export type UpdateFamilyRequest = z.infer<typeof updateFamilyRequestSchema>;
 
 /** Response of `GET /families`. */
-export const familyListSchema = z.object({ items: z.array(familySchema) }).strict().meta({ id: 'FamilyList' });
+export const familyListSchema = z
+  .object({ items: z.array(familySchema) })
+  .strict()
+  .meta({ id: 'FamilyList' });
 
 const addressField = z.string().trim().max(200).nullable();
 
@@ -196,9 +206,7 @@ export const meSchema = z
     lastFamilyId: uuidSchema.nullable(),
     lastHouseId: uuidSchema.nullable(),
     families: z.array(
-      z
-        .object({ id: uuidSchema, name: z.string(), role: memberRoleSchema, plan: planTierSchema })
-        .strict(),
+      z.object({ id: uuidSchema, name: z.string(), role: memberRoleSchema, plan: planTierSchema }).strict(),
     ),
   })
   .strict()

@@ -137,8 +137,7 @@ export interface AccessSubject {
 
 /** Result of a permission check: denied, or allowed with the scope the module must still enforce. */
 export type AccessDecision =
-  | { readonly allowed: false }
-  | { readonly allowed: true; readonly scope: 'all' | 'scoped' | 'own' };
+  { readonly allowed: false } | { readonly allowed: true; readonly scope: 'all' | 'scoped' | 'own' };
 
 /**
  * Decides whether a member holds a permission. Resource-level scope (`scoped`, `own`) is returned for the

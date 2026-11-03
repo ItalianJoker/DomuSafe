@@ -15,6 +15,7 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "db:roles": "pnpm --filter @domusafe/db run roles",
     "db:migrate": "pnpm --filter @domusafe/db run migrate",
     "openapi:write": "pnpm --filter @domusafe/api run openapi:write",
     "openapi:check": "pnpm --filter @domusafe/api run openapi:check",

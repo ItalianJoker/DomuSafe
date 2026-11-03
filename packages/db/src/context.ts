@@ -62,6 +62,10 @@ export async function withContext<T>(
  * @param principal - Principal of that transaction.
  * @param familyId - Family to act on.
  */
-export async function setFamilyContext(tx: Transaction, principal: DbPrincipal, familyId: string): Promise<void> {
+export async function setFamilyContext(
+  tx: Transaction,
+  principal: DbPrincipal,
+  familyId: string,
+): Promise<void> {
   await applyContext(tx, { principal, familyId });
 }

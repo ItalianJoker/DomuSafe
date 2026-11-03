@@ -29,7 +29,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src test",
     "test": "vitest run",
-    "migrate": "tsx --conditions=@domusafe/source src/cli.ts migrate"
+    "migrate": "tsx --conditions=@domusafe/source src/cli.ts migrate",
+    "roles": "tsx --conditions=@domusafe/source src/cli.ts roles"
   },
   "dependencies": {
     "drizzle-orm": "0.45.4",

@@ -74,7 +74,9 @@ export const scopeKeyVersions = pgTable('scope_key_versions', {
 
 /** Scope-key grants (`DS-GRANT v1`) to accounts, vault keys and kiosks. */
 export const scopeKeyGrants = pgTable('scope_key_grants', {
-  id: uuid('id').primaryKey().default(sql`uuidv7()`),
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
   familyId: uuid('family_id').notNull(),
   scopeId: uuid('scope_id').notNull(),
   version: integer('version').notNull(),

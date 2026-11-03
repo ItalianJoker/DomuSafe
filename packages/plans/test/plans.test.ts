@@ -68,8 +68,16 @@ describe('effective plan and trial', () => {
       source: 'trial',
       trialEndsAt: trial.endsAt,
     });
-    expect(effectivePlan('basic', trial, trial.endsAt)).toEqual({ tier: 'basic', source: 'paid', trialEndsAt: null });
-    expect(effectivePlan('free', null, new Date())).toEqual({ tier: 'free', source: 'paid', trialEndsAt: null });
+    expect(effectivePlan('basic', trial, trial.endsAt)).toEqual({
+      tier: 'basic',
+      source: 'paid',
+      trialEndsAt: null,
+    });
+    expect(effectivePlan('free', null, new Date())).toEqual({
+      tier: 'free',
+      source: 'paid',
+      trialEndsAt: null,
+    });
   });
 
   it('does not report a trial on a family that already pays for Premium', () => {
