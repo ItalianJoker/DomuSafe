@@ -1,0 +1,9 @@
+{
+  "extends": "@domusafe/config/tsconfig/node.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "allowImportingTsExtensions": false
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}

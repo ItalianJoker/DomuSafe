@@ -1,0 +1,9 @@
+{
+  "extends": "@domusafe/config/tsconfig/isomorphic.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}

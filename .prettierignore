@@ -1,0 +1,9 @@
+legacy/
+pnpm-lock.yaml
+dist/
+coverage/
+.turbo/
+apps/api/openapi.json
+docs/design/
+LICENSE.md
+LICENSE

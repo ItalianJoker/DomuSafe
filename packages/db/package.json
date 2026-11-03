@@ -1,0 +1,44 @@
+{
+  "name": "@domusafe/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DomuSafe PostgreSQL 18 schema: SQL migrations, RLS, Drizzle table definitions and tenant context.",
+  "exports": {
+    ".": {
+      "@domusafe/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./testing": {
+      "@domusafe/source": "./src/testing.ts",
+      "types": "./dist/testing.d.ts",
+      "default": "./dist/testing.js"
+    }
+  },
+  "files": [
+    "dist",
+    "migrations",
+    "sql"
+  ],
+  "bin": {
+    "domusafe-db": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src test",
+    "test": "vitest run",
+    "migrate": "tsx --conditions=@domusafe/source src/cli.ts migrate",
+    "roles": "tsx --conditions=@domusafe/source src/cli.ts roles"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@domusafe/config": "workspace:*",
+    "@domusafe/contracts": "workspace:*",
+    "@types/pg": "8.23.1"
+  }
+}
