@@ -1,7 +1,7 @@
 # DomuSafe
 
 ![Licenza](https://img.shields.io/badge/licenza-BSL%201.1-blue)
-![Versione](https://img.shields.io/badge/versione-0.11.0-green)
+![Versione](https://img.shields.io/badge/versione-0.12.0-green)
 ![Dispositivi](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 ![PWA](https://img.shields.io/badge/PWA-installabile-teal)
 
@@ -15,7 +15,7 @@ I dati appartengono al tuo **account** (per **Famiglia** o per **Residente**) e 
 
 1. Apri DomuSafe e **crea un account** (email e una password che ricordi).
 2. **Crea la Famiglia**, oppure entra con l’invito / QR che ti hanno mandato.
-3. Compila **Casa** (utenze, Wi‑Fi) e **Emergenza** (schede sanitarie ICE).
+3. Compila **Casa** (chiusure, Wi‑Fi), **Utenze** (contratti e scadenze) e **Emergenza** (schede sanitarie ICE).
 
 Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSafe** (Manuale Utente) dal menu. Su molti telefoni puoi anche aggiungere DomuSafe alla schermata Home come app.
 
@@ -24,8 +24,9 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 | Sezione | A cosa serve |
 | :--- | :--- |
 | **Panoramica** | Tre colonne Casa / Residenti / Emergenza con %, scadenze, QR emergenza in 1 tap, ultimo accesso break-glass |
-| **Casa** | Chiusure utenze con foto, Wi‑Fi, rifiuti, artigiani; contratti e scadenze Famiglia; anteprima ospite |
-| **Emergenza (ICE)** | Schede 118 / 112, modalità soccorso a schermo intero; mobile e abbonamenti personali |
+| **Casa** | Chiusure di emergenza con foto, Wi‑Fi, rifiuti, artigiani; anteprima ospite |
+| **Utenze** | Luce, Gas, Internet, Acqua, TARI, abbonamenti Famiglia e scadenze (es. caldaia) |
+| **Emergenza (ICE)** | Schede 118 / 112, modalità soccorso a schermo intero; mobile, bollo/auto, conti personali, tasse IT |
 | **Cassaforte** | Documenti Famiglia (anche conti bancari Famiglia) protetti da PIN (Advanced+) · kit eredità (Premium) |
 | **Stampa / QR** | Foglio A4, stampa solo emergenza A5, QR break-glass senza login |
 | **Premium** | Registro scan, SOS SMS/WhatsApp, marchio host |

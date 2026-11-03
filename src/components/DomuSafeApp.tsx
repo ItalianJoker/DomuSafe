@@ -19,6 +19,7 @@ import {
   Home,
   Loader2,
   LogOut,
+  PlugZap,
   Printer,
   Receipt,
   Save,
@@ -74,10 +75,12 @@ import { EmergencyPublishPanel } from '@/components/EmergencyPublishPanel';
 import { EmergencyPrintSheet } from '@/components/EmergencyPrintSheet';
 import { IceRescueMode } from '@/components/IceRescueMode';
 import { JsonBackupPanel } from '@/components/JsonBackupPanel';
+import { FamilyServicesPanel } from '@/components/FamilyServicesPanel';
 
 type Tab =
   | 'home'
   | 'casa'
+  | 'utenze'
   | 'ice'
   | 'cassaforte'
   | 'sync'
@@ -535,18 +538,70 @@ function AuthenticatedApp() {
               setDocument({ ...liveDoc, level1_public })
             }
             onStartWizard={() => setShowWizard(true)}
+            onOpenUtenze={() => setTab('utenze')}
           />
+        ) : null}
+
+        {tab === 'utenze' ? (
+          <div className="space-y-4">
+            <header>
+              <p className="text-sm font-bold uppercase tracking-widest text-[var(--brand-forest)]">
+                Famiglia · Contratti
+              </p>
+              <h2 className="mt-1 font-display text-2xl font-black text-[var(--brand-ink)]">
+                Utenze, abbonamenti e scadenze
+              </h2>
+              <p className="mt-2 max-w-2xl text-base text-zinc-700">
+                Luce, Gas, Internet, Acqua, TARI, abbonamenti condivisi e
+                scadenze (es. controllo caldaia). Restano protetti con i dati
+                della casa. I conti bancari Famiglia stanno in{' '}
+                <button
+                  type="button"
+                  className="font-bold text-[var(--brand-forest)] underline"
+                  onClick={() => setTab('cassaforte')}
+                >
+                  Cassaforte
+                </button>{' '}
+                (PIN, da Advanced).
+              </p>
+            </header>
+            <FamilyServicesPanel
+              tier={effectiveTier}
+              value={liveDoc.level1_public.familyServices}
+              onChange={(familyServices) =>
+                setDocument({
+                  ...liveDoc,
+                  level1_public: {
+                    ...liveDoc.level1_public,
+                    familyServices,
+                  },
+                })
+              }
+            />
+          </div>
         ) : null}
 
         {tab === 'ice' ? (
           <div className="space-y-4">
             {effectiveTier !== 'PREMIUM' ? (
-              <p className="no-print inline-flex items-center gap-2 text-sm font-semibold text-amber-950">
+              <p className="no-print flex flex-wrap items-center gap-2 text-sm font-semibold text-amber-950">
                 <Receipt className="size-4" aria-hidden />
-                Checklist tasse italiane su ogni scheda residente: inclusa in
-                Premium (o durante la prova). Apri Piano per i dettagli.
+                Checklist tasse italiane e conti personali: su ogni scheda
+                residente con Premium (o prova).
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => setTab('licenze')}
+                >
+                  Apri Piano
+                </button>
               </p>
-            ) : null}
+            ) : (
+              <p className="no-print text-sm font-semibold text-emerald-950">
+                Su ogni scheda residente: mobile, abbonamenti (bollo/auto),
+                conti personali e checklist tasse IT.
+              </p>
+            )}
             <Level2IcePanel
               tier={effectiveTier}
               residents={liveDoc.level2_ice.residents}
@@ -727,11 +782,39 @@ function AuthenticatedApp() {
         ) : null}
 
         {tab === 'famiglia' ? (
-          <FamilyInvitePanel
-            family={family}
-            house={liveDoc.level1_public}
-            onCreateInvite={createInvite}
-          />
+          <div className="space-y-4">
+            <FamilyInvitePanel
+              family={family}
+              house={liveDoc.level1_public}
+              onCreateInvite={createInvite}
+            />
+            <aside className="rounded-lg border-2 border-zinc-900 bg-white p-4">
+              <h3 className="text-lg font-black text-zinc-950">
+                Conti e documenti Famiglia
+              </h3>
+              <p className="mt-1 text-sm text-zinc-700">
+                I conti bancari Famiglia e i documenti riservati stanno nella{' '}
+                <strong>Cassaforte</strong> (PIN, da Advanced). Utenze e
+                scadenze quotidiane sono nella sezione <strong>Utenze</strong>.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="inline-flex min-h-12 items-center rounded-md border-2 border-zinc-900 bg-zinc-950 px-4 font-bold text-white"
+                  onClick={() => setTab('cassaforte')}
+                >
+                  Apri Cassaforte
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex min-h-12 items-center rounded-md border-2 border-[var(--brand-forest)] bg-white px-4 font-bold text-[var(--brand-ink)]"
+                  onClick={() => setTab('utenze')}
+                >
+                  Apri Utenze
+                </button>
+              </div>
+            </aside>
+          </div>
         ) : null}
         {tab === 'licenze' ? (
           <LicensePanel
@@ -787,6 +870,12 @@ const TAB_ITEMS: Array<{
     icon: <Sparkles className="size-5" aria-hidden />,
   },
   { id: 'casa', label: 'Casa', short: 'Casa', icon: <Home className="size-5" aria-hidden /> },
+  {
+    id: 'utenze',
+    label: 'Utenze',
+    short: 'Utenze',
+    icon: <PlugZap className="size-5" aria-hidden />,
+  },
   {
     id: 'ice',
     label: 'Emergenza',

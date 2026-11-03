@@ -20,13 +20,13 @@ import {
   Copy,
   KeyRound,
   Leaf,
+  PlugZap,
 } from 'lucide-react';
 import type { LicenseTier, PublicHouseData } from '@/types/domus';
 import { canAccessFeature } from '@/lib/licensing';
 import { WEEKDAYS } from '@/lib/labels';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
-import { FamilyServicesPanel } from '@/components/FamilyServicesPanel';
 import { FeatureGate } from '@/components/FeatureGate';
 import { PhotoCaptureField } from '@/components/PhotoCaptureField';
 import { EmptyStateCta } from '@/components/EmptyStateCta';
@@ -38,6 +38,8 @@ interface Level1PublicPanelProps {
   data: PublicHouseData;
   onChange: (next: PublicHouseData) => void;
   onStartWizard?: () => void;
+  /** Porta alla tab Utenze (contratti Famiglia). */
+  onOpenUtenze?: () => void;
 }
 
 type HouseView = 'guest' | 'tech';
@@ -47,6 +49,7 @@ export function Level1PublicPanel({
   data,
   onChange,
   onStartWizard,
+  onOpenUtenze,
 }: Level1PublicPanelProps) {
   const allowCustom = canAccessFeature(tier, 'allowCustomFields');
   const [view, setView] = useState<HouseView>('guest');
@@ -213,8 +216,12 @@ export function Level1PublicPanel({
       <div className="space-y-4">
         <h3 className="flex items-center gap-2 text-lg font-bold text-zinc-950">
           <Droplets className="size-6 shrink-0" aria-hidden />
-          Utenze
+          Chiusure di emergenza
         </h3>
+        <p className="text-sm text-zinc-700">
+          Dove chiudere acqua, gas e luce. I contratti (Luce, Gas, Internet…)
+          stanno nella sezione <strong>Utenze</strong>.
+        </p>
 
         <UtilityBlock
           icon={<Droplets className="size-5" aria-hidden />}
@@ -686,6 +693,14 @@ export function Level1PublicPanel({
                     update({ artisanContacts });
                   }}
                 />
+                {contact.phone.trim() ? (
+                  <a
+                    href={`tel:${contact.phone.replace(/\s+/g, '')}`}
+                    className="mt-2 inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-emerald-900 bg-emerald-50 px-3 text-sm font-bold text-emerald-950"
+                  >
+                    Chiama
+                  </a>
+                ) : null}
               </div>
               <button
                 type="button"
@@ -708,11 +723,26 @@ export function Level1PublicPanel({
       </>
       ) : null}
 
-      <FamilyServicesPanel
-        tier={tier}
-        value={data.familyServices}
-        onChange={(familyServices) => update({ familyServices })}
-      />
+      {onOpenUtenze ? (
+        <aside className="rounded-lg border-2 border-[var(--brand-forest)] bg-[var(--brand-cream)]/60 p-4">
+          <h3 className="flex items-center gap-2 text-lg font-black text-[var(--brand-ink)]">
+            <PlugZap className="size-6" aria-hidden />
+            Contratti e scadenze Famiglia
+          </h3>
+          <p className="mt-1 text-sm text-zinc-700">
+            Luce, Gas, Internet, Acqua, abbonamenti e controllo caldaia: gestiscili
+            nella sezione dedicata <strong>Utenze</strong>.
+          </p>
+          <button
+            type="button"
+            className="mt-3 inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-[var(--brand-ink)] bg-[var(--brand-ink)] px-4 font-bold text-white"
+            onClick={onOpenUtenze}
+          >
+            <PlugZap className="size-5" aria-hidden />
+            Apri Utenze
+          </button>
+        </aside>
+      ) : null}
       <FeatureGate tier={tier} feature="allowCustomFields">
         <CustomFieldsEditor
           title="Campi personalizzati (casa)"

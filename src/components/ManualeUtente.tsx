@@ -17,7 +17,11 @@ const SECTIONS = [
   },
   {
     title: 'Casa (livello 1)',
-    body: 'Annota dove chiudere acqua, gas ed elettricità, il Wi‑Fi (copia + QR), citofono/cancello/pacchi, house-sitting e utenze (Luce, Gas, Internet, Acqua, TARI) con scadenze. Vista ospite/sitter o tecnica. I contratti restano protetti con i dati della casa.',
+    body: 'Annota le chiusure di emergenza (acqua, gas, quadro), il Wi‑Fi (copia + QR), citofono/cancello/pacchi e house-sitting. Vista ospite/sitter o tecnica. I contratti Famiglia non stanno qui: usa la sezione Utenze.',
+  },
+  {
+    title: 'Utenze (Famiglia)',
+    body: 'Nella sezione Utenze del menu gestisci Luce, Gas, Internet, Acqua, TARI, abbonamenti familiari e scadenze (es. controllo caldaia). Restano protetti con i dati della casa. I conti bancari Famiglia invece sono in Cassaforte (PIN).',
   },
   {
     title: 'QR emergenza senza login',
@@ -25,7 +29,7 @@ const SECTIONS = [
   },
   {
     title: 'Emergenza ICE (livello 2)',
-    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Su ogni Residente puoi annotare tariffa mobile e abbonamenti personali (assicurazione auto, bollo…). In stampa le parti sanitarie restano sotto la linguetta da piegare.',
+    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Sulla scheda chiusa trovi i chip «Mobile · Abbonamenti», «Conti personali» e «Tasse IT»: aprono la sezione giusta. In stampa le parti sanitarie restano sotto la linguetta da piegare.',
   },
   {
     title: 'Tasse italiane (scheda residente)',
