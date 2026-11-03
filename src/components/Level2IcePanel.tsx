@@ -50,6 +50,8 @@ interface Level2IcePanelProps {
   onPetsChange: (pets: PetRecord[]) => void;
   onOpenRescue?: () => void;
   onStartWizard?: () => void;
+  /** Personale → Servizi (tasse, mobile, abbonamenti, conti). */
+  onOpenServizi?: () => void;
 }
 
 export function Level2IcePanel({
@@ -60,6 +62,7 @@ export function Level2IcePanel({
   onPetsChange,
   onOpenRescue,
   onStartWizard,
+  onOpenServizi,
 }: Level2IcePanelProps) {
   const maxResidents = getMaxResidents(tier);
   const canAdd = canAddResident(tier, residents.length);
@@ -72,7 +75,7 @@ export function Level2IcePanel({
     <section aria-labelledby="level2-title" className="space-y-8">
       <header>
         <p className="text-sm font-bold uppercase tracking-widest text-red-800">
-          Livello 2 · Emergenza e soccorso
+          Personale · Schede di emergenza
         </p>
         <div className="mt-3 flex flex-wrap gap-3">
           <a
@@ -92,13 +95,22 @@ export function Level2IcePanel({
               Modalità soccorso
             </button>
           ) : null}
+          {onOpenServizi ? (
+            <button
+              type="button"
+              className="inline-flex min-h-14 items-center gap-2 rounded-md border-2 border-[var(--brand-forest)] bg-[var(--md-surface-container)] px-5 font-black text-[var(--brand-ink)]"
+              onClick={onOpenServizi}
+            >
+              Apri Servizi
+            </button>
+          ) : null}
         </div>
-        <h2 id="level2-title" className="mt-1 text-2xl font-black text-zinc-950">
+        <h2 id="level2-title" className="mt-1 text-2xl font-black text-[var(--md-on-surface)]">
           Schede sanitarie
         </h2>
-        <p className="mt-2 max-w-2xl text-base text-zinc-700">
+        <p className="mt-2 max-w-2xl text-base text-[var(--md-on-surface-variant)]">
           Dati per il triage del soccorso. In stampa restano sotto la linguetta
-          privacy pieghevole.
+          privacy pieghevole. Tasse, mobile e conti: sezione Servizi.
         </p>
         <p className="mt-3 inline-flex items-start gap-2 rounded-md border-2 border-red-800 bg-red-50 px-3 py-2 text-sm font-semibold text-red-950">
           <AlertTriangle className="mt-0.5 size-5 shrink-0" aria-hidden />

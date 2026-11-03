@@ -28,20 +28,24 @@ const SECTIONS = [
     body: 'In Stampa / QR puoi pubblicare un QR di emergenza: chi lo inquadra apre Casa + schede di emergenza senza account, dopo un avviso, con tasto 118. L’accesso viene registrato. Aggiorna il QR dopo modifiche importanti.',
   },
   {
-    title: 'Emergenza e soccorso (livello 2)',
-    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Ogni campo è modificabile a mano sulla scheda. Sulla scheda chiusa trovi i collegamenti a mobile, abbonamenti, conti e tasse. In stampa le parti sanitarie restano sotto la linguetta da piegare.',
+    title: 'Personale (schede di emergenza)',
+    body: 'Nel menu Personale trovi le schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Ogni campo è modificabile a mano. In stampa le parti sanitarie restano sotto la linguetta da piegare.',
+  },
+  {
+    title: 'Servizi (Personale)',
+    body: 'Sotto Personale → Servizi gestisci tariffa mobile, abbonamenti personali (bollo, auto…), conti bancari personali e la checklist tasse italiane per ogni residente. Con Premium (o prova) tasse e conti sono sbloccati; altrimenti vedi un messaggio chiaro in Account.',
   },
   {
     title: 'Tasse italiane (scheda residente)',
-    body: 'Con Premium (o durante la prova) su ogni scheda residente trovi la checklist annuale (Certificazione Unica, dichiarazione precompilata, modello 730, indicatore economico, imposta sugli immobili, tassa rifiuti, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
+    body: 'Con Premium (o durante la prova) in Servizi e sulla scheda residente trovi la checklist annuale (Certificazione Unica, dichiarazione precompilata, modello 730, indicatore economico, imposta sugli immobili, tassa rifiuti, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
   },
   {
     title: 'Tema chiaro / scuro',
-    body: 'Dall’intestazione puoi scegliere tema chiaro, scuro o sistema. La scelta viene salvata sul tuo account.',
+    body: 'Dall’intestazione o da Account puoi scegliere tema chiaro, scuro o sistema. La scelta viene salvata sul tuo account.',
   },
   {
     title: 'Conti bancari',
-    body: 'I conti della Famiglia stanno nella Cassaforte (da Advanced in su), protetti da PIN. I conti personali di ciascun Residente stanno sulla sua scheda Emergenza e richiedono Premium (o prova).',
+    body: 'I conti della Famiglia stanno nella Cassaforte (da Advanced in su), protetti da PIN. I conti personali di ciascun Residente stanno in Personale → Servizi (e sulla scheda) e richiedono Premium (o prova).',
   },
   {
     title: 'Cassaforte (livello 3)',
@@ -65,15 +69,15 @@ const SECTIONS = [
   },
   {
     title: 'Altri telefoni',
-    body: 'Con Premium (o prova) colleghi un altro telefono o computer con un QR, in modo cifrato. Ogni caricamento tiene anche le versioni precedenti (backup storico): puoi ripristinare una revisione sul dispositivo. Free e Basic salvano sull’account senza questa funzione tra dispositivi.',
+    body: 'Con Premium (o prova), nella sezione Extra → Altri telefoni colleghi un altro telefono o computer con un QR, in modo cifrato. Ogni caricamento tiene anche le versioni precedenti (backup storico): puoi ripristinare una revisione sul dispositivo. Free e Basic salvano sull’account senza questa funzione tra dispositivi.',
   },
   {
     title: 'Chiave di licenza (SaaS)',
-    body: 'Nella sezione Piano puoi incollare una chiave firmata ricevuta dall’autore. DomuSafe verifica la firma sul server e attiva il piano indicato. Senza chiave restano piano base, prova Premium e l’eventuale piano impostato da chi gestisce l’installazione.',
+    body: 'Nella sezione Account puoi incollare una chiave firmata ricevuta dall’autore. DomuSafe verifica la firma sul server e attiva il piano indicato. Senza chiave restano piano base, prova Premium e l’eventuale piano impostato da chi gestisce l’installazione.',
   },
   {
     title: 'Registro accessi (scan)',
-    body: 'Con Premium, nella sezione Premium trovi il registro di chi ha inquadrato il QR di monitoraggio per gli ospiti e quando. Puoi anche annotare accessi a mano. Non mostra dati sanitari né cassaforte.',
+    body: 'Con Premium, nella sezione Extra trovi il registro di chi ha inquadrato il QR di monitoraggio per gli ospiti e quando. Puoi anche annotare accessi a mano. Non mostra dati sanitari né cassaforte.',
   },
   {
     title: 'Avvisi di soccorso',
@@ -89,11 +93,11 @@ const SECTIONS = [
   },
   {
     title: 'Piani: Free, Basic, Advanced, Premium',
-    body: 'Free: Casa + Emergenza (utenze/abbonamenti standard), una scheda residente, marchio DomuSafe in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN, conti Famiglia) e stampa senza marchio DomuSafe; niente tasse, conti/patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse e conti personali sulle schede residenti, patrimonio personale in cassaforte, successione Famiglia, sync, campi/servizi personalizzati, registro accessi, avvisi di soccorso, marchio host).',
+    body: 'Free: Casa + Personale (utenze/abbonamenti standard), una scheda residente, marchio DomuSafe in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN, conti Famiglia) e stampa senza marchio DomuSafe; niente tasse, conti/patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse e conti personali in Servizi / schede residenti, patrimonio personale in cassaforte, successione Famiglia, sync, campi/servizi personalizzati, registro accessi, avvisi di soccorso, marchio host).',
   },
   {
     title: 'Prova Premium',
-    body: 'Ogni account può avviare una prova Premium di 30 giorni una sola volta, dalla sezione Piano. Durante la prova usi tutte le funzioni Premium. Alla scadenza torni al piano base (di solito Free).',
+    body: 'Ogni account può avviare una prova Premium di 30 giorni una sola volta, dalla sezione Account. Durante la prova usi tutte le funzioni Premium. Alla scadenza torni al piano base (di solito Free).',
   },
   {
     title: 'Installare DomuSafe sul telefono',
@@ -117,7 +121,7 @@ export function ManualeUtente() {
         {SECTIONS.map((section) => (
           <li
             key={section.title}
-            className="border-l-4 border-[var(--brand-gold)] bg-white/70 py-3 pl-4 pr-2"
+            className="border-l-4 border-[var(--brand-gold)] bg-[var(--md-surface-container)] py-3 pl-4 pr-2"
           >
             <h3 className="font-display text-lg font-bold text-[var(--brand-ink)]">
               {section.title}

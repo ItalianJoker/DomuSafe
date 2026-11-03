@@ -16,10 +16,13 @@ export type EngagementStepId =
 export type EngagementTarget =
   | 'casa'
   | 'utenze'
-  | 'ice'
+  | 'personale'
+  | 'servizi'
   | 'cassaforte'
   | 'stampa'
-  | 'home';
+  | 'home'
+  /** @deprecated alias → personale */
+  | 'ice';
 
 export type EngagementStep = {
   id: EngagementStepId;
@@ -96,8 +99,8 @@ export function buildEngagementSteps(
       id: 'residenti',
       title: 'Aggiungi i residenti',
       blurb: 'Almeno una scheda con nome per chi vive in casa.',
-      cta: 'Apri Emergenza',
-      target: 'ice',
+      cta: 'Apri Personale',
+      target: 'personale',
       done: hasResidenti(doc),
       available: true,
     },
@@ -105,8 +108,8 @@ export function buildEngagementSteps(
       id: 'emergenza',
       title: 'Dati utili al soccorso',
       blurb: 'Allergie, farmaci salvavita o un contatto di emergenza.',
-      cta: 'Completa Emergenza',
-      target: 'ice',
+      cta: 'Completa Personale',
+      target: 'personale',
       done: hasEmergenza(doc),
       available: true,
     },
