@@ -23,14 +23,15 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
     name: 'Free',
     audience: 'Per iniziare da soli, con una sola persona in casa.',
     includes: [
-      'Casa (utenze, Wi‑Fi, rifiuti, artigiani) e schede Emergenza ICE',
+      'Casa (chiusure, Wi‑Fi, rifiuti, artigiani) e utenze/abbonamenti/scadenze Famiglia',
+      'Schede Emergenza ICE con mobile e abbonamenti personali standard',
       'Una scheda residente',
       'Stampa A4 e QR (con Watermark DomuSafe)',
       'Solo i campi previsti dall’app (campi standard)',
     ],
     limits: [
       'Niente Cassaforte protetta da PIN',
-      'Niente tasse italiane, successione, sync tra dispositivi né campi personalizzati',
+      'Niente tasse italiane, conti personali, successione, sync né campi personalizzati',
     ],
   },
   BASIC: {
@@ -44,7 +45,7 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
     ],
     limits: [
       'Niente Cassaforte protetta da PIN',
-      'Niente tasse italiane, successione, sync tra dispositivi né campi personalizzati',
+      'Niente tasse italiane, conti personali, successione, sync né campi personalizzati',
     ],
   },
   ADVANCED: {
@@ -52,13 +53,13 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
     audience: 'Per chi vuole anche i documenti riservati di Famiglia, dietro PIN.',
     includes: [
       'Tutto di Basic',
-      'Cassaforte (Livello 3): documenti di Famiglia (utenze, eredità digitale) protetti da PIN',
+      'Cassaforte (Livello 3): documenti Famiglia (archivio bollette, eredità digitale, conti bancari Famiglia) protetti da PIN',
       'Stampa A4 senza Watermark DomuSafe (resta la linguetta Privacy per l’ICE)',
       'Fino a 3 abitazioni',
       'Solo campi standard',
     ],
     limits: [
-      'Niente documenti patrimoniali personali (conti, polizze, lavoro)',
+      'Niente patrimonio personale (polizze, lavoro) né conti bancari personali',
       'Niente checklist tasse / ISEE sulle schede residenti',
       'Niente checklist successione Famiglia, sync tra dispositivi né campi personalizzati',
     ],
@@ -68,11 +69,12 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
     audience: 'Tutto DomuSafe: casa, emergenza, patrimonio, tasse, successione e sync.',
     includes: [
       'Tutto di Advanced, senza Watermark in stampa',
-      'Patrimonio personale in Cassaforte (conti, polizze, lavoro)',
+      'Conti bancari personali sulla scheda Residente',
+      'Patrimonio personale in Cassaforte (polizze, lavoro)',
       'Checklist tasse italiane su ogni scheda residente',
       'Checklist successione per tutta la Famiglia e kit eredità da stampare',
       'Sync cifrato tra i tuoi dispositivi (QR)',
-      'Campi personalizzati oltre a quelli standard',
+      'Campi e servizi personalizzati oltre a quelli standard',
       'Registro accessi (scan), avvisi SOS, marchio host personalizzato',
       'Abitazioni senza limite pratico',
     ],
@@ -82,12 +84,12 @@ export const TIER_COPY: Record<LicenseTier, TierCopy> = {
 
 /** Riepilogo breve per tabelle / badge. */
 export const TIER_SUMMARY: Record<LicenseTier, string> = {
-  FREE: 'Casa + Emergenza · 1 residente · Watermark · campi standard',
+  FREE: 'Casa + utenze/scadenze + Emergenza · 1 residente · Watermark · campi standard',
   BASIC: 'Come Free, con residenti illimitati · Watermark · campi standard',
   ADVANCED:
-    'Come Basic + Cassaforte Famiglia · senza Watermark · senza tasse / patrimonio personale / sync',
+    'Come Basic + Cassaforte Famiglia (conti Famiglia) · senza Watermark · senza tasse / conti personali / sync',
   PREMIUM:
-    'Tutto: tasse, patrimonio personale, successione, sync, campi personalizzati, registro, SOS, marchio host',
+    'Tutto: tasse, conti personali, patrimonio, successione, sync, campi personalizzati, registro, SOS, marchio host',
 };
 
 /** Prova Premium — testo fisso per UI. */

@@ -13,19 +13,23 @@ const SECTIONS = [
   },
   {
     title: 'Casa (livello 1)',
-    body: 'Annota dove chiudere acqua, gas ed elettricità, il Wi‑Fi, i rifiuti e i contatti degli artigiani. Sono informazioni pensate anche per gli ospiti.',
+    body: 'Annota dove chiudere acqua, gas ed elettricità, il Wi‑Fi, i rifiuti e i contatti degli artigiani. Qui trovi anche utenze (Luce, Gas, Internet, Acqua, TARI), abbonamenti familiari e scadenze (es. controllo caldaia). Sono informazioni pensate anche per gli ospiti; i contratti restano protetti con i dati della casa.',
   },
   {
     title: 'Emergenza ICE (livello 2)',
-    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. In stampa restano sotto la linguetta da piegare.',
+    body: 'Schede sanitarie di residenti e animali: gruppo sanguigno, allergie, farmaci salvavita, contatti di emergenza. Su ogni Residente puoi annotare tariffa mobile e abbonamenti personali (assicurazione auto, bollo…). In stampa le parti sanitarie restano sotto la linguetta da piegare.',
   },
   {
     title: 'Tasse italiane (scheda residente)',
     body: 'Con Premium (o durante la prova) su ogni scheda residente trovi la checklist annuale (CU, precompilata, 730, ISEE, IMU, TARI, acconti). Segna «fatto» per anno e aggiungi note: restano protette insieme ai dati della Famiglia.',
   },
   {
+    title: 'Conti bancari',
+    body: 'I conti della Famiglia stanno nella Cassaforte (da Advanced in su), protetti da PIN. I conti personali di ciascun Residente stanno sulla sua scheda Emergenza e richiedono Premium (o prova).',
+  },
+  {
     title: 'Cassaforte (livello 3)',
-    body: 'Advanced: documenti di Famiglia (utenze, eredità digitale) protetti da un PIN. Premium: anche patrimonio personale (conti, polizze, lavoro). PIN sbagliato → «PIN errato o dati non validi».',
+    body: 'Advanced: documenti di Famiglia (archivio bollette, eredità digitale, conti bancari Famiglia) protetti da un PIN. Premium: anche patrimonio personale (polizze, lavoro) e campi liberi. PIN sbagliato → «PIN errato o dati non validi».',
   },
   {
     title: 'Checklist successione (Famiglia)',
@@ -69,7 +73,7 @@ const SECTIONS = [
   },
   {
     title: 'Piani: Free, Basic, Advanced, Premium',
-    body: 'Free: Casa + Emergenza, una scheda residente, Watermark in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN) e stampa senza Watermark; niente tasse, patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse sulle schede residenti, patrimonio personale, successione Famiglia, sync, campi personalizzati, registro accessi, SOS, marchio host).',
+    body: 'Free: Casa + Emergenza (utenze/abbonamenti standard), una scheda residente, Watermark in stampa, solo campi standard. Basic: come Free con residenti illimitati. Advanced: aggiunge la Cassaforte Famiglia (PIN, conti Famiglia) e stampa senza Watermark; niente tasse, conti/patrimonio personale, successione, sync né campi personalizzati. Premium: tutto (tasse e conti personali sulle schede residenti, patrimonio personale in cassaforte, successione Famiglia, sync, campi/servizi personalizzati, registro accessi, SOS, marchio host).',
   },
   {
     title: 'Prova Premium',

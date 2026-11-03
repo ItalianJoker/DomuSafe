@@ -17,8 +17,11 @@ import { createEmptyPet, createEmptyResident } from '@/lib/defaults';
 import { BLOOD_GROUP_LABELS, MOBILITY_LABELS } from '@/lib/labels';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
 import { ResidentTaxChecklist } from '@/components/ResidentTaxChecklist';
+import { ResidentServicesPanel } from '@/components/ResidentServicesPanel';
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
 import { FeatureGate } from '@/components/FeatureGate';
+import { enforceResidentForTier } from '@/lib/vault-policy';
+import { canAccessFeature } from '@/lib/licensing';
 import type { LicenseTier } from '@/types/domus';
 
 interface Level2IcePanelProps {
@@ -120,7 +123,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           fullName: e.target.value,
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                     />
                   </div>
@@ -133,7 +136,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           birthYear: Number(e.target.value) || 0,
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                     />
                   </div>
@@ -144,7 +147,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           bloodGroup: e.target.value as BloodGroup,
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                     >
                       {(Object.keys(BLOOD_GROUP_LABELS) as BloodGroup[]).map(
@@ -163,7 +166,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           mobilityStatus: e.target.value as EvacuationMobility,
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                     >
                       {(
@@ -182,7 +185,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           sleepingRoom: e.target.value,
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                       placeholder="Es. Camera matrimoniale, primo piano"
                     />
@@ -194,7 +197,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           allergies: splitList(e.target.value),
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                     />
                   </div>
@@ -205,7 +208,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           chronicConditions: splitList(e.target.value),
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                     />
                   </div>
@@ -216,7 +219,7 @@ export function Level2IcePanel({
                       onChange={(e) =>
                         patchResident(residents, resident.id, {
                           medicalDevices: splitList(e.target.value),
-                        }, onResidentsChange)
+                        }, onResidentsChange, tier)
                       }
                       placeholder="Es. Pacemaker, insulina pen"
                     />
@@ -230,7 +233,8 @@ export function Level2IcePanel({
                       residents,
                       resident.id,
                       { lifesavingMedicines },
-                      onResidentsChange
+                      onResidentsChange,
+                      tier
                     )
                   }
                 />
@@ -242,7 +246,42 @@ export function Level2IcePanel({
                       residents,
                       resident.id,
                       { iceContacts },
-                      onResidentsChange
+                      onResidentsChange,
+                      tier
+                    )
+                  }
+                />
+
+                <ResidentServicesPanel
+                  tier={tier}
+                  mobilePlan={resident.mobilePlan}
+                  personalSubscriptions={resident.personalSubscriptions}
+                  personalBankAccounts={resident.personalBankAccounts}
+                  onMobilePlanChange={(mobilePlan) =>
+                    patchResident(
+                      residents,
+                      resident.id,
+                      { mobilePlan },
+                      onResidentsChange,
+                      tier
+                    )
+                  }
+                  onSubscriptionsChange={(personalSubscriptions) =>
+                    patchResident(
+                      residents,
+                      resident.id,
+                      { personalSubscriptions },
+                      onResidentsChange,
+                      tier
+                    )
+                  }
+                  onBankAccountsChange={(personalBankAccounts) =>
+                    patchResident(
+                      residents,
+                      resident.id,
+                      { personalBankAccounts },
+                      onResidentsChange,
+                      tier
                     )
                   }
                 />
@@ -255,7 +294,8 @@ export function Level2IcePanel({
                         residents,
                         resident.id,
                         { taxChecklist },
-                        onResidentsChange
+                        onResidentsChange,
+                        tier
                       )
                     }
                   />
@@ -270,7 +310,8 @@ export function Level2IcePanel({
                         residents,
                         resident.id,
                         { customFields },
-                        onResidentsChange
+                        onResidentsChange,
+                        tier
                       )
                     }
                   />
@@ -453,10 +494,24 @@ function patchResident(
   residents: ResidentHealthRecord[],
   id: string,
   patch: Partial<ResidentHealthRecord>,
-  onChange: (next: ResidentHealthRecord[]) => void
+  onChange: (next: ResidentHealthRecord[]) => void,
+  tier: LicenseTier
 ) {
   onChange(
-    residents.map((r) => (r.id === id ? { ...r, ...patch } : r))
+    residents.map((r) =>
+      r.id === id
+        ? enforceResidentForTier(
+            { ...r, ...patch },
+            {
+              allowCustomFields: canAccessFeature(tier, 'allowCustomFields'),
+              allowPersonalPatrimonio: canAccessFeature(
+                tier,
+                'allowPersonalPatrimonio'
+              ),
+            }
+          )
+        : r
+    )
   );
 }
 

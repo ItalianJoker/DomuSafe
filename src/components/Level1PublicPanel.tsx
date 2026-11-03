@@ -13,7 +13,9 @@ import { canAccessFeature } from '@/lib/licensing';
 import { WEEKDAYS } from '@/lib/labels';
 import { FieldLabel, TouchInput, TouchSelect, TouchTextarea } from '@/components/TouchField';
 import { CustomFieldsEditor } from '@/components/CustomFieldsEditor';
+import { FamilyServicesPanel } from '@/components/FamilyServicesPanel';
 import { FeatureGate } from '@/components/FeatureGate';
+import { enforcePublicHouseForTier } from '@/lib/vault-policy';
 
 interface Level1PublicPanelProps {
   tier: LicenseTier;
@@ -26,18 +28,14 @@ export function Level1PublicPanel({
   data,
   onChange,
 }: Level1PublicPanelProps) {
+  const allowCustom = canAccessFeature(tier, 'allowCustomFields');
+
   const update = (patch: Partial<PublicHouseData>) => {
-    // Free/Basic/Advanced: non persistere custom fields anche se arrivano da sync.
-    if (
-      !canAccessFeature(tier, 'allowCustomFields') &&
-      'customFields' in patch
-    ) {
-      const rest = { ...patch };
-      delete rest.customFields;
-      onChange({ ...data, ...rest });
-      return;
-    }
-    onChange({ ...data, ...patch });
+    // Free/Basic/Advanced: strip custom fields / servizi personalizzati.
+    const merged = { ...data, ...patch };
+    onChange(
+      enforcePublicHouseForTier(merged, { allowCustomFields: allowCustom })
+    );
   };
 
   return (
@@ -392,6 +390,12 @@ export function Level1PublicPanel({
           ))}
         </ul>
       </div>
+
+      <FamilyServicesPanel
+        tier={tier}
+        value={data.familyServices}
+        onChange={(familyServices) => update({ familyServices })}
+      />
 
       <FeatureGate tier={tier} feature="allowCustomFields">
         <CustomFieldsEditor

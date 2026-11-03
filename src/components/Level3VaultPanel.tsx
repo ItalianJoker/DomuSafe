@@ -2,9 +2,9 @@
 
 /**
  * Livello 3 — Cassaforte patrimoniale E2EE (Advanced / Premium).
- * Advanced: documenti Famiglia (utenze + eredità digitale).
- * Premium: + patrimonio personale + campi personalizzati.
- * PIN errato → messaggio italiano; nessun crash applicativo.
+ * Advanced: documenti Famiglia (utenze, eredità digitale, conti bancari Famiglia).
+ * Premium: + patrimonio personale (polizze, lavoro) + campi personalizzati.
+ * Conti personali → scheda Residente (Premium). PIN errato → messaggio IT.
  */
 
 import { useState } from 'react';
@@ -231,9 +231,10 @@ export function Level3VaultPanel({
         <div className="space-y-6">
           {!allowPersonal ? (
             <p className="rounded-md border-2 border-amber-800 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950">
-              Piano Advanced: documenti Famiglia (utenze e eredità digitale).
-              Patrimonio personale (conti, polizze, lavoro) e campi liberi
-              richiedono Premium o prova.
+              Piano Advanced: documenti Famiglia (utenze, eredità digitale,
+              conti bancari Famiglia). Patrimonio personale (polizze, lavoro) e
+              campi liberi richiedono Premium o prova. I conti personali stanno
+              sulla scheda Residente in Emergenza.
             </p>
           ) : null}
           <VaultEditor
@@ -322,11 +323,15 @@ function VaultEditor({
 }) {
   return (
     <div className="space-y-8">
-      {allowPersonal ? (
-      <>
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-lg font-bold">Conti bancari</h3>
+          <div>
+            <h3 className="text-lg font-bold">Conti bancari Famiglia</h3>
+            <p className="text-xs text-zinc-600">
+              Conti condivisi della Famiglia (Advanced+). I conti personali
+              stanno sulla scheda Residente (Premium).
+            </p>
+          </div>
           <button
             type="button"
             className="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-zinc-900 bg-white px-4 font-bold hover:bg-zinc-100"
@@ -339,6 +344,7 @@ function VaultEditor({
                     institution: '',
                     accountType: '',
                     ownershipDetails: '',
+                    ibanHint: '',
                     notes: '',
                   },
                 ],
@@ -350,7 +356,7 @@ function VaultEditor({
           </button>
         </div>
         {payload.bankAccounts.length === 0 ? (
-          <p className="text-sm text-zinc-700">Nessun conto inserito.</p>
+          <p className="text-sm text-zinc-700">Nessun conto Famiglia inserito.</p>
         ) : (
           <ul className="space-y-4">
             {payload.bankAccounts.map((account, index) => (
@@ -361,7 +367,7 @@ function VaultEditor({
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    aria-label={`Rimuovi conto ${index + 1}`}
+                    aria-label={`Rimuovi conto Famiglia ${index + 1}`}
                     className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-md border-2 border-red-800 bg-white text-red-900"
                     onClick={() =>
                       onChange({
@@ -419,6 +425,21 @@ function VaultEditor({
                     />
                   </div>
                   <div className="sm:col-span-2">
+                    <FieldLabel>Riferimento IBAN (parziale)</FieldLabel>
+                    <TouchInput
+                      value={account.ibanHint ?? ''}
+                      placeholder="Ultime cifre o dove trovi l’IBAN completo"
+                      onChange={(e) => {
+                        const bankAccounts = [...payload.bankAccounts];
+                        bankAccounts[index] = {
+                          ...account,
+                          ibanHint: e.target.value,
+                        };
+                        onChange({ ...payload, bankAccounts });
+                      }}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
                     <FieldLabel>Note</FieldLabel>
                     <TouchTextarea
                       value={account.notes ?? ''}
@@ -439,6 +460,8 @@ function VaultEditor({
         )}
       </div>
 
+      {allowPersonal ? (
+      <>
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-bold">Assicurazioni vita</h3>
@@ -631,7 +654,11 @@ function VaultEditor({
       ) : null}
 
       <div className="space-y-3 rounded-md border-2 border-amber-900/40 bg-white p-3">
-        <h3 className="text-lg font-bold">Utenze &amp; abbonamenti</h3>
+        <h3 className="text-lg font-bold">Archivio bollette &amp; revoche</h3>
+        <p className="text-xs text-zinc-600">
+          Dove trovi le bollette e quali abbonamenti chiudere in caso di
+          emergenza patrimoniale. I contratti attivi si compilano in Casa.
+        </p>
         <div>
           <FieldLabel>Cartella ultime bollette</FieldLabel>
           <TouchInput

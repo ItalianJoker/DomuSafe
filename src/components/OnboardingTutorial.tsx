@@ -22,17 +22,17 @@ const STEPS = [
   },
   {
     title: 'Casa',
-    body: 'Utenze, Wi‑Fi, rifiuti e artigiani: utili anche agli ospiti, senza dati sanitari.',
+    body: 'Chiusure, Wi‑Fi, rifiuti, artigiani e anche contratti (Luce, Gas, Internet) con scadenze Famiglia come il controllo caldaia.',
     icon: BookOpen,
   },
   {
     title: 'Emergenza (ICE)',
-    body: 'Schede sanitarie per il soccorso 118/112. In stampa restano sotto la linguetta privacy.',
+    body: 'Schede sanitarie per il soccorso 118/112, più mobile e abbonamenti personali. In stampa le parti sanitarie restano sotto la linguetta privacy.',
     icon: ShieldAlert,
   },
   {
     title: 'Cassaforte',
-    body: 'Documenti riservati protetti da un PIN. Disponibile con Advanced, Premium o durante la prova.',
+    body: 'Documenti Famiglia (anche conti bancari Famiglia) protetti da un PIN. Advanced, Premium o prova. I conti personali stanno sulla scheda Residente (Premium).',
     icon: KeyRound,
   },
   {

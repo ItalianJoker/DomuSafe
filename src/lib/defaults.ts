@@ -1,5 +1,10 @@
 import { resolveConfiguredTier } from '@/lib/licensing';
 import { createEmptyResidentTaxBlock } from '@/lib/checklist-defaults';
+import {
+  createEmptyFamilyServices,
+  emptyMobilePlan,
+  ensurePersonalSubscriptions,
+} from '@/lib/service-catalog';
 import type {
   DomusRunbookDocument,
   EncryptedVaultPayload,
@@ -28,6 +33,7 @@ export function createEmptyPublicHouse(): PublicHouseData {
     wifi: { ssid: '', password: '' },
     wasteSchedule: [],
     artisanContacts: [],
+    familyServices: createEmptyFamilyServices(),
   };
 }
 
@@ -45,6 +51,9 @@ export function createEmptyResident(): ResidentHealthRecord {
     sleepingRoom: '',
     iceContacts: [],
     taxChecklist: createEmptyResidentTaxBlock(),
+    mobilePlan: emptyMobilePlan(),
+    personalSubscriptions: ensurePersonalSubscriptions(undefined),
+    personalBankAccounts: [],
   };
 }
 

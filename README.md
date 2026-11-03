@@ -1,7 +1,7 @@
 # DomuSafe
 
 ![Licenza](https://img.shields.io/badge/licenza-BSL%201.1-blue)
-![Versione](https://img.shields.io/badge/versione-0.8.0-green)
+![Versione](https://img.shields.io/badge/versione-0.9.0-green)
 ![Dispositivi](https://img.shields.io/badge/telefono%20·%20tablet%20·%20computer-ok-emerald)
 ![PWA](https://img.shields.io/badge/PWA-installabile-teal)
 
@@ -23,9 +23,9 @@ Al primo accesso compare una guida breve. Quando vuoi, riapri la **Guida DomuSaf
 
 | Sezione | A cosa serve |
 | :--- | :--- |
-| **Casa** | Dove chiudere acqua, gas e luce; Wi‑Fi; rifiuti; artigiani |
-| **Emergenza (ICE)** | Schede per il 118 / 112: allergie, farmaci, contatti |
-| **Cassaforte** | Documenti riservati protetti da PIN (da Advanced in su) · kit eredità (Premium) |
+| **Casa** | Chiusure utenze, Wi‑Fi, rifiuti, artigiani; contratti Luce/Gas/Internet e scadenze Famiglia |
+| **Emergenza (ICE)** | Schede per il 118 / 112; mobile e abbonamenti personali; conti personali (Premium) |
+| **Cassaforte** | Documenti Famiglia (anche conti bancari Famiglia) protetti da PIN (Advanced+) · kit eredità (Premium) |
 | **Stampa / QR** | Foglio A4 da appendere e codice da scansionare |
 | **Premium** | Registro scan, SOS SMS/WhatsApp, marchio host |
 | **Famiglia** | Inviti e QR per aggiungere i membri |
@@ -45,10 +45,10 @@ Quattro piani. I nomi restano **Free**, **Basic**, **Advanced** e **Premium**.
 
 | Piano | In sintesi | Residenti | Cosa include | Cosa non include |
 | :--- | :--- | :--- | :--- | :--- |
-| **Free** | Per iniziare da soli | 1 | Casa + Emergenza; stampa/QR con **Watermark** DomuSafe; solo **campi standard** | Cassaforte, tasse, successione, sync, campi personalizzati |
+| **Free** | Per iniziare da soli | 1 | Casa (anche utenze/abbonamenti/scadenze standard) + Emergenza; stampa/QR con **Watermark** DomuSafe; solo **campi standard** | Cassaforte, tasse, conti personali, successione, sync, campi personalizzati |
 | **Basic** | Per più schede Emergenza in famiglia | Illimitati | Come Free, con residenti (e animali) senza limite numerico; Watermark; campi standard | Come Free: niente Cassaforte né funzioni Premium |
-| **Advanced** | Per i documenti riservati di Famiglia | Illimitati | Come Basic **più** Cassaforte (PIN) con documenti di **Famiglia**; stampa **senza Watermark** (resta la linguetta Privacy); fino a 3 abitazioni; campi standard | Documenti patrimoniali **personali**; checklist tasse/ISEE; successione Famiglia; sync tra dispositivi; campi personalizzati |
-| **Premium** | Tutto DomuSafe | Illimitati | Tasse IT sulle schede residenti; patrimonio personale; successione Famiglia; sync cifrato; campi personalizzati; registro accessi; SOS; marchio host; kit eredità; senza Watermark | — |
+| **Advanced** | Per i documenti riservati di Famiglia | Illimitati | Come Basic **più** Cassaforte (PIN) con documenti di **Famiglia** (anche conti bancari Famiglia); stampa **senza Watermark** (resta la linguetta Privacy); fino a 3 abitazioni; campi standard | Patrimonio **personale** (polizze/lavoro) e conti personali; checklist tasse/ISEE; successione Famiglia; sync; campi personalizzati |
+| **Premium** | Tutto DomuSafe | Illimitati | Tasse IT e conti personali sulle schede residenti; patrimonio personale in cassaforte; successione Famiglia; sync cifrato; campi/servizi personalizzati; registro accessi; SOS; marchio host; kit eredità; senza Watermark | — |
 
 Ogni account può attivare **una sola volta** la prova **Premium di 30 giorni**, dalla sezione **Piano**. Durante la prova usi tutte le funzioni Premium (compresi campi personalizzati e sync). Alla scadenza torni al piano base (di solito Free).
 
