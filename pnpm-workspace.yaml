@@ -2,5 +2,8 @@ packages:
   - apps/*
   - packages/*
 
+allowBuilds:
+  esbuild: true
+
 overrides:
   eslint-plugin-tsdoc>@typescript-eslint/utils: 8.72.1
