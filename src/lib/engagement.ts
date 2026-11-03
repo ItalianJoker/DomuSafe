@@ -15,6 +15,7 @@ export type EngagementStepId =
 
 export type EngagementTarget =
   | 'casa'
+  | 'utenze'
   | 'ice'
   | 'cassaforte'
   | 'stampa'
@@ -114,7 +115,7 @@ export function buildEngagementSteps(
       title: 'Utenze e scadenze',
       blurb: 'Luce, gas, internet o controllo caldaia — quando vuoi.',
       cta: 'Apri utenze',
-      target: 'casa',
+      target: 'utenze',
       done: hasUtenze(doc),
       available: true,
     },

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import {
   BookOpen,
   KeyRound,
+  PlugZap,
   Printer,
   ShieldAlert,
   Users,
@@ -22,8 +23,13 @@ const STEPS = [
   },
   {
     title: 'Casa',
-    body: 'Chiusure, Wi‑Fi, rifiuti, artigiani e anche contratti (Luce, Gas, Internet) con scadenze Famiglia come il controllo caldaia.',
+    body: 'Chiusure di emergenza, Wi‑Fi, rifiuti e artigiani. Vista ospite o tecnica.',
     icon: BookOpen,
+  },
+  {
+    title: 'Utenze',
+    body: 'Nella sezione Utenze trovi Luce, Gas, Internet, Acqua, abbonamenti Famiglia e scadenze come il controllo caldaia.',
+    icon: PlugZap,
   },
   {
     title: 'Emergenza (ICE)',

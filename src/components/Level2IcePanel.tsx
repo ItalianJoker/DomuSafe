@@ -188,6 +188,49 @@ export function Level2IcePanel({
                   </button>
                 </div>
 
+                {!open ? (
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        {
+                          anchor: 'services' as const,
+                          label: 'Mobile · Abbonamenti',
+                        },
+                        {
+                          anchor: 'services' as const,
+                          label: 'Conti personali ★',
+                        },
+                        { anchor: 'tax' as const, label: 'Tasse IT ★' },
+                      ]
+                    ).map((chip) => (
+                      <button
+                        key={`${resident.id}-${chip.label}`}
+                        type="button"
+                        className="inline-flex min-h-10 items-center rounded-md border border-red-900/40 bg-white px-3 text-xs font-bold text-red-950"
+                        onClick={() => {
+                          setOpenIds((prev) => ({
+                            ...prev,
+                            [resident.id]: true,
+                          }));
+                          window.setTimeout(() => {
+                            const el = window.document.getElementById(
+                              chip.anchor === 'tax'
+                                ? `resident-tax-${resident.id}`
+                                : `resident-services-${resident.id}`
+                            );
+                            el?.scrollIntoView({
+                              behavior: 'smooth',
+                              block: 'start',
+                            });
+                          }, 50);
+                        }}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
                 {open ? (
                 <>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -407,54 +450,58 @@ export function Level2IcePanel({
                   }
                 />
 
-                <ResidentServicesPanel
-                  tier={tier}
-                  mobilePlan={resident.mobilePlan}
-                  personalSubscriptions={resident.personalSubscriptions}
-                  personalBankAccounts={resident.personalBankAccounts}
-                  onMobilePlanChange={(mobilePlan) =>
-                    patchResident(
-                      residents,
-                      resident.id,
-                      { mobilePlan },
-                      onResidentsChange,
-                      tier
-                    )
-                  }
-                  onSubscriptionsChange={(personalSubscriptions) =>
-                    patchResident(
-                      residents,
-                      resident.id,
-                      { personalSubscriptions },
-                      onResidentsChange,
-                      tier
-                    )
-                  }
-                  onBankAccountsChange={(personalBankAccounts) =>
-                    patchResident(
-                      residents,
-                      resident.id,
-                      { personalBankAccounts },
-                      onResidentsChange,
-                      tier
-                    )
-                  }
-                />
-
-                <FeatureGate tier={tier} feature="allowResidentTax">
-                  <ResidentTaxChecklist
-                    taxChecklist={resident.taxChecklist}
-                    onChange={(taxChecklist) =>
+                <div id={`resident-services-${resident.id}`}>
+                  <ResidentServicesPanel
+                    tier={tier}
+                    mobilePlan={resident.mobilePlan}
+                    personalSubscriptions={resident.personalSubscriptions}
+                    personalBankAccounts={resident.personalBankAccounts}
+                    onMobilePlanChange={(mobilePlan) =>
                       patchResident(
                         residents,
                         resident.id,
-                        { taxChecklist },
+                        { mobilePlan },
+                        onResidentsChange,
+                        tier
+                      )
+                    }
+                    onSubscriptionsChange={(personalSubscriptions) =>
+                      patchResident(
+                        residents,
+                        resident.id,
+                        { personalSubscriptions },
+                        onResidentsChange,
+                        tier
+                      )
+                    }
+                    onBankAccountsChange={(personalBankAccounts) =>
+                      patchResident(
+                        residents,
+                        resident.id,
+                        { personalBankAccounts },
                         onResidentsChange,
                         tier
                       )
                     }
                   />
-                </FeatureGate>
+                </div>
+
+                <div id={`resident-tax-${resident.id}`}>
+                  <FeatureGate tier={tier} feature="allowResidentTax">
+                    <ResidentTaxChecklist
+                      taxChecklist={resident.taxChecklist}
+                      onChange={(taxChecklist) =>
+                        patchResident(
+                          residents,
+                          resident.id,
+                          { taxChecklist },
+                          onResidentsChange,
+                          tier
+                        )
+                      }
+                    />
+                  </FeatureGate>
+                </div>
 
                 <FeatureGate tier={tier} feature="allowCustomFields">
                   <CustomFieldsEditor

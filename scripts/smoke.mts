@@ -1009,6 +1009,7 @@ await record('engagement: progressive casa→residenti→emergenza→utenze→L3
   const empty = createEmptyRunbook();
   const steps0 = buildEngagementSteps(empty, 'FREE');
   assert.equal(steps0[0]?.id, 'casa');
+  assert.equal(steps0.find((s) => s.id === 'utenze')?.target, 'utenze');
   assert.equal(steps0.find((s) => s.id === 'l3')?.available, false);
   const prog0 = engagementProgress(steps0);
   assert.ok(prog0.next?.id === 'casa');

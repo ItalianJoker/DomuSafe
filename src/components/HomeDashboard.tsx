@@ -10,6 +10,7 @@ import {
   CalendarClock,
   Home,
   Phone,
+  PlugZap,
   Printer,
   ShieldAlert,
   ShieldCheck,
@@ -39,6 +40,7 @@ import { EmptyStateCta } from '@/components/EmptyStateCta';
 
 export type DashboardTarget =
   | 'casa'
+  | 'utenze'
   | 'ice'
   | 'famiglia'
   | 'stampa'
@@ -238,17 +240,17 @@ export function HomeDashboard({
           <DeadlineGroup
             title="Scadute"
             items={deadlines.overdue}
-            onOpen={(src) => onGo(src === 'famiglia' ? 'casa' : 'ice')}
+            onOpen={(src) => onGo(src === 'famiglia' ? 'utenze' : 'ice')}
           />
           <DeadlineGroup
             title="Questa settimana"
             items={deadlines.week}
-            onOpen={(src) => onGo(src === 'famiglia' ? 'casa' : 'ice')}
+            onOpen={(src) => onGo(src === 'famiglia' ? 'utenze' : 'ice')}
           />
           <DeadlineGroup
             title="Questo mese"
             items={deadlines.month}
-            onOpen={(src) => onGo(src === 'famiglia' ? 'casa' : 'ice')}
+            onOpen={(src) => onGo(src === 'famiglia' ? 'utenze' : 'ice')}
           />
         </aside>
       ) : null}
@@ -305,6 +307,13 @@ export function HomeDashboard({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
+        <DashCard
+          icon={<PlugZap className="size-7" aria-hidden />}
+          title="Utenze e scadenze"
+          body="Luce, Gas, Internet, Acqua, abbonamenti Famiglia e controllo caldaia."
+          cta="Gestisci utenze"
+          onClick={() => onGo('utenze')}
+        />
         <DashCard
           icon={<Users className="size-7" aria-hidden />}
           title="Famiglia"
