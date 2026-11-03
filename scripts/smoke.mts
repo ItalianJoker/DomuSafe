@@ -628,6 +628,31 @@ await record('ui: auth gate + manuale + license + tax/succession modules', () =>
   assert.match(app, /InheritanceKitPanel/);
   assert.match(app, /md:hidden/);
   assert.match(app, /AppTabs/);
+  // Personale obbligatorio + Servizi; ordine nav binding
+  assert.match(app, /id: 'personale'/);
+  assert.match(app, /id: 'servizi'/);
+  assert.match(app, /label: 'Personale'/);
+  assert.match(app, /PersonalServicesHub/);
+  assert.match(app, /id: 'account'/);
+  assert.equal(existsSync(resolve('src/components/PersonalServicesHub.tsx')), true);
+  const tabOrder = [
+    'cassaforte',
+    'famiglia',
+    'casa',
+    'utenze',
+    'personale',
+    'servizi',
+    'stampa',
+    'extra',
+    'manuale',
+    'account',
+  ];
+  let lastIdx = -1;
+  for (const id of tabOrder) {
+    const idx = app.indexOf(`id: '${id}'`);
+    assert.ok(idx > lastIdx, `nav order missing/out-of-order: ${id}`);
+    lastIdx = idx;
+  }
   assert.equal(
     existsSync(resolve('src/app/api/auth/register/route.ts')),
     true
@@ -1014,6 +1039,8 @@ await record('engagement: progressive casa→residenti→emergenza→utenze→L3
   const empty = createEmptyRunbook();
   const steps0 = buildEngagementSteps(empty, 'FREE');
   assert.equal(steps0[0]?.id, 'casa');
+  assert.equal(steps0.find((s) => s.id === 'residenti')?.target, 'personale');
+  assert.equal(steps0.find((s) => s.id === 'emergenza')?.target, 'personale');
   assert.equal(steps0.find((s) => s.id === 'utenze')?.target, 'utenze');
   assert.equal(steps0.find((s) => s.id === 'l3')?.available, false);
   const prog0 = engagementProgress(steps0);

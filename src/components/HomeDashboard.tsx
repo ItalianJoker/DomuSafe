@@ -41,12 +41,17 @@ import { EmptyStateCta } from '@/components/EmptyStateCta';
 export type DashboardTarget =
   | 'casa'
   | 'utenze'
-  | 'ice'
+  | 'personale'
+  | 'servizi'
   | 'famiglia'
   | 'stampa'
   | 'cassaforte'
-  | 'premium'
-  | 'home';
+  | 'extra'
+  | 'account'
+  | 'home'
+  /** @deprecated alias → personale / extra */
+  | 'ice'
+  | 'premium';
 
 interface HomeDashboardProps {
   familyId: string;
@@ -152,7 +157,7 @@ export function HomeDashboard({
 
   const goColumn = (id: DashboardColumnId) => {
     if (id === 'casa') onGo('casa');
-    else onGo('ice');
+    else onGo('personale');
   };
 
   const go = (target: EngagementTarget | DashboardTarget) => {
@@ -240,17 +245,23 @@ export function HomeDashboard({
           <DeadlineGroup
             title="Scadute"
             items={deadlines.overdue}
-            onOpen={(src) => onGo(src === 'famiglia' ? 'utenze' : 'ice')}
+            onOpen={(src) =>
+              onGo(src === 'famiglia' ? 'utenze' : 'servizi')
+            }
           />
           <DeadlineGroup
             title="Questa settimana"
             items={deadlines.week}
-            onOpen={(src) => onGo(src === 'famiglia' ? 'utenze' : 'ice')}
+            onOpen={(src) =>
+              onGo(src === 'famiglia' ? 'utenze' : 'servizi')
+            }
           />
           <DeadlineGroup
             title="Questo mese"
             items={deadlines.month}
-            onOpen={(src) => onGo(src === 'famiglia' ? 'utenze' : 'ice')}
+            onOpen={(src) =>
+              onGo(src === 'famiglia' ? 'utenze' : 'servizi')
+            }
           />
         </aside>
       ) : null}
@@ -313,6 +324,20 @@ export function HomeDashboard({
           body="Luce, Gas, Internet, Acqua, abbonamenti Famiglia e controllo caldaia."
           cta="Gestisci utenze"
           onClick={() => onGo('utenze')}
+        />
+        <DashCard
+          icon={<ShieldAlert className="size-7" aria-hidden />}
+          title="Personale"
+          body="Schede residente di emergenza: sanitario, contatti e animali."
+          cta="Apri Personale"
+          onClick={() => onGo('personale')}
+        />
+        <DashCard
+          icon={<Sparkles className="size-7" aria-hidden />}
+          title="Servizi personali"
+          body="Mobile, abbonamenti, bollo/auto, conti personali e checklist tasse."
+          cta="Apri Servizi"
+          onClick={() => onGo('servizi')}
         />
         <DashCard
           icon={<Users className="size-7" aria-hidden />}

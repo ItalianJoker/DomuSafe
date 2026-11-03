@@ -242,6 +242,127 @@ textarea {
   border-radius: 999px;
 }
 
+/*
+ * Dark contrast overhaul — remap common light-only Tailwind chrome to MD tokens.
+ * Emergency reds stay vivid; section tints become darker mixes.
+ */
+html[data-theme='dark'] .bg-white,
+html[data-theme='dark'] .bg-white\/70,
+html[data-theme='dark'] .bg-white\/90,
+html[data-theme='dark'] .bg-white\/95 {
+  background-color: var(--md-surface-container) !important;
+}
+
+html[data-theme='dark'] .bg-zinc-50,
+html[data-theme='dark'] .bg-zinc-100 {
+  background-color: var(--md-surface-container-high) !important;
+}
+
+html[data-theme='dark'] .bg-zinc-200 {
+  background-color: var(--md-outline-variant) !important;
+}
+
+html[data-theme='dark'] .bg-zinc-950,
+html[data-theme='dark'] .bg-zinc-900 {
+  background-color: var(--md-primary) !important;
+  color: var(--md-on-primary) !important;
+}
+
+html[data-theme='dark'] .text-zinc-950,
+html[data-theme='dark'] .text-zinc-900,
+html[data-theme='dark'] .text-zinc-800 {
+  color: var(--md-on-surface) !important;
+}
+
+html[data-theme='dark'] .text-zinc-700,
+html[data-theme='dark'] .text-zinc-600,
+html[data-theme='dark'] .text-zinc-500 {
+  color: var(--md-on-surface-variant) !important;
+}
+
+html[data-theme='dark'] .border-zinc-900,
+html[data-theme='dark'] .border-zinc-800,
+html[data-theme='dark'] .border-zinc-500,
+html[data-theme='dark'] .border-zinc-400,
+html[data-theme='dark'] .border-zinc-300 {
+  border-color: var(--md-outline) !important;
+}
+
+html[data-theme='dark'] .hover\:bg-zinc-100:hover,
+html[data-theme='dark'] .hover\:bg-zinc-50:hover {
+  background-color: var(--md-surface-container-high) !important;
+}
+
+html[data-theme='dark'] .hover\:bg-zinc-800:hover {
+  filter: brightness(1.1);
+}
+
+html[data-theme='dark'] .bg-rose-50 {
+  background-color: color-mix(in srgb, #9f1239 22%, var(--md-surface-container)) !important;
+}
+
+html[data-theme='dark'] .bg-emerald-50,
+html[data-theme='dark'] .bg-emerald-50\/70 {
+  background-color: color-mix(
+    in srgb,
+    #1a5c3a 28%,
+    var(--md-surface-container)
+  ) !important;
+}
+
+html[data-theme='dark'] .bg-amber-50,
+html[data-theme='dark'] .bg-amber-50\/80 {
+  background-color: color-mix(
+    in srgb,
+    #f0b429 18%,
+    var(--md-surface-container)
+  ) !important;
+}
+
+html[data-theme='dark'] .bg-violet-50 {
+  background-color: color-mix(
+    in srgb,
+    #6d28d9 16%,
+    var(--md-surface-container)
+  ) !important;
+}
+
+html[data-theme='dark'] .text-amber-950,
+html[data-theme='dark'] .dark-contrast-amber {
+  color: #ffe6a8 !important;
+}
+
+html[data-theme='dark'] .text-emerald-950 {
+  color: #b8f0d0 !important;
+}
+
+html[data-theme='dark'] .text-red-950,
+html[data-theme='dark'] .text-red-900 {
+  color: #ffc0c8 !important;
+}
+
+html[data-theme='dark'] .text-red-800 {
+  color: #ff8a9b !important;
+}
+
+html[data-theme='dark'] .border-amber-900,
+html[data-theme='dark'] .border-amber-800 {
+  border-color: #f5c84d !important;
+}
+
+html[data-theme='dark'] .border-emerald-900\/40,
+html[data-theme='dark'] .border-emerald-900\/30 {
+  border-color: color-mix(in srgb, #6dce98 55%, transparent) !important;
+}
+
+html[data-theme='dark'] .border-red-900\/40 {
+  border-color: color-mix(in srgb, #ff8a9b 45%, transparent) !important;
+}
+
+html[data-theme='dark'] .bg-black\/70 {
+  background-color: rgba(0, 0, 0, 0.78) !important;
+}
+
 /* Stampa: forza tema chiaro leggibile */
 @media print {
   html,

@@ -27,7 +27,9 @@ import {
   ShieldCheck,
   BadgeCheck,
   Sparkles,
+  UserRound,
   Users,
+  WalletCards,
 } from 'lucide-react';
 import type { DomusRunbookDocument } from '@/types/domus';
 import type { SuccessionChecklist } from '@/types/checklists';
@@ -76,20 +78,53 @@ import { EmergencyPrintSheet } from '@/components/EmergencyPrintSheet';
 import { IceRescueMode } from '@/components/IceRescueMode';
 import { JsonBackupPanel } from '@/components/JsonBackupPanel';
 import { FamilyServicesPanel } from '@/components/FamilyServicesPanel';
+import { PersonalServicesHub } from '@/components/PersonalServicesHub';
 import { ThemeSelector } from '@/components/ThemeSelector';
 
+/**
+ * Menu top-level (ordine binding nav-structure.md):
+ * Cassaforte · Famiglia · Casa · Personale · Stampa/QR · Extra · Guida · Account
+ * + Panoramica atterraggio; Casa→Utenze; Personale→Servizi.
+ */
 type Tab =
   | 'home'
+  | 'cassaforte'
+  | 'famiglia'
   | 'casa'
   | 'utenze'
-  | 'ice'
-  | 'cassaforte'
-  | 'sync'
+  | 'personale'
+  | 'servizi'
   | 'stampa'
-  | 'premium'
-  | 'famiglia'
-  | 'licenze'
-  | 'manuale';
+  | 'extra'
+  | 'manuale'
+  | 'account';
+
+/** Alias legacy (dashboard/engagement) → tab attuali. */
+function normalizeTab(target: string): Tab {
+  switch (target) {
+    case 'ice':
+      return 'personale';
+    case 'premium':
+    case 'sync':
+      return 'extra';
+    case 'licenze':
+      return 'account';
+    case 'home':
+    case 'cassaforte':
+    case 'famiglia':
+    case 'casa':
+    case 'utenze':
+    case 'personale':
+    case 'servizi':
+    case 'stampa':
+    case 'extra':
+    case 'manuale':
+    case 'account':
+      return target;
+    default:
+      return 'home';
+  }
+}
 function useClientUrl(): string {
   return useSyncExternalStore(
     () => () => {},
@@ -324,7 +359,7 @@ function AuthenticatedApp() {
         <strong>{TIER_LABELS[effectiveTier]}</strong>.
       </p>
       <p className="mt-2 text-sm text-zinc-600">
-        Apri <strong>Piano</strong> per confrontare i piani o avviare la prova
+        Apri <strong>Account</strong> per confrontare i piani o avviare la prova
         Premium di 30 giorni.
       </p>
     </aside>
@@ -363,7 +398,7 @@ function AuthenticatedApp() {
         giorni). Piano attuale: <strong>{TIER_LABELS[effectiveTier]}</strong>.
       </p>
       <p className="mt-2 text-sm text-zinc-600">
-        Apri <strong>Piano</strong> per i dettagli o per avviare la prova.
+        Apri <strong>Account</strong> per i dettagli o per avviare la prova.
       </p>
     </aside>
   );
@@ -479,7 +514,7 @@ function AuthenticatedApp() {
       <main className="app-shell-main mx-auto w-full max-w-5xl space-y-5 px-3 py-4 sm:space-y-6 sm:px-4 sm:py-6">
         {status ? (
           <p
-            className="no-print rounded-md border-2 border-emerald-800 bg-emerald-50 px-4 py-3 font-semibold text-emerald-950"
+            className="no-print rounded-[var(--md-radius-sm)] border-2 border-[var(--brand-forest)] bg-emerald-50 px-4 py-3 font-semibold text-emerald-950"
             role="status"
           >
             {status}
@@ -526,7 +561,7 @@ function AuthenticatedApp() {
             familyName={family.name}
             document={liveDoc}
             tier={effectiveTier}
-            onGo={(target) => setTab(target)}
+            onGo={(target) => setTab(normalizeTab(target))}
             onStartWizard={() => setShowWizard(true)}
             onOpenRescue={() => setShowRescue(true)}
             onStatus={setStatus}
@@ -584,27 +619,29 @@ function AuthenticatedApp() {
           </div>
         ) : null}
 
-        {tab === 'ice' ? (
+        {tab === 'personale' ? (
           <div className="space-y-4">
             {effectiveTier !== 'PREMIUM' ? (
               <p className="no-print flex flex-wrap items-center gap-2 text-sm font-semibold text-amber-950">
                 <Receipt className="size-4" aria-hidden />
-                Checklist tasse italiane e conti personali: su ogni scheda
-                residente con Premium (o prova).
+                Tasse e conti personali: Premium (o prova) — sezione{' '}
                 <button
                   type="button"
                   className="underline"
-                  onClick={() => setTab('licenze')}
+                  onClick={() => setTab('servizi')}
                 >
-                  Apri Piano
+                  Servizi
+                </button>
+                .
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => setTab('account')}
+                >
+                  Apri Account
                 </button>
               </p>
-            ) : (
-              <p className="no-print text-sm font-semibold text-emerald-950">
-                Su ogni scheda residente: mobile, abbonamenti (bollo/auto),
-                conti personali e checklist tasse IT.
-              </p>
-            )}
+            ) : null}
             <Level2IcePanel
               tier={effectiveTier}
               residents={liveDoc.level2_ice.residents}
@@ -623,8 +660,24 @@ function AuthenticatedApp() {
               }
               onOpenRescue={() => setShowRescue(true)}
               onStartWizard={() => setShowWizard(true)}
+              onOpenServizi={() => setTab('servizi')}
             />
           </div>
+        ) : null}
+
+        {tab === 'servizi' ? (
+          <PersonalServicesHub
+            tier={effectiveTier}
+            residents={liveDoc.level2_ice.residents}
+            onResidentsChange={(residents) =>
+              setDocument({
+                ...liveDoc,
+                level2_ice: { ...liveDoc.level2_ice, residents },
+              })
+            }
+            onOpenPersonale={() => setTab('personale')}
+            onOpenAccount={() => setTab('account')}
+          />
         ) : null}
 
         {tab === 'cassaforte' ? (
@@ -668,28 +721,6 @@ function AuthenticatedApp() {
             </FeatureGate>
           </div>
         ) : null}
-        {tab === 'sync' ? (
-          <FeatureGate
-            tier={effectiveTier}
-            feature="allowCloudSync"
-            fallback={syncFallback}
-          >
-            <CloudSyncPanel
-              collection={collection}
-              familyId={storageCtx.familyId}
-              dataKey={storageCtx.dataKey}
-              onStatus={setStatus}
-              onCollectionImported={async (imported) => {
-                const saved = await replaceHouseCollection(
-                  imported,
-                  storageCtx
-                );
-                setCollection(saved);
-              }}
-            />
-          </FeatureGate>
-        ) : null}
-
         {tab === 'stampa' ? (
           <div className="no-print space-y-6">
             <EmergencyPublishPanel
@@ -750,8 +781,16 @@ function AuthenticatedApp() {
           </div>
         ) : null}
 
-        {tab === 'premium' ? (
+        {tab === 'extra' ? (
           <div className="no-print space-y-6">
+            <header>
+              <p className="text-sm font-bold uppercase tracking-widest text-[var(--brand-forest)]">
+                Extra
+              </p>
+              <h2 className="mt-1 font-display text-2xl font-black text-[var(--brand-ink)]">
+                Registro, avvisi, marchio e altri telefoni
+              </h2>
+            </header>
             <FeatureGate
               tier={effectiveTier}
               feature="auditLog"
@@ -782,6 +821,34 @@ function AuthenticatedApp() {
                 onStatus={setStatus}
               />
             </FeatureGate>
+            <section aria-labelledby="extra-sync-title" className="space-y-3">
+              <h3
+                id="extra-sync-title"
+                className="flex items-center gap-2 text-lg font-black text-[var(--md-on-surface)]"
+              >
+                <Cloud className="size-5" aria-hidden />
+                Altri telefoni
+              </h3>
+              <FeatureGate
+                tier={effectiveTier}
+                feature="allowCloudSync"
+                fallback={syncFallback}
+              >
+                <CloudSyncPanel
+                  collection={collection}
+                  familyId={storageCtx.familyId}
+                  dataKey={storageCtx.dataKey}
+                  onStatus={setStatus}
+                  onCollectionImported={async (imported) => {
+                    const saved = await replaceHouseCollection(
+                      imported,
+                      storageCtx
+                    );
+                    setCollection(saved);
+                  }}
+                />
+              </FeatureGate>
+            </section>
           </div>
         ) : null}
 
@@ -820,14 +887,33 @@ function AuthenticatedApp() {
             </aside>
           </div>
         ) : null}
-        {tab === 'licenze' ? (
-          <LicensePanel
-            account={account}
-            effectiveTier={effectiveTier}
-            familyName={family.name}
-            onStartTrial={startTrial}
-            onApplySaasLicense={applySaasLicense}
-          />
+        {tab === 'account' ? (
+          <div className="space-y-6">
+            <header>
+              <p className="text-sm font-bold uppercase tracking-widest text-[var(--brand-forest)]">
+                Account
+              </p>
+              <h2 className="mt-1 font-display text-2xl font-black text-[var(--brand-ink)]">
+                Piano, tema e profilo
+              </h2>
+              <p className="mt-2 max-w-2xl text-base text-[var(--md-on-surface-variant)]">
+                Gestisci il piano (Free / Basic / Advanced / Premium), la prova
+                Premium e il tema (anche dall’intestazione). Profilo:{' '}
+                <strong>{account.displayName}</strong> · Famiglia{' '}
+                <strong>{family.name}</strong>.
+              </p>
+              <div className="mt-3">
+                <ThemeSelector />
+              </div>
+            </header>
+            <LicensePanel
+              account={account}
+              effectiveTier={effectiveTier}
+              familyName={family.name}
+              onStartTrial={startTrial}
+              onApplySaasLicense={applySaasLicense}
+            />
+          </div>
         ) : null}
 
         {tab === 'manuale' ? <ManualeUtente /> : null}
@@ -845,12 +931,12 @@ function AuthenticatedApp() {
         />
       </main>
 
-      <footer className="no-print mb-[calc(4.75rem+var(--safe-bottom))] border-t-2 border-zinc-900 bg-white px-4 py-6 text-center text-sm text-zinc-600 md:mb-0">
+      <footer className="no-print mb-[calc(4.75rem+var(--safe-bottom))] border-t-2 border-[var(--md-outline)] bg-[var(--md-surface-container)] px-4 py-6 text-center text-sm text-[var(--md-on-surface-variant)] md:mb-0">
         DomuSafe · I tuoi dati restano cifrati · Uso familiare
       </footer>
 
       <nav
-        className="no-print fixed inset-x-0 bottom-0 z-20 border-t-2 border-zinc-900 bg-white/95 pb-[var(--safe-bottom)] backdrop-blur md:hidden"
+        className="no-print fixed inset-x-0 bottom-0 z-20 border-t-2 border-[var(--md-outline)] bg-[color-mix(in_srgb,var(--md-surface-container)_95%,transparent)] pb-[var(--safe-bottom)] backdrop-blur md:hidden"
         aria-label="Sezioni DomuSafe (telefono)"
       >
         <div className="device-nav-scroll flex gap-1 overflow-x-auto px-2 py-2">
@@ -861,6 +947,7 @@ function AuthenticatedApp() {
   );
 }
 
+/** Ordine: Panoramica + binding Cassaforte·Famiglia·Casa·Personale·Stampa/QR·Extra·Guida·Account. */
 const TAB_ITEMS: Array<{
   id: Tab;
   label: string;
@@ -873,18 +960,11 @@ const TAB_ITEMS: Array<{
     short: 'Home',
     icon: <Sparkles className="size-5" aria-hidden />,
   },
-  { id: 'casa', label: 'Casa', short: 'Casa', icon: <Home className="size-5" aria-hidden /> },
   {
-    id: 'utenze',
-    label: 'Utenze',
-    short: 'Utenze',
-    icon: <PlugZap className="size-5" aria-hidden />,
-  },
-  {
-    id: 'ice',
-    label: 'Emergenza',
-    short: 'Soccorso',
-    icon: <ShieldAlert className="size-5" aria-hidden />,
+    id: 'cassaforte',
+    label: 'Cassaforte',
+    short: 'Cassa',
+    icon: <ShieldCheck className="size-5" aria-hidden />,
   },
   {
     id: 'famiglia',
@@ -893,40 +973,52 @@ const TAB_ITEMS: Array<{
     icon: <Users className="size-5" aria-hidden />,
   },
   {
+    id: 'casa',
+    label: 'Casa',
+    short: 'Casa',
+    icon: <Home className="size-5" aria-hidden />,
+  },
+  {
+    id: 'utenze',
+    label: 'Utenze',
+    short: 'Utenze',
+    icon: <PlugZap className="size-5" aria-hidden />,
+  },
+  {
+    id: 'personale',
+    label: 'Personale',
+    short: 'Personale',
+    icon: <UserRound className="size-5" aria-hidden />,
+  },
+  {
+    id: 'servizi',
+    label: 'Servizi',
+    short: 'Servizi',
+    icon: <WalletCards className="size-5" aria-hidden />,
+  },
+  {
     id: 'stampa',
     label: 'Stampa / QR',
     short: 'Stampa',
     icon: <Printer className="size-5" aria-hidden />,
   },
   {
-    id: 'cassaforte',
-    label: 'Cassaforte',
-    short: 'Cassa',
-    icon: <ShieldCheck className="size-5" aria-hidden />,
-  },
-  {
-    id: 'sync',
-    label: 'Altri telefoni',
-    short: 'Sync',
-    icon: <Cloud className="size-5" aria-hidden />,
-  },
-  {
-    id: 'premium',
+    id: 'extra',
     label: 'Extra',
     short: 'Extra',
     icon: <Receipt className="size-5" aria-hidden />,
-  },
-  {
-    id: 'licenze',
-    label: 'Piano',
-    short: 'Piano',
-    icon: <BadgeCheck className="size-5" aria-hidden />,
   },
   {
     id: 'manuale',
     label: 'Guida',
     short: 'Guida',
     icon: <BookOpen className="size-5" aria-hidden />,
+  },
+  {
+    id: 'account',
+    label: 'Account',
+    short: 'Account',
+    icon: <BadgeCheck className="size-5" aria-hidden />,
   },
 ];
 
@@ -974,10 +1066,10 @@ function TabButton({
         type="button"
         onClick={onClick}
         aria-current={active ? 'page' : undefined}
-        className={`inline-flex min-h-14 min-w-[4.25rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded-md border-2 px-2 text-[11px] font-bold leading-tight ${
+        className={`inline-flex min-h-14 min-w-[4.25rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[var(--md-radius-sm)] border-2 px-2 text-[11px] font-bold leading-tight ${
           active
-            ? 'border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white'
-            : 'border-zinc-300 bg-white text-zinc-950'
+            ? 'border-[var(--md-primary)] bg-[var(--md-primary)] text-[var(--md-on-primary)]'
+            : 'border-[var(--md-outline-variant)] bg-[var(--md-surface-container)] text-[var(--md-on-surface)]'
         }`}
       >
         {icon}
@@ -991,10 +1083,10 @@ function TabButton({
       type="button"
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className={`inline-flex min-h-12 min-w-12 shrink-0 items-center gap-2 rounded-md border-2 px-4 font-bold ${
+      className={`inline-flex min-h-12 min-w-12 shrink-0 items-center gap-2 rounded-[var(--md-radius-sm)] border-2 px-4 font-bold ${
         active
-          ? 'border-[var(--brand-ink)] bg-[var(--brand-ink)] text-white'
-          : 'border-zinc-900 bg-white text-zinc-950 hover:bg-zinc-100'
+          ? 'border-[var(--md-primary)] bg-[var(--md-primary)] text-[var(--md-on-primary)]'
+          : 'border-[var(--md-outline)] bg-[var(--md-surface-container)] text-[var(--md-on-surface)] hover:bg-[var(--md-surface-container-high)]'
       }`}
     >
       {icon}

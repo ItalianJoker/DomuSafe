@@ -32,13 +32,13 @@ const STEPS = [
     icon: PlugZap,
   },
   {
-    title: 'Emergenza e soccorso',
-    body: 'Schede sanitarie per il soccorso 118/112, più mobile e abbonamenti personali. Ogni campo è compilabile a mano; la guida rapida è opzionale. In stampa le parti sanitarie restano sotto la linguetta privacy.',
+    title: 'Personale',
+    body: 'Schede di emergenza per il soccorso 118/112 (sanitario, contatti, animali). In Servizi trovi mobile, abbonamenti, conti e tasse personali. Ogni campo è compilabile a mano; la guida rapida è opzionale.',
     icon: ShieldAlert,
   },
   {
     title: 'Cassaforte',
-    body: 'Documenti Famiglia (anche conti bancari Famiglia) protetti da un PIN. Advanced, Premium o prova. I conti personali stanno sulla scheda Residente (Premium).',
+    body: 'Documenti Famiglia (anche conti bancari Famiglia) protetti da un PIN. Advanced, Premium o prova. I conti personali stanno in Personale → Servizi (Premium).',
     icon: KeyRound,
   },
   {
@@ -47,8 +47,8 @@ const STEPS = [
     icon: Printer,
   },
   {
-    title: 'Piano',
-    body: 'Free e Basic: Casa ed Emergenza. Advanced: anche Cassaforte Famiglia. Premium: tasse, successione, sync e altro. Puoi provare Premium 30 giorni, una sola volta.',
+    title: 'Account',
+    body: 'Free e Basic: Casa e Personale. Advanced: anche Cassaforte Famiglia. Premium: tasse, successione, sync e altro. Da Account avvii la prova Premium di 30 giorni, una sola volta, e scegli il tema.',
     icon: BadgeCheck,
   },
 ] as const;
