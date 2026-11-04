@@ -11,6 +11,22 @@ import {
   guestViewSchema,
   housePageSchema,
   houseSchema,
+  bankAccountPageSchema,
+  personalBankAccountSchema,
+  petPageSchema,
+  petSchema,
+  phoneLinePageSchema,
+  phoneLineSchema,
+  rescueCardSchema,
+  rescueSheetSchema,
+  residentPageSchema,
+  residentSchema,
+  subscriptionPageSchema,
+  subscriptionSchema,
+  taxChecklistItemSchema,
+  taxChecklistSchema,
+  vehiclePageSchema,
+  vehicleSchema,
   maintenanceTaskPageSchema,
   maintenanceTaskSchema,
   meSchema,
@@ -38,6 +54,26 @@ import {
   type House,
   type MaintenanceTask,
   type Me,
+  type PersonalBankAccount,
+  type PersonalSubscription,
+  type Pet,
+  type PhoneLine,
+  type PutRescueRequest,
+  type RescueCard,
+  type RescueSheet,
+  type Resident,
+  type TaxChecklist,
+  type TaxChecklistItem,
+  type Vehicle,
+  type CreatePersonalBankAccountRequest,
+  type CreatePersonalSubscriptionRequest,
+  type CreatePetRequest,
+  type CreatePhoneLineRequest,
+  type CreateResidentRequest,
+  type CreateVehicleRequest,
+  type GenerateTaxChecklistRequest,
+  type UpdateResidentRequest,
+  type UpdateTaxChecklistItemRequest,
   type Membership,
   type Shutoff,
   type UpdateContactRequest,
@@ -429,6 +465,215 @@ export interface DomusafeApi {
     version: number,
     patch: UpdateMaintenanceTaskRequest,
   ): Promise<MaintenanceTask>;
+  /**
+   * People linked to one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Every page.
+   */
+  listResidents(familyId: string, houseId: string): Promise<readonly Resident[]>;
+  /**
+   * Adds a person to the house.
+   *
+   * @param familyId - Family id.
+   * @param body - Name and houses.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The person.
+   */
+  createResident(familyId: string, body: CreateResidentRequest, idempotencyKey: string): Promise<Resident>;
+  /**
+   * Updates the identity of a person.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Fields to change.
+   * @returns The person.
+   */
+  updateResident(
+    familyId: string,
+    residentId: string,
+    version: number,
+    patch: UpdateResidentRequest,
+  ): Promise<Resident>;
+  /**
+   * Reads the rescue card.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @returns The card.
+   */
+  getRescue(familyId: string, residentId: string): Promise<RescueCard>;
+  /**
+   * Replaces the rescue card.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param version - Card version the form was loaded with.
+   * @param body - The whole card.
+   * @returns The stored card.
+   */
+  putRescue(
+    familyId: string,
+    residentId: string,
+    version: number,
+    body: PutRescueRequest,
+  ): Promise<RescueCard>;
+  /**
+   * Readable rescue sheet of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns People, medicines, contacts and animals.
+   */
+  getRescueSheet(familyId: string, houseId: string): Promise<RescueSheet>;
+  /**
+   * Animals of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Every page.
+   */
+  listPets(familyId: string, houseId: string): Promise<readonly Pet[]>;
+  /**
+   * Adds an animal.
+   *
+   * @param familyId - Family id.
+   * @param body - Name, species and clinic.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The animal.
+   */
+  createPet(familyId: string, body: CreatePetRequest, idempotencyKey: string): Promise<Pet>;
+  /**
+   * Mobile plans of a person.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @returns Every page.
+   */
+  listPhoneLines(familyId: string, residentId: string): Promise<readonly PhoneLine[]>;
+  /**
+   * Adds a mobile plan.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param body - Operator, number and plan.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The plan.
+   */
+  createPhoneLine(
+    familyId: string,
+    residentId: string,
+    body: CreatePhoneLineRequest,
+    idempotencyKey: string,
+  ): Promise<PhoneLine>;
+  /**
+   * Personal subscriptions of a person.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @returns Every page.
+   */
+  listSubscriptions(familyId: string, residentId: string): Promise<readonly PersonalSubscription[]>;
+  /**
+   * Adds a personal subscription.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param body - Name and renewal.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The subscription.
+   */
+  createSubscription(
+    familyId: string,
+    residentId: string,
+    body: CreatePersonalSubscriptionRequest,
+    idempotencyKey: string,
+  ): Promise<PersonalSubscription>;
+  /**
+   * Vehicles of a person.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @returns Every page.
+   */
+  listVehicles(familyId: string, residentId: string): Promise<readonly Vehicle[]>;
+  /**
+   * Adds a vehicle.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param body - Plate and deadlines.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The vehicle.
+   */
+  createVehicle(
+    familyId: string,
+    residentId: string,
+    body: CreateVehicleRequest,
+    idempotencyKey: string,
+  ): Promise<Vehicle>;
+  /**
+   * Personal bank-account metadata. The route answers 403 without Premium.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @returns Every page.
+   */
+  listBankAccounts(familyId: string, residentId: string): Promise<readonly PersonalBankAccount[]>;
+  /**
+   * Adds bank-account metadata.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param body - Institution, label and optional last digits.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The metadata.
+   */
+  createBankAccount(
+    familyId: string,
+    residentId: string,
+    body: CreatePersonalBankAccountRequest,
+    idempotencyKey: string,
+  ): Promise<PersonalBankAccount>;
+  /**
+   * Tax checklist of one year. The route answers 403 without Premium.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param year - Calendar year.
+   * @returns The items.
+   */
+  listTax(familyId: string, residentId: string, year: number): Promise<TaxChecklist>;
+  /**
+   * Creates the missing tax items of a year.
+   *
+   * @param familyId - Family id.
+   * @param body - Person and year.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The checklist.
+   */
+  generateTax(
+    familyId: string,
+    body: GenerateTaxChecklistRequest,
+    idempotencyKey: string,
+  ): Promise<TaxChecklist>;
+  /**
+   * Updates one tax item.
+   *
+   * @param familyId - Family id.
+   * @param itemId - Item id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Status or date.
+   * @returns The item.
+   */
+  updateTaxItem(
+    familyId: string,
+    itemId: string,
+    version: number,
+    patch: UpdateTaxChecklistItemRequest,
+  ): Promise<TaxChecklistItem>;
 }
 
 /** Options of {@link createApi}. */
@@ -830,6 +1075,176 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       );
       return unwrap(maintenanceTaskSchema, result);
+    },
+    listResidents(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/residents', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, houseId, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(residentPageSchema, result)),
+      );
+    },
+    async createResident(familyId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/residents', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateResidentRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(residentSchema, result);
+    },
+    async updateResident(familyId, residentId, version, patch) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/residents/{residentId}', {
+        params: { path: { familyId, residentId } },
+        body: patch as components['schemas']['UpdateResidentRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(residentSchema, result);
+    },
+    async getRescue(familyId, residentId) {
+      const result = await client.GET('/api/v1/families/{familyId}/residents/{residentId}/rescue', {
+        params: { path: { familyId, residentId } },
+      });
+      return unwrap(rescueCardSchema, result);
+    },
+    async putRescue(familyId, residentId, version, body) {
+      const result = await client.PUT('/api/v1/families/{familyId}/residents/{residentId}/rescue', {
+        params: { path: { familyId, residentId } },
+        body,
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(rescueCardSchema, result);
+    },
+    async getRescueSheet(familyId, houseId) {
+      const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/rescue-sheet', {
+        params: { path: { familyId, houseId } },
+      });
+      return unwrap(rescueSheetSchema, result);
+    },
+    listPets(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/pets', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, houseId, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(petPageSchema, result)),
+      );
+    },
+    async createPet(familyId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/pets', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreatePetRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(petSchema, result);
+    },
+    listPhoneLines(familyId, residentId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/residents/{residentId}/phone-lines', {
+            params: {
+              path: { familyId, residentId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(phoneLinePageSchema, result)),
+      );
+    },
+    async createPhoneLine(familyId, residentId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/residents/{residentId}/phone-lines', {
+        params: { path: { familyId, residentId } },
+        body: body as components['schemas']['CreatePhoneLineRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(phoneLineSchema, result);
+    },
+    listSubscriptions(familyId, residentId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/residents/{residentId}/subscriptions', {
+            params: {
+              path: { familyId, residentId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(subscriptionPageSchema, result)),
+      );
+    },
+    async createSubscription(familyId, residentId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/residents/{residentId}/subscriptions', {
+        params: { path: { familyId, residentId } },
+        body: body as components['schemas']['CreatePersonalSubscriptionRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(subscriptionSchema, result);
+    },
+    listVehicles(familyId, residentId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/residents/{residentId}/vehicles', {
+            params: {
+              path: { familyId, residentId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(vehiclePageSchema, result)),
+      );
+    },
+    async createVehicle(familyId, residentId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/residents/{residentId}/vehicles', {
+        params: { path: { familyId, residentId } },
+        body: body as components['schemas']['CreateVehicleRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(vehicleSchema, result);
+    },
+    listBankAccounts(familyId, residentId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/residents/{residentId}/bank-accounts', {
+            params: {
+              path: { familyId, residentId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(bankAccountPageSchema, result)),
+      );
+    },
+    async createBankAccount(familyId, residentId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/residents/{residentId}/bank-accounts', {
+        params: { path: { familyId, residentId } },
+        body: body as components['schemas']['CreatePersonalBankAccountRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(personalBankAccountSchema, result);
+    },
+    async listTax(familyId, residentId, year) {
+      const result = await client.GET('/api/v1/families/{familyId}/tax-checklist', {
+        params: { path: { familyId }, query: { residentId, year } },
+      });
+      return unwrap(taxChecklistSchema, result);
+    },
+    async generateTax(familyId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/tax-checklist/generate', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(taxChecklistSchema, result);
+    },
+    async updateTaxItem(familyId, itemId, version, patch) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/tax-checklist/{itemId}', {
+        params: { path: { familyId, itemId } },
+        body: patch as components['schemas']['UpdateTaxChecklistItemRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(taxChecklistItemSchema, result);
     },
   };
 }

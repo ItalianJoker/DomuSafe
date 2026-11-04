@@ -11,15 +11,6 @@ export function VaultPage() {
 }
 
 /**
- * Personale section before that module exists.
- *
- * @returns The empty section.
- */
-export function PersonalPage() {
-  return <EmptySection title={m.personalTitle()} body={m.personalBody()} />;
-}
-
-/**
  * Print section before sheets and codes exist.
  *
  * @returns The empty section.

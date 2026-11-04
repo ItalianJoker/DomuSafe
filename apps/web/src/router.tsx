@@ -50,7 +50,9 @@ const AccountPage = lazy(() =>
 );
 const sections = () => import('@/features/sections/section-pages.js');
 const VaultPage = lazy(() => sections().then((mod) => ({ default: mod.VaultPage })));
-const PersonalPage = lazy(() => sections().then((mod) => ({ default: mod.PersonalPage })));
+const PersonalePage = lazy(() =>
+  import('@/features/personale/personale-page.js').then((mod) => ({ default: mod.PersonalePage })),
+);
 const PrintPage = lazy(() => sections().then((mod) => ({ default: mod.PrintPage })));
 const ExtraPage = lazy(() => sections().then((mod) => ({ default: mod.ExtraPage })));
 const GuidePage = lazy(() => sections().then((mod) => ({ default: mod.GuidePage })));
@@ -275,9 +277,11 @@ const personalRoute = createRoute({
   getParentRoute: () => houseRoute,
   path: '/personale',
   component: function PersonalFrame() {
+    const { me } = houseRoute.useRouteContext();
+    const { familyId, houseId } = houseRoute.useParams();
     return (
       <Suspended>
-        <PersonalPage />
+        <PersonalePage me={me} familyId={familyId} houseId={houseId} />
       </Suspended>
     );
   },

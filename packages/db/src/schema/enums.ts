@@ -106,3 +106,41 @@ export const maintenanceCategoryEnum = pgEnum('maintenance_category', [
 ]);
 /** Priority of a maintenance task. */
 export const maintenancePriorityEnum = pgEnum('maintenance_priority', ['low', 'medium', 'high', 'urgent']);
+/** ABO blood group stored on the readable rescue card. */
+export const bloodGroupEnum = pgEnum('blood_group', [
+  'a_positive',
+  'a_negative',
+  'b_positive',
+  'b_negative',
+  'ab_positive',
+  'ab_negative',
+  'o_positive',
+  'o_negative',
+  'unknown',
+]);
+/** How a person moves, for the rescue card. */
+export const mobilityEnum = pgEnum('mobility', ['independent', 'assisted', 'wheelchair', 'bedridden']);
+/** Species of a pet. */
+export const petSpeciesEnum = pgEnum('pet_species', [
+  'dog',
+  'cat',
+  'bird',
+  'fish',
+  'rabbit',
+  'rodent',
+  'reptile',
+  'horse',
+  'other',
+]);
+/** One Italian annual tax item on a resident. */
+export const taxItemKeyEnum = pgEnum('tax_item_key', [
+  'declaration',
+  'precompiled_return',
+  'isee',
+  'property_tax',
+  'waste_tax',
+  'income_tax_first_instalment',
+  'income_tax_second_instalment',
+]);
+/** Progress of a tax checklist item. */
+export const taxItemStatusEnum = pgEnum('tax_item_status', ['todo', 'in_progress', 'done', 'not_applicable']);
