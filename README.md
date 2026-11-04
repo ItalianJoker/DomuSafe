@@ -6,7 +6,7 @@ Questo repository contiene **DomuSafe Suite**, la nuova versione costruita da ze
 
 ## Cosa protegge DomuSafe
 
-- **I dati più delicati restano tuoi.** Cassaforte, schede sanitarie, codici di accesso e dati di pagamento vengono cifrati sul tuo dispositivo prima di essere salvati: il server conserva solo contenuti illeggibili.
+- **I dati più delicati restano tuoi.** I documenti della Cassaforte, i codici di accesso e i dati di pagamento vengono cifrati sul dispositivo prima di essere salvati. La scheda di soccorso è leggibile dalle persone della famiglia autorizzate, così si può usare in un momento di emergenza.
 - **Ogni famiglia è separata dalle altre**, anche a livello di database: un errore del programma non può mostrare i dati di un'altra famiglia.
 - **Ognuno vede solo ciò che gli serve.** Amministratore, Genitore, Figlio, Caregiver e Ospite hanno permessi diversi; l'Ospite vede solo la casa che gli è stata affidata e solo fino alla scadenza.
 - **Ogni modifica è registrata** e si può tornare a una versione precedente.
@@ -31,7 +31,7 @@ Le **fondamenta** già disponibili:
 - crittografia lato dispositivo pronta per Cassaforte e dati sensibili (formati, chiavi, PIN, frase di recupero);
 - documentazione dell'interfaccia di programmazione consultabile su `/api/v1/docs`.
 
-L'interfaccia web è installabile e parla con questa API: accesso, creazione della famiglia, elenco e cambio casa, tema chiaro, scuro o automatico. Le otto sezioni del menu sono percorsi veri; Famiglia e Casa si usano già, le altre spiegano che il contenuto arriverà con il modulo successivo. Dettaglio visivo in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+L'interfaccia web è installabile e parla con questa API: accesso, creazione della famiglia, elenco e cambio casa, tema chiaro, scuro o automatico. Le otto sezioni del menu sono percorsi veri. Famiglia, Casa e Personale si usano già: in Personale si compilano le schede di soccorso, i servizi personali e gli animali e, con il piano Premium o la prova di trenta giorni, gli adempimenti fiscali e i conti personali. Dettaglio visivo in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 I prossimi passi (chiavi e dispositivi, poi casa, utenze, residenti, emergenza e stampa) seguono l'ordine della [fase 3, §12](docs/design/phase-3-api-rbac.md) e riusano la stessa shell.
 

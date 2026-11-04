@@ -135,7 +135,143 @@ export function utilitiesQuery(api: DomusafeApi, familyId: string, houseId: stri
 }
 
 /**
- * Query of the heating tasks used for the boiler-check deadline.
+ * Query of the people linked to one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function residentsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['residents', familyId, houseId] as const,
+    queryFn: () => api.listResidents(familyId, houseId),
+  });
+}
+
+/**
+ * Query of one rescue card.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @returns Options for TanStack Query.
+ */
+export function rescueQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['rescue', familyId, residentId] as const,
+    queryFn: () => api.getRescue(familyId, residentId),
+  });
+}
+
+/**
+ * Query of the readable rescue sheet of one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function rescueSheetQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['rescue-sheet', familyId, houseId] as const,
+    queryFn: () => api.getRescueSheet(familyId, houseId),
+  });
+}
+
+/**
+ * Query of the animals of one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function petsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['pets', familyId, houseId] as const,
+    queryFn: () => api.listPets(familyId, houseId),
+  });
+}
+
+/**
+ * Query of the mobile plans of a person.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @returns Options for TanStack Query.
+ */
+export function phoneLinesQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['phone-lines', familyId, residentId] as const,
+    queryFn: () => api.listPhoneLines(familyId, residentId),
+  });
+}
+
+/**
+ * Query of the personal subscriptions of a person.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @returns Options for TanStack Query.
+ */
+export function subscriptionsQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['subscriptions', familyId, residentId] as const,
+    queryFn: () => api.listSubscriptions(familyId, residentId),
+  });
+}
+
+/**
+ * Query of the vehicles of a person.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @returns Options for TanStack Query.
+ */
+export function vehiclesQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['vehicles', familyId, residentId] as const,
+    queryFn: () => api.listVehicles(familyId, residentId),
+  });
+}
+
+/**
+ * Query of personal bank-account metadata.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @returns Options for TanStack Query.
+ */
+export function bankAccountsQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['bank-accounts', familyId, residentId] as const,
+    queryFn: () => api.listBankAccounts(familyId, residentId),
+  });
+}
+
+/**
+ * Query of the tax checklist of one year.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @param year - Calendar year.
+ * @returns Options for TanStack Query.
+ */
+export function taxQuery(api: DomusafeApi, familyId: string, residentId: string, year: number) {
+  return queryOptions({
+    queryKey: ['tax', familyId, residentId, year] as const,
+    queryFn: () => api.listTax(familyId, residentId, year),
+  });
+}
+
+/**
+ * Query of heating maintenance, used for the boiler deadline.
  *
  * @param api - Shell API.
  * @param familyId - Family id.

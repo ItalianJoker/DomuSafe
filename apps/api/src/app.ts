@@ -15,6 +15,8 @@ import { ProblemError, classifyDatabaseError, sendProblem } from './http/problem
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
 import { houseRoutes } from './modules/house/routes.js';
 import { createHouseService } from './modules/house/service.js';
+import { personaleRoutes } from './modules/personale/routes.js';
+import { createPersonaleService } from './modules/personale/service.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import { createIdentityService } from './modules/identity/service.js';
 import { systemRoutes } from './modules/system/routes.js';
@@ -64,6 +66,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
 
   const tenancy = createTenancyService(db);
   const house = createHouseService(db);
+  const personale = createPersonaleService(db);
   const identity = createIdentityService(db, tenancy);
   const auth = createAuth({
     db,
@@ -158,6 +161,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(identityRoutes, { identity });
   await app.register(tenancyRoutes, { tenancy });
   await app.register(houseRoutes, { house });
+  await app.register(personaleRoutes, { personale });
 
   app.addHook('onClose', async () => {
     if (deps.pool === undefined) {
