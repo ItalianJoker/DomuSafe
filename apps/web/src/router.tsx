@@ -8,6 +8,7 @@ import {
   createRouter,
   Outlet,
   redirect,
+  useRouterState,
 } from '@tanstack/react-router';
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { ClientsProvider } from '@/components/api-context.js';
@@ -69,6 +70,9 @@ const PublicRescuePage = lazy(() =>
 );
 const ExtraPage = lazy(() => sections().then((mod) => ({ default: mod.ExtraPage })));
 const GuidePage = lazy(() => sections().then((mod) => ({ default: mod.GuidePage })));
+const RescuePage = lazy(() =>
+  import('@/features/rescue/rescue-page.js').then((mod) => ({ default: mod.RescuePage })),
+);
 
 /**
  * Shows a quiet loading line while a section chunk arrives.
@@ -218,9 +222,18 @@ const houseRoute = createRoute({
   component: function HouseFrame() {
     const { me, houses } = houseRoute.useRouteContext();
     const { familyId, houseId } = houseRoute.useParams();
+    const pathname = useRouterState({ select: (state) => state.location.pathname });
     useEffect(() => {
       applyTheme(me.theme);
     }, [me.theme]);
+    if (
+      pathname
+        .split('/')
+        .filter((part) => part.length > 0)
+        .at(-1) === 'soccorso'
+    ) {
+      return <Outlet />;
+    }
     return (
       <AppShell me={me} familyId={familyId} houseId={houseId} houses={houses}>
         <Outlet />
@@ -353,6 +366,23 @@ const guideRoute = createRoute({
     );
   },
 });
+const rescueRoute = createRoute({
+  getParentRoute: () => houseRoute,
+  path: '/soccorso',
+  component: function RescueFrame() {
+    const { me, houses } = houseRoute.useRouteContext();
+    const { familyId, houseId } = houseRoute.useParams();
+    const house = houses.find((item: House) => item.id === houseId);
+    if (house === undefined) {
+      return <p className="text-lg">{m.noHouses()}</p>;
+    }
+    return (
+      <Suspended>
+        <RescuePage me={me} familyId={familyId} houseId={houseId} houseName={house.name} />
+      </Suspended>
+    );
+  },
+});
 const accountRoute = createRoute({
   getParentRoute: () => houseRoute,
   path: '/account',
@@ -407,6 +437,7 @@ const routeTree = rootRoute.addChildren([
       successionRoute,
       casaRoute,
       personalRoute,
+      rescueRoute,
       printRoute,
       extraRoute,
       guideRoute,
