@@ -44,3 +44,4 @@ pnpm verify
 | Hook di autenticazione e autorizzazione | `apps/api/src/plugins/access.ts`                                        |
 | Interfaccia, token, shell               | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`             |
 | Registro letture dei codici pubblici    | `packages/db/migrations/0013_publication_readings.sql`                  |
+| Marchio della famiglia                  | `packages/db/migrations/0014_family_branding.sql`                       |

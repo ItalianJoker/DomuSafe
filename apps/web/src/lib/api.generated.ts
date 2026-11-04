@@ -859,6 +859,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/families/{familyId}/branding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Host mark of the family */
+        get: operations["branding.get"];
+        /** Replace the host mark, or clear it when every field is empty */
+        put: operations["branding.put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/keys": {
         parameters: {
             query?: never;
@@ -1129,6 +1147,46 @@ export interface components {
             dek: string;
             /** @description Bytes encoded as base64url without padding */
             payload: string;
+        };
+        PutFamilyBrandingRequestInput: {
+            displayName: string | null;
+            color: string | null;
+            welcome: string | null;
+            logoDataUrl: string | null;
+        };
+        FamilyBrandingInput: {
+            displayName: string | null;
+            color: string | null;
+            welcome: string | null;
+            logoDataUrl: string | null;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FamilyBrandingResponseInput: {
+            branding: components["schemas"]["FamilyBrandingInput"] | null;
+        };
+        SheetMarkInput: {
+            /** @constant */
+            kind: "product";
+        } | {
+            /** @constant */
+            kind: "none";
+        } | {
+            /** @constant */
+            kind: "host";
+            displayName: string | null;
+            color: string | null;
+            welcome: string | null;
+            logoDataUrl: string | null;
         };
         ResidentInput: {
             /**
@@ -2261,11 +2319,13 @@ export interface components {
                 phone: string | null;
                 relationship: string | null;
             } | null;
+            mark: components["schemas"]["SheetMarkInput"];
         };
         PublicRescueSheetInput: {
             houseName: string;
             residents: components["schemas"]["RescueSheetResidentInput"][];
             pets: components["schemas"]["RescueSheetPetInput"][];
+            mark: components["schemas"]["SheetMarkInput"];
         };
         ProblemIssueInput: {
             path: string;
@@ -2774,6 +2834,46 @@ export interface components {
             dek: string;
             /** @description Bytes encoded as base64url without padding */
             payload: string;
+        };
+        PutFamilyBrandingRequest: {
+            displayName: string | null;
+            color: string | null;
+            welcome: string | null;
+            logoDataUrl: string | null;
+        };
+        FamilyBranding: {
+            displayName: string | null;
+            color: string | null;
+            welcome: string | null;
+            logoDataUrl: string | null;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FamilyBrandingResponse: {
+            branding: components["schemas"]["FamilyBranding"] | null;
+        };
+        SheetMark: {
+            /** @constant */
+            kind: "product";
+        } | {
+            /** @constant */
+            kind: "none";
+        } | {
+            /** @constant */
+            kind: "host";
+            displayName: string | null;
+            color: string | null;
+            welcome: string | null;
+            logoDataUrl: string | null;
         };
         Resident: {
             /**
@@ -3906,11 +4006,13 @@ export interface components {
                 phone: string | null;
                 relationship: string | null;
             } | null;
+            mark: components["schemas"]["SheetMark"];
         };
         PublicRescueSheet: {
             houseName: string;
             residents: components["schemas"]["RescueSheetResident"][];
             pets: components["schemas"]["RescueSheetPet"][];
+            mark: components["schemas"]["SheetMark"];
         };
         ProblemIssue: {
             path: string;
@@ -10633,6 +10735,160 @@ export interface operations {
             };
             /** @description Default Response */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "branding.get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyBrandingResponse"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "branding.put": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutFamilyBrandingRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyBrandingResponse"];
+                };
+            };
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyBrandingResponse"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -4,6 +4,7 @@ import { useApi } from '@/components/api-context.js';
 import { Button } from '@/components/ui/button.js';
 import { ApiProblem } from '@/lib/api.js';
 import { m } from '@/paraglide/messages.js';
+import { SheetMarkView } from '@/features/branding/mark.js';
 import { bloodLabel, mobilityLabel, speciesLabel, telHref } from '@/features/personale/model.js';
 import { readingDeviceLabel } from '@/features/print/device-label.js';
 
@@ -47,7 +48,7 @@ function Outcome(props: { readonly error: unknown }) {
  *
  * Preconditions: `token` comes from the path.
  * Postconditions: a revoked code explains that the sheet must be replaced.
- * Data contract: cutoffs, artisans and the primary contact. No health data.
+ * Data contract: cutoffs, artisans, the primary contact and the host mark. No health data and no vault text.
  *
  * @param props - Token from the address.
  * @returns The page.
@@ -74,7 +75,7 @@ export function PublicHousePage(props: { readonly token: string }) {
   const page = query.data;
   return (
     <main className="mx-auto grid max-w-3xl gap-6 px-4 py-8">
-      <p className="text-sm text-muted-foreground">DomuSafe</p>
+      <SheetMarkView mark={page.mark} place="page" />
       <header>
         <h1 className="text-4xl font-medium">{page.houseName}</h1>
         {page.address === null ? null : <p className="mt-1 text-xl">{page.address}</p>}
@@ -125,7 +126,7 @@ export function PublicHousePage(props: { readonly token: string }) {
  *
  * Preconditions: `token` comes from the path.
  * Postconditions: a revoked code does not show health data.
- * Data contract: the rescue sheet only.
+ * Data contract: the rescue sheet and the host mark. No vault text.
  *
  * @param props - Token from the address.
  * @returns The page.
@@ -152,7 +153,7 @@ export function PublicRescuePage(props: { readonly token: string }) {
   const page = query.data;
   return (
     <main className="mx-auto grid max-w-3xl gap-6 px-4 py-8">
-      <p className="text-sm text-muted-foreground">DomuSafe</p>
+      <SheetMarkView mark={page.mark} place="page" />
       <header className="grid gap-3">
         <h1 className="text-4xl font-medium">{page.houseName}</h1>
         <p className="text-lg text-muted-foreground">{m.publicRescueLead()}</p>

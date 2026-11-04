@@ -1,4 +1,5 @@
-import type { RescueSheet } from '@domusafe/contracts';
+import type { RescueSheet, SheetMark } from '@domusafe/contracts';
+import { SheetMarkView } from '@/features/branding/mark.js';
 import { m } from '@/paraglide/messages.js';
 import { bloodLabel, mobilityLabel, speciesLabel } from '@/features/personale/model.js';
 import type { EssentialPerson, PrintedContact, PrintedTrade, WallBox, WallKind } from './model.js';
@@ -13,17 +14,6 @@ function shutoffLabel(kind: WallKind): string {
     case 'electricity':
       return m.casaShutoffPower();
   }
-}
-
-function Mark(props: { readonly show: boolean }) {
-  if (!props.show) {
-    return null;
-  }
-  return (
-    <p aria-hidden="true" className="sheet-watermark">
-      DomuSafe
-    </p>
-  );
 }
 
 function CodeBlock(props: { readonly url: string | null; readonly title: string; readonly large?: boolean }) {
@@ -43,7 +33,7 @@ function CodeBlock(props: { readonly url: string | null; readonly title: string;
  * The sheet that hangs on the wall: cutoffs, artisans, the first contact, two codes and a folded strip.
  *
  * Preconditions: health facts are the essential strip only.
- * Postconditions: the mark is present when the plan requires it.
+ * Postconditions: Free and Basic show the product mark. Advanced shows none. Premium shows the host mark.
  * Data contract: no account numbers and no notes from the address book.
  *
  * @param props - Prepared lines and the two addresses.
@@ -58,11 +48,11 @@ export function WallSheet(props: {
   readonly people: readonly EssentialPerson[];
   readonly houseUrl: string | null;
   readonly rescueUrl: string | null;
-  readonly watermark: boolean;
+  readonly mark: SheetMark;
 }) {
   return (
     <article className="sheet-wall print-sheet">
-      <Mark show={props.watermark} />
+      <SheetMarkView mark={props.mark} place="sheet" />
       <header>
         <p className="text-xs tracking-wide">{m.printWallKicker()}</p>
         <h2 className="text-3xl font-medium">{props.houseName}</h2>
@@ -148,7 +138,7 @@ export function WallSheet(props: {
  * The compact rescue sheet: health, contacts, animals and the rescue code.
  *
  * Preconditions: `sheet` is the rescue sheet, not the vault and not a bank list.
- * Postconditions: the mark is present when the plan requires it.
+ * Postconditions: Free and Basic show the product mark. Advanced shows none. Premium shows the host mark.
  * Data contract: the same facts as the public rescue page, plus the code that opens it.
  *
  * @param props - House name, rescue sheet, address of the code and the mark.
@@ -158,11 +148,11 @@ export function CompactSheet(props: {
   readonly houseName: string;
   readonly sheet: RescueSheet;
   readonly rescueUrl: string | null;
-  readonly watermark: boolean;
+  readonly mark: SheetMark;
 }) {
   return (
     <article className="sheet-compact print-sheet">
-      <Mark show={props.watermark} />
+      <SheetMarkView mark={props.mark} place="sheet" />
       <header>
         <p className="text-xs tracking-wide">{m.printCompactKicker()}</p>
         <h2 className="text-3xl font-medium">{props.houseName}</h2>

@@ -712,6 +712,25 @@ export function createTenancyService(db: Database, now: () => Date = () => new D
         }),
       );
     },
+
+    /**
+     * Effective plan of a family inside an open transaction.
+     *
+     * Preconditions: the transaction can read the family (a member, or the system principal with the family set).
+     * Postconditions: null when the family is not visible. A running owner trial counts as Premium.
+     * Data contract: tier, source and trial end. No other family columns.
+     *
+     * @param tx - Open transaction.
+     * @param familyId - Family id.
+     * @returns The effective plan, or null.
+     */
+    async planOfFamily(tx: Transaction, familyId: string): Promise<EffectivePlan | null> {
+      const family = await repo.findFamily(tx, familyId);
+      if (family === null) {
+        return null;
+      }
+      return planOf(tx, family);
+    },
   };
 }
 

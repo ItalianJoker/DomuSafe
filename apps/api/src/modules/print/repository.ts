@@ -469,7 +469,7 @@ export async function loadHousePage(
   tx: Transaction,
   familyId: string,
   houseId: string,
-): Promise<PublicHousePage | null> {
+): Promise<Omit<PublicHousePage, 'mark'> | null> {
   const house = await findHouse(tx, familyId, houseId);
   if (house === null) {
     return null;
@@ -564,7 +564,7 @@ export async function loadRescueSheet(
   tx: Transaction,
   familyId: string,
   houseId: string,
-): Promise<PublicRescueSheet | null> {
+): Promise<Omit<PublicRescueSheet, 'mark'> | null> {
   const house = await findHouse(tx, familyId, houseId);
   if (house === null) {
     return null;

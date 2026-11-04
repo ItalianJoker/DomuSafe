@@ -210,6 +210,42 @@ describe('row-level security', () => {
     ).toMatch(/row-level security/);
   });
 
+  it('stores a host mark for the administrator and hides it from other families', async () => {
+    expect(
+      await dbError(
+        withContext(db, { principal: account(ids.carol), familyId: alice.familyId }, (tx) =>
+          tx.insert(schema.familyBranding).values({
+            familyId: alice.familyId,
+            displayName: 'Casa del Genitore',
+          }),
+        ),
+      ),
+    ).toMatch(/row-level security/);
+    await withContext(db, { principal: account(ids.alice), familyId: alice.familyId }, (tx) =>
+      tx.insert(schema.familyBranding).values({
+        familyId: alice.familyId,
+        displayName: 'Casa Alice',
+        accentColor: '#1f4e79',
+      }),
+    );
+    const own = await withContext(db, { principal: account(ids.alice), familyId: alice.familyId }, (tx) =>
+      tx.select({ name: schema.familyBranding.displayName }).from(schema.familyBranding),
+    );
+    expect(own).toEqual([{ name: 'Casa Alice' }]);
+    const foreign = await withContext(db, { principal: account(ids.bob), familyId: bob.familyId }, (tx) =>
+      tx.select().from(schema.familyBranding),
+    );
+    expect(foreign).toEqual([]);
+    const updated = await withContext(db, { principal: account(ids.carol), familyId: alice.familyId }, (tx) =>
+      tx
+        .update(schema.familyBranding)
+        .set({ displayName: 'Cambio' })
+        .where(eq(schema.familyBranding.familyId, alice.familyId))
+        .returning(),
+    );
+    expect(updated).toEqual([]);
+  });
+
   it('lists only the families of the account', async () => {
     const rows = await withContext(db, { principal: account(ids.alice) }, (tx) =>
       tx.select({ id: schema.families.id }).from(schema.families),

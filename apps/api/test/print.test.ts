@@ -200,6 +200,7 @@ describe('printed codes', () => {
       phone: '+393339998877',
       relationship: 'Figlia',
     });
+    expect(houseJson.mark).toEqual({ kind: 'product' });
     for (const secret of [
       WIFI_SECRET,
       UTILITY_SECRET,
@@ -221,6 +222,7 @@ describe('printed codes', () => {
     expect(rescueJson.residents[0]?.allergies).toEqual([ALLERGY]);
     expect(rescueJson.residents[0]?.medicines[0]?.name).toBe('Insulina');
     expect(rescueJson.pets[0]?.name).toBe('Luna');
+    expect(rescueJson.mark).toEqual({ kind: 'product' });
     expect(rescuePage.body).not.toContain(BANK_SECRET);
     expect(rescuePage.body).not.toContain(UTILITY_SECRET);
     expect(rescuePage.body).not.toContain(WIFI_SECRET);

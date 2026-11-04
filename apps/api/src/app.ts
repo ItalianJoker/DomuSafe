@@ -14,6 +14,8 @@ import type { ApiConfig } from './config.js';
 import { ProblemError, classifyDatabaseError, sendProblem } from './http/problem.js';
 import { redactRequestUrl } from './http/redact.js';
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
+import { brandingRoutes } from './modules/branding/routes.js';
+import { createBrandingService } from './modules/branding/service.js';
 import { deadlineRoutes } from './modules/deadlines/routes.js';
 import { createDeadlinesService } from './modules/deadlines/service.js';
 import { houseRoutes } from './modules/house/routes.js';
@@ -74,10 +76,11 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const secrets = await ServerSecretBox.create(parseMasterKeys(config.masterKeys), config.masterKeyActive);
 
   const tenancy = createTenancyService(db);
+  const branding = createBrandingService(db, tenancy);
   const house = createHouseService(db);
   const deadlines = createDeadlinesService(db);
   const personale = createPersonaleService(db);
-  const print = createPrintService(db);
+  const print = createPrintService(db, branding);
   const vault = createVaultService(db, store, secrets);
   const succession = createSuccessionService(db);
   const identity = createIdentityService(db, tenancy);
@@ -106,6 +109,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
           '*.serverShare',
           '*.token',
           '*.secret',
+          '*.logoDataUrl',
           '*.wrappedAccountKey',
           '*.wrappedVaultPrivateKey',
           '*.recoverySealedVaultKey',
@@ -191,6 +195,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(deadlineRoutes, { deadlines });
   await app.register(personaleRoutes, { personale });
   await app.register(printRoutes, { print });
+  await app.register(brandingRoutes, { branding });
   await app.register(vaultRoutes, { vault });
   await app.register(successionRoutes, { succession });
 

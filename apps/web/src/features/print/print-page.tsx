@@ -1,18 +1,20 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import {
+  sheetMarkFor,
   formatHouseAddress,
   type House,
   type Me,
   type Publication,
   type PublicationKind,
 } from '@domusafe/contracts';
+import { hasFeature } from '@domusafe/plans';
 import { useApi } from '@/components/api-context.js';
 import { PageHeader } from '@/components/shell/page.js';
 import { Button } from '@/components/ui/button.js';
 import { problemText } from '@/lib/copy.js';
 import { roleAllows } from '@/lib/permissions.js';
-import { publicationsQuery, rescueSheetQuery, shutoffsQuery } from '@/lib/queries.js';
+import { brandingQuery, publicationsQuery, rescueSheetQuery, shutoffsQuery } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 import {
@@ -22,7 +24,6 @@ import {
   primaryEmergencyContact,
   printedTrades,
   rescuePagePath,
-  sheetHasWatermark,
   sheetUrl,
   wallBoxes,
 } from './model.js';
@@ -59,6 +60,7 @@ export function PrintPage(props: { readonly me: Me; readonly familyId: string; r
   const role = props.me.families.find((family) => family.id === props.familyId)?.role;
   const tier = props.me.families.find((family) => family.id === props.familyId)?.plan ?? 'free';
   const canManage = role !== undefined && roleAllows(role, 'qr.manage');
+  const canBrand = hasFeature(tier, 'branding');
   const shutoffs = useQuery({
     ...shutoffsQuery(api, props.familyId, props.house.id),
     enabled: canManage,
@@ -75,6 +77,10 @@ export function PrintPage(props: { readonly me: Me; readonly familyId: string; r
   const codes = useQuery({
     ...publicationsQuery(api, props.familyId, props.house.id),
     enabled: canManage,
+  });
+  const branding = useQuery({
+    ...brandingQuery(api, props.familyId),
+    enabled: canManage && canBrand,
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,8 +105,14 @@ export function PrintPage(props: { readonly me: Me; readonly familyId: string; r
     );
   }
 
-  const pending = shutoffs.isPending || trades.isPending || rescue.isPending || codes.isPending;
-  const failed = shutoffs.error ?? trades.error ?? rescue.error ?? codes.error;
+  const pending =
+    shutoffs.isPending ||
+    trades.isPending ||
+    rescue.isPending ||
+    codes.isPending ||
+    (canBrand && branding.isPending);
+  const failed =
+    shutoffs.error ?? trades.error ?? rescue.error ?? codes.error ?? (canBrand ? branding.error : null);
   if (pending) {
     return <p className="text-[13px] text-muted-foreground">{m.loading()}</p>;
   }
@@ -115,11 +127,13 @@ export function PrintPage(props: { readonly me: Me; readonly familyId: string; r
     shutoffs.data === undefined ||
     trades.data === undefined ||
     rescue.data === undefined ||
-    codes.data === undefined
+    codes.data === undefined ||
+    (canBrand && branding.data === undefined)
   ) {
     return <p className="text-[13px] text-muted-foreground">{m.loading()}</p>;
   }
 
+  const mark = sheetMarkFor(tier, canBrand ? (branding.data ?? null) : null);
   const origin = window.location.origin;
   const houseCode = currentPublication(codes.data, 'house_page');
   const rescueCode = currentPublication(codes.data, 'rescue_sheet');
@@ -226,14 +240,9 @@ export function PrintPage(props: { readonly me: Me; readonly familyId: string; r
         people={essentialPeople(rescue.data)}
         houseUrl={houseUrl}
         rescueUrl={rescueUrl}
-        watermark={sheetHasWatermark(tier)}
+        mark={mark}
       />
-      <CompactSheet
-        houseName={props.house.name}
-        sheet={rescue.data}
-        rescueUrl={rescueUrl}
-        watermark={sheetHasWatermark(tier)}
-      />
+      <CompactSheet houseName={props.house.name} sheet={rescue.data} rescueUrl={rescueUrl} mark={mark} />
     </section>
   );
 }

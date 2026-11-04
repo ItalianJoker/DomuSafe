@@ -18,6 +18,7 @@ import {
 } from '@domusafe/db';
 import { ProblemError, classifyDatabaseError } from '../../http/problem.js';
 import type { TenantContext } from '../../types.js';
+import type { BrandingService } from '../branding/service.js';
 import * as repo from './repository.js';
 
 /** Outcome of preparing a code: created now, or the one already hanging on the wall. */
@@ -175,9 +176,10 @@ export interface PrintService {
  * Builds the print service.
  *
  * @param db - Database bound to the application role.
+ * @param branding - Host mark used by the public pages. The sheets themselves are drawn in the browser.
  * @returns The service.
  */
-export function createPrintService(db: Database): PrintService {
+export function createPrintService(db: Database, branding: BrandingService): PrintService {
   function inFamily<T>(tenant: TenantContext, work: (tx: Transaction) => Promise<T>): Promise<T> {
     return withContext(db, { principal: account(tenant.accountId), familyId: tenant.familyId }, work);
   }
@@ -321,7 +323,13 @@ export function createPrintService(db: Database): PrintService {
     },
 
     async openHousePage(token, deviceLabel) {
-      const opened = await open(token, 'house_page', deviceLabel, repo.loadHousePage);
+      const opened = await open(token, 'house_page', deviceLabel, async (tx, familyId, houseId) => {
+        const page = await repo.loadHousePage(tx, familyId, houseId);
+        if (page === null) {
+          return null;
+        }
+        return { ...page, mark: await branding.markForFamily(tx, familyId) };
+      });
       if (opened === null) {
         throw new ProblemError('not_found');
       }
@@ -329,7 +337,13 @@ export function createPrintService(db: Database): PrintService {
     },
 
     async openRescueSheet(token, deviceLabel) {
-      const opened = await open(token, 'rescue_sheet', deviceLabel, repo.loadRescueSheet);
+      const opened = await open(token, 'rescue_sheet', deviceLabel, async (tx, familyId, houseId) => {
+        const page = await repo.loadRescueSheet(tx, familyId, houseId);
+        if (page === null) {
+          return null;
+        }
+        return { ...page, mark: await branding.markForFamily(tx, familyId) };
+      });
       if (opened === null) {
         throw new ProblemError('not_found');
       }

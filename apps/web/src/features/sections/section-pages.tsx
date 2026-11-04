@@ -27,6 +27,10 @@ export function GuidePage() {
         <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{m.guideSuccessionBody()}</p>
       </article>
       <article>
+        <h2 className="text-[13px] font-medium">{m.guideHostTitle()}</h2>
+        <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{m.guideHostBody()}</p>
+      </article>
+      <article>
         <h2 className="text-[13px] font-medium">{m.guideRestTitle()}</h2>
         <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{m.guideRestBody()}</p>
       </article>
