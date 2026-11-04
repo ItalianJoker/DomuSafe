@@ -88,6 +88,29 @@ import {
   type UpdateFamilyRequest,
   type UpdateHouseRequest,
   type UpdateProfileRequest,
+  accountKeysResponseSchema,
+  deviceSchema,
+  recoveryMaterialSchema,
+  unlockVaultResponseSchema,
+  vaultItemPageSchema,
+  vaultItemSchema,
+  vaultPinStatusSchema,
+  vaultScopeSchema,
+  type AccountKeysResponse,
+  type CreateVaultItemRequest,
+  type Device,
+  type FamilyVaultSection,
+  type PutAccountKeysRequest,
+  type PutVaultScopeRequest,
+  type RecoveryMaterial,
+  type RegisterDeviceRequest,
+  type ResetVaultPinRequest,
+  type SetVaultPinRequest,
+  type UnlockVaultResponse,
+  type UpdateVaultItemRequest,
+  type VaultItem,
+  type VaultPinStatus,
+  type VaultScope,
 } from '@domusafe/contracts';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { z } from 'zod';
@@ -674,6 +697,129 @@ export interface DomusafeApi {
     version: number,
     patch: UpdateTaxChecklistItemRequest,
   ): Promise<TaxChecklistItem>;
+  /**
+   * Wrapped account keys, or `missing` when the recovery phrase has not been confirmed.
+   *
+   * @returns The key material the browser may see without the phrase.
+   */
+  getKeys(): Promise<AccountKeysResponse>;
+  /**
+   * Stores the account keys once.
+   *
+   * @param body - Wrapped keys. The phrase is not included.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The stored view.
+   */
+  putKeys(body: PutAccountKeysRequest, idempotencyKey: string): Promise<AccountKeysResponse>;
+  /**
+   * Registers this browser.
+   *
+   * @param body - Device id and the wrapped account key.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The device.
+   */
+  registerDevice(body: RegisterDeviceRequest, idempotencyKey: string): Promise<Device>;
+  /**
+   * Reads the wrapped account key of one device.
+   *
+   * @param deviceId - Device id.
+   * @returns The device.
+   */
+  getDevice(deviceId: string): Promise<Device>;
+  /**
+   * Exchanges a recovery verifier for the recovery-wrapped keys.
+   *
+   * @param verifier - Base64url verifier of the phrase.
+   * @returns The wrapped copies.
+   */
+  verifyRecovery(verifier: string): Promise<RecoveryMaterial>;
+  /**
+   * Salt and state of the vault code.
+   *
+   * @returns `not_set`, `active` or `locked`.
+   */
+  getVaultPin(): Promise<VaultPinStatus>;
+  /**
+   * Sets or changes the vault code.
+   *
+   * @param body - Verifier, salt and wrapped key. The code is not included.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The new status.
+   */
+  setVaultPin(body: SetVaultPinRequest, idempotencyKey: string): Promise<VaultPinStatus>;
+  /**
+   * Opens the vault session.
+   *
+   * @param verifier - Base64url verifier of the code.
+   * @returns The server share.
+   */
+  unlockVault(verifier: string): Promise<UnlockVaultResponse>;
+  /** Closes the vault session. */
+  lockVault(): Promise<void>;
+  /**
+   * Sets a new code with the recovery verifier.
+   *
+   * @param body - Recovery verifier and the new wrap.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The new status.
+   */
+  resetVaultPin(body: ResetVaultPinRequest, idempotencyKey: string): Promise<VaultPinStatus>;
+  /**
+   * Family vault scope and this account's grant.
+   *
+   * @param familyId - Family id.
+   * @returns The scope, with nulls when it does not exist yet.
+   */
+  getVaultScope(familyId: string): Promise<VaultScope>;
+  /**
+   * Creates the family vault scope once.
+   *
+   * @param familyId - Family id.
+   * @param body - Scope id and grant.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The scope.
+   */
+  putVaultScope(familyId: string, body: PutVaultScopeRequest, idempotencyKey: string): Promise<VaultScope>;
+  /**
+   * Ciphertext documents of one section.
+   *
+   * @param familyId - Family id.
+   * @param section - Family section.
+   * @returns Every page.
+   */
+  listVaultItems(familyId: string, section: FamilyVaultSection): Promise<readonly VaultItem[]>;
+  /**
+   * Stores one encrypted document.
+   *
+   * @param familyId - Family id.
+   * @param body - Section and envelope.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The stored envelope.
+   */
+  createVaultItem(familyId: string, body: CreateVaultItemRequest, idempotencyKey: string): Promise<VaultItem>;
+  /**
+   * Replaces one envelope.
+   *
+   * @param familyId - Family id.
+   * @param itemId - Item id.
+   * @param version - Version the form was loaded with.
+   * @param body - New envelope.
+   * @returns The stored envelope.
+   */
+  updateVaultItem(
+    familyId: string,
+    itemId: string,
+    version: number,
+    body: UpdateVaultItemRequest,
+  ): Promise<VaultItem>;
+  /**
+   * Moves one document to the trash.
+   *
+   * @param familyId - Family id.
+   * @param itemId - Item id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteVaultItem(familyId: string, itemId: string, version: number): Promise<void>;
 }
 
 /** Options of {@link createApi}. */
@@ -1245,6 +1391,125 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         headers: { [HEADERS.ifMatch]: formatEtag(version) },
       });
       return unwrap(taxChecklistItemSchema, result);
+    },
+    async getKeys() {
+      return unwrap(accountKeysResponseSchema, await client.GET('/api/v1/me/keys'));
+    },
+    async putKeys(body, idempotencyKey) {
+      return unwrap(
+        accountKeysResponseSchema,
+        await client.PUT('/api/v1/me/keys', {
+          body,
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        }),
+      );
+    },
+    async registerDevice(body, idempotencyKey) {
+      return unwrap(
+        deviceSchema,
+        await client.POST('/api/v1/me/devices', {
+          body,
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        }),
+      );
+    },
+    async getDevice(deviceId) {
+      return unwrap(
+        deviceSchema,
+        await client.GET('/api/v1/me/devices/{deviceId}', { params: { path: { deviceId } } }),
+      );
+    },
+    async verifyRecovery(verifier) {
+      return unwrap(
+        recoveryMaterialSchema,
+        await client.POST('/api/v1/me/recovery/verify', { body: { verifier } }),
+      );
+    },
+    async getVaultPin() {
+      return unwrap(vaultPinStatusSchema, await client.GET('/api/v1/me/vault-pin'));
+    },
+    async setVaultPin(body, idempotencyKey) {
+      return unwrap(
+        vaultPinStatusSchema,
+        await client.PUT('/api/v1/me/vault-pin', {
+          body: body as components['schemas']['SetVaultPinRequestInput'],
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        }),
+      );
+    },
+    async unlockVault(verifier) {
+      return unwrap(
+        unlockVaultResponseSchema,
+        await client.POST('/api/v1/me/vault-pin/unlock', { body: { verifier } }),
+      );
+    },
+    async lockVault() {
+      const result = await client.POST('/api/v1/me/vault-pin/lock');
+      ensureOk(result);
+    },
+    async resetVaultPin(body, idempotencyKey) {
+      return unwrap(
+        vaultPinStatusSchema,
+        await client.POST('/api/v1/me/vault-pin/reset', {
+          body: body as components['schemas']['ResetVaultPinRequestInput'],
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        }),
+      );
+    },
+    async getVaultScope(familyId) {
+      return unwrap(
+        vaultScopeSchema,
+        await client.GET('/api/v1/families/{familyId}/vault/scope', { params: { path: { familyId } } }),
+      );
+    },
+    async putVaultScope(familyId, body, idempotencyKey) {
+      return unwrap(
+        vaultScopeSchema,
+        await client.PUT('/api/v1/families/{familyId}/vault/scope', {
+          params: { path: { familyId } },
+          body,
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        }),
+      );
+    },
+    listVaultItems(familyId, section) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/vault/items', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, section, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(vaultItemPageSchema, result)),
+      );
+    },
+    async createVaultItem(familyId, body, idempotencyKey) {
+      return unwrap(
+        vaultItemSchema,
+        await client.POST('/api/v1/families/{familyId}/vault/items', {
+          params: { path: { familyId } },
+          body,
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        }),
+      );
+    },
+    async updateVaultItem(familyId, itemId, version, body) {
+      return unwrap(
+        vaultItemSchema,
+        await client.PATCH('/api/v1/families/{familyId}/vault/items/{itemId}', {
+          params: { path: { familyId, itemId } },
+          body,
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        }),
+      );
+    },
+    async deleteVaultItem(familyId, itemId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/vault/items/{itemId}', {
+        params: { path: { familyId, itemId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
     },
   };
 }

@@ -49,7 +49,9 @@ const AccountPage = lazy(() =>
   import('@/features/account/account-page.js').then((mod) => ({ default: mod.AccountPage })),
 );
 const sections = () => import('@/features/sections/section-pages.js');
-const VaultPage = lazy(() => sections().then((mod) => ({ default: mod.VaultPage })));
+const VaultPage = lazy(() =>
+  import('@/features/vault/vault-page.js').then((mod) => ({ default: mod.VaultPage })),
+);
 const PersonalePage = lazy(() =>
   import('@/features/personale/personale-page.js').then((mod) => ({ default: mod.PersonalePage })),
 );
@@ -240,9 +242,11 @@ const vaultRoute = createRoute({
   getParentRoute: () => houseRoute,
   path: '/cassaforte',
   component: function VaultFrame() {
+    const { me } = houseRoute.useRouteContext();
+    const { familyId } = houseRoute.useParams();
     return (
       <Suspended>
-        <VaultPage />
+        <VaultPage me={me} familyId={familyId} />
       </Suspended>
     );
   },

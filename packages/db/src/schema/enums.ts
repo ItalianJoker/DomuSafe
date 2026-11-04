@@ -144,3 +144,12 @@ export const taxItemKeyEnum = pgEnum('tax_item_key', [
 ]);
 /** Progress of a tax checklist item. */
 export const taxItemStatusEnum = pgEnum('tax_item_status', ['todo', 'in_progress', 'done', 'not_applicable']);
+/** Section of a family vault document. Personal sections are not created in this migration. */
+export const vaultSectionEnum = pgEnum('vault_section', [
+  'family_accounts',
+  'mortgages',
+  'credit_protection',
+  'insurance_policies',
+  'bills_and_cancellations',
+  'digital_legacy',
+]);

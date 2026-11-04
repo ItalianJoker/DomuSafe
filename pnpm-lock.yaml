@@ -275,6 +275,9 @@ importers:
       '@domusafe/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@domusafe/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@domusafe/plans':
         specifier: workspace:*
         version: link:../../packages/plans

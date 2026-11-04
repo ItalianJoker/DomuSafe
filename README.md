@@ -31,7 +31,7 @@ Le **fondamenta** già disponibili:
 - crittografia lato dispositivo pronta per Cassaforte e dati sensibili (formati, chiavi, PIN, frase di recupero);
 - documentazione dell'interfaccia di programmazione consultabile su `/api/v1/docs`.
 
-L'interfaccia web è installabile e parla con questa API: accesso, creazione della famiglia, elenco e cambio casa, tema chiaro, scuro o automatico. Le otto sezioni del menu sono percorsi veri. Famiglia, Casa e Personale si usano già: in Personale si compilano le schede di soccorso, i servizi personali e gli animali e, con il piano Premium o la prova di trenta giorni, gli adempimenti fiscali e i conti personali. Dettaglio visivo in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+L'interfaccia web è installabile e parla con questa API: accesso, creazione della famiglia, elenco e cambio casa, tema chiaro, scuro o automatico. Le otto sezioni del menu sono percorsi veri. Famiglia, Casa, Personale e Cassaforte si usano già. In Cassaforte i documenti della famiglia si cifrano sul dispositivo con un codice dedicato; i piani Gratuito e Base vedono solo la spiegazione, mentre Avanzato, Premium e la prova di trenta giorni possono compilarli. Dettaglio visivo in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 I prossimi passi (chiavi e dispositivi, poi casa, utenze, residenti, emergenza e stampa) seguono l'ordine della [fase 3, §12](docs/design/phase-3-api-rbac.md) e riusano la stessa shell.
 

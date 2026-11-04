@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@domusafe/contracts": "workspace:*",
+    "@domusafe/crypto": "workspace:*",
     "@domusafe/plans": "workspace:*",
     "@radix-ui/react-label": "2.1.17",
     "@radix-ui/react-radio-group": "1.5.1",

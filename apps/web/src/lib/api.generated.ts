@@ -756,6 +756,198 @@ export interface paths {
         patch: operations["personale.updateTaxItem"];
         trace?: never;
     };
+    "/api/v1/me/keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Wrapped account keys, without the recovery copies */
+        get: operations["vault.getKeys"];
+        /** Store the account keys once, after the recovery phrase is confirmed */
+        put: operations["vault.putKeys"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register a device and the account key wrapped for it */
+        post: operations["vault.registerDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/devices/{deviceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Wrapped account key of one device */
+        get: operations["vault.getDevice"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/recovery/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Return the recovery-wrapped keys after the phrase verifier matches */
+        post: operations["vault.verifyRecovery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/vault-pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Salt, cost and state of the vault code */
+        get: operations["vault.getPin"];
+        /** Set or change the vault code */
+        put: operations["vault.setPin"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/vault-pin/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check the code verifier and open the vault session */
+        post: operations["vault.unlock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/vault-pin/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close the vault session */
+        post: operations["vault.lock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/vault-pin/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set a new vault code with the recovery verifier */
+        post: operations["vault.resetPin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/vault/scope": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Family vault scope and the caller grant */
+        get: operations["vault.getScope"];
+        /** Create the family vault scope and grant, once */
+        put: operations["vault.putScope"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/vault/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ciphertext of the family vault documents */
+        get: operations["vault.listItems"];
+        put?: never;
+        /** Store one encrypted family document */
+        post: operations["vault.createItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/vault/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Move one family document to the trash */
+        delete: operations["vault.deleteItem"];
+        options?: never;
+        head?: never;
+        /** Replace the envelope of one family document */
+        patch: operations["vault.updateItem"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2013,6 +2205,7 @@ export interface components {
                 name: string;
                 role: components["schemas"]["MemberRoleInput"];
                 plan: components["schemas"]["PlanTierInput"];
+                vaultFamily: boolean;
             }[];
         };
         UpdateProfileRequestInput: {
@@ -2026,6 +2219,223 @@ export interface components {
             theme?: "light" | "dark" | "system";
             lastFamilyId?: string | null;
             lastHouseId?: string | null;
+        };
+        AccountKeysInput: {
+            /** @constant */
+            state: "ready";
+            /** @description Bytes encoded as base64url without padding */
+            publicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryPublicKey: string;
+            vaultPublicKey: string | null;
+            wrappedVaultPrivateKey: string | null;
+            recoverySealedVaultKey: string | null;
+            fingerprint: string;
+        };
+        MissingAccountKeysInput: {
+            /** @constant */
+            state: "missing";
+        };
+        PutAccountKeysRequestInput: {
+            /** @description Bytes encoded as base64url without padding */
+            publicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryPublicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedAccountKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryVerifierSha256: string;
+            fingerprint: string;
+        };
+        DeviceInput: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            label: string;
+            /** @enum {string} */
+            platform: "android" | "ios" | "windows" | "macos" | "linux" | "other";
+            /** @description Bytes encoded as base64url without padding */
+            wrappedAccountKey: string;
+            /** @enum {string} */
+            pairedVia: "signup" | "pairing" | "recovery";
+        };
+        RegisterDeviceRequestInput: components["schemas"]["DeviceInput"];
+        VerifyRecoveryRequestInput: {
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+        };
+        RecoveryMaterialInput: {
+            /** @description Bytes encoded as base64url without padding */
+            recoveryPublicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedAccountKey: string;
+        };
+        VaultPinStatusInput: {
+            /** @enum {string} */
+            state: "not_set" | "active" | "locked";
+            salt: string | null;
+            kdf: {
+                /** @constant */
+                memoryKib: 65536;
+                /** @constant */
+                iterations: 3;
+                /** @constant */
+                parallelism: 1;
+            } | null;
+            remainingAttempts: number;
+            pinGeneration: number | null;
+        };
+        SetVaultPinRequestInput: {
+            /** @description Bytes encoded as base64url without padding */
+            salt: string;
+            kdf: {
+                /** @constant */
+                memoryKib: 65536;
+                /** @constant */
+                iterations: 3;
+                /** @constant */
+                parallelism: 1;
+            };
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+            /** @description Bytes encoded as base64url without padding */
+            serverShare: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedVaultPrivateKey: string;
+            pinGeneration: number;
+            /** @description Bytes encoded as base64url without padding */
+            vaultPublicKey?: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoverySealedVaultKey?: string;
+        };
+        UnlockVaultRequestInput: {
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+        };
+        UnlockVaultResponseInput: {
+            /** @description Bytes encoded as base64url without padding */
+            serverShare: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            unlockedUntil: string;
+            pinGeneration: number;
+        };
+        ResetVaultPinRequestInput: {
+            /** @description Bytes encoded as base64url without padding */
+            salt: string;
+            kdf: {
+                /** @constant */
+                memoryKib: 65536;
+                /** @constant */
+                iterations: 3;
+                /** @constant */
+                parallelism: 1;
+            };
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+            /** @description Bytes encoded as base64url without padding */
+            serverShare: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedVaultPrivateKey: string;
+            pinGeneration: number;
+            /** @description Bytes encoded as base64url without padding */
+            vaultPublicKey?: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoverySealedVaultKey?: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryVerifier: string;
+        };
+        VaultScopeInput: {
+            scopeId: string | null;
+            version: number | null;
+            grant: string | null;
+        };
+        PutVaultScopeRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            scopeId: string;
+            /** @description Bytes encoded as base64url without padding */
+            grant: string;
+        };
+        VaultItemInput: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            /** @enum {string} */
+            section: "family_accounts" | "mortgages" | "credit_protection" | "insurance_policies" | "bills_and_cancellations" | "digital_legacy";
+            version: number;
+            sealed: {
+                /**
+                 * Format: uuid
+                 * @description UUIDv7 generated by the client
+                 */
+                scopeId: string;
+                keyVersion: number;
+                /** @description Bytes encoded as base64url without padding */
+                dek: string;
+                /** @description Bytes encoded as base64url without padding */
+                payload: string;
+            };
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        VaultItemPageInput: {
+            items: components["schemas"]["VaultItemInput"][];
+            nextCursor: string | null;
+        };
+        CreateVaultItemRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            /** @enum {string} */
+            section: "family_accounts" | "mortgages" | "credit_protection" | "insurance_policies" | "bills_and_cancellations" | "digital_legacy";
+            sealed: {
+                /**
+                 * Format: uuid
+                 * @description UUIDv7 generated by the client
+                 */
+                scopeId: string;
+                keyVersion: number;
+                /** @description Bytes encoded as base64url without padding */
+                dek: string;
+                /** @description Bytes encoded as base64url without padding */
+                payload: string;
+            };
+        };
+        UpdateVaultItemRequestInput: {
+            sealed: {
+                /**
+                 * Format: uuid
+                 * @description UUIDv7 generated by the client
+                 */
+                scopeId: string;
+                keyVersion: number;
+                /** @description Bytes encoded as base64url without padding */
+                dek: string;
+                /** @description Bytes encoded as base64url without padding */
+                payload: string;
+            };
         };
         HealthStatusInput: {
             /** @constant */
@@ -3288,6 +3698,7 @@ export interface components {
                 name: string;
                 role: components["schemas"]["MemberRole"];
                 plan: components["schemas"]["PlanTier"];
+                vaultFamily: boolean;
             }[];
         };
         UpdateProfileRequest: {
@@ -3301,6 +3712,223 @@ export interface components {
             theme?: "light" | "dark" | "system";
             lastFamilyId?: string | null;
             lastHouseId?: string | null;
+        };
+        AccountKeys: {
+            /** @constant */
+            state: "ready";
+            /** @description Bytes encoded as base64url without padding */
+            publicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryPublicKey: string;
+            vaultPublicKey: string | null;
+            wrappedVaultPrivateKey: string | null;
+            recoverySealedVaultKey: string | null;
+            fingerprint: string;
+        };
+        MissingAccountKeys: {
+            /** @constant */
+            state: "missing";
+        };
+        PutAccountKeysRequest: {
+            /** @description Bytes encoded as base64url without padding */
+            publicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryPublicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedAccountKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryVerifierSha256: string;
+            fingerprint: string;
+        };
+        Device: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            label: string;
+            /** @enum {string} */
+            platform: "android" | "ios" | "windows" | "macos" | "linux" | "other";
+            /** @description Bytes encoded as base64url without padding */
+            wrappedAccountKey: string;
+            /** @enum {string} */
+            pairedVia: "signup" | "pairing" | "recovery";
+        };
+        RegisterDeviceRequest: components["schemas"]["Device"];
+        VerifyRecoveryRequest: {
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+        };
+        RecoveryMaterial: {
+            /** @description Bytes encoded as base64url without padding */
+            recoveryPublicKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedPrivateKey: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryWrappedAccountKey: string;
+        };
+        VaultPinStatus: {
+            /** @enum {string} */
+            state: "not_set" | "active" | "locked";
+            salt: string | null;
+            kdf: {
+                /** @constant */
+                memoryKib: 65536;
+                /** @constant */
+                iterations: 3;
+                /** @constant */
+                parallelism: 1;
+            } | null;
+            remainingAttempts: number;
+            pinGeneration: number | null;
+        };
+        SetVaultPinRequest: {
+            /** @description Bytes encoded as base64url without padding */
+            salt: string;
+            kdf: {
+                /** @constant */
+                memoryKib: 65536;
+                /** @constant */
+                iterations: 3;
+                /** @constant */
+                parallelism: 1;
+            };
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+            /** @description Bytes encoded as base64url without padding */
+            serverShare: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedVaultPrivateKey: string;
+            pinGeneration: number;
+            /** @description Bytes encoded as base64url without padding */
+            vaultPublicKey?: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoverySealedVaultKey?: string;
+        };
+        UnlockVaultRequest: {
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+        };
+        UnlockVaultResponse: {
+            /** @description Bytes encoded as base64url without padding */
+            serverShare: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            unlockedUntil: string;
+            pinGeneration: number;
+        };
+        ResetVaultPinRequest: {
+            /** @description Bytes encoded as base64url without padding */
+            salt: string;
+            kdf: {
+                /** @constant */
+                memoryKib: 65536;
+                /** @constant */
+                iterations: 3;
+                /** @constant */
+                parallelism: 1;
+            };
+            /** @description Bytes encoded as base64url without padding */
+            verifier: string;
+            /** @description Bytes encoded as base64url without padding */
+            serverShare: string;
+            /** @description Bytes encoded as base64url without padding */
+            wrappedVaultPrivateKey: string;
+            pinGeneration: number;
+            /** @description Bytes encoded as base64url without padding */
+            vaultPublicKey?: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoverySealedVaultKey?: string;
+            /** @description Bytes encoded as base64url without padding */
+            recoveryVerifier: string;
+        };
+        VaultScope: {
+            scopeId: string | null;
+            version: number | null;
+            grant: string | null;
+        };
+        PutVaultScopeRequest: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            scopeId: string;
+            /** @description Bytes encoded as base64url without padding */
+            grant: string;
+        };
+        VaultItem: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            /** @enum {string} */
+            section: "family_accounts" | "mortgages" | "credit_protection" | "insurance_policies" | "bills_and_cancellations" | "digital_legacy";
+            version: number;
+            sealed: {
+                /**
+                 * Format: uuid
+                 * @description UUIDv7 generated by the client
+                 */
+                scopeId: string;
+                keyVersion: number;
+                /** @description Bytes encoded as base64url without padding */
+                dek: string;
+                /** @description Bytes encoded as base64url without padding */
+                payload: string;
+            };
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        VaultItemPage: {
+            items: components["schemas"]["VaultItem"][];
+            nextCursor: string | null;
+        };
+        CreateVaultItemRequest: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            /** @enum {string} */
+            section: "family_accounts" | "mortgages" | "credit_protection" | "insurance_policies" | "bills_and_cancellations" | "digital_legacy";
+            sealed: {
+                /**
+                 * Format: uuid
+                 * @description UUIDv7 generated by the client
+                 */
+                scopeId: string;
+                keyVersion: number;
+                /** @description Bytes encoded as base64url without padding */
+                dek: string;
+                /** @description Bytes encoded as base64url without padding */
+                payload: string;
+            };
+        };
+        UpdateVaultItemRequest: {
+            sealed: {
+                /**
+                 * Format: uuid
+                 * @description UUIDv7 generated by the client
+                 */
+                scopeId: string;
+                keyVersion: number;
+                /** @description Bytes encoded as base64url without padding */
+                dek: string;
+                /** @description Bytes encoded as base64url without padding */
+                payload: string;
+            };
         };
         HealthStatus: {
             /** @constant */
@@ -9087,6 +9715,1023 @@ export interface operations {
             };
             /** @description Default Response */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.getKeys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MissingAccountKeys"] | components["schemas"]["AccountKeys"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.putKeys": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutAccountKeysRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MissingAccountKeys"] | components["schemas"]["AccountKeys"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.registerDevice": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDeviceRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Device"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.getDevice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUIDv7 generated by the client */
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Device"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.verifyRecovery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyRecoveryRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryMaterial"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.getPin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultPinStatus"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.setPin": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetVaultPinRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultPinStatus"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnlockVaultRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnlockVaultResponse"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.resetPin": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetVaultPinRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultPinStatus"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.getScope": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultScope"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.putScope": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutVaultScopeRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultScope"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.listItems": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                section?: "family_accounts" | "mortgages" | "credit_protection" | "insurance_policies" | "bills_and_cancellations" | "digital_legacy";
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultItemPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.createItem": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateVaultItemRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultItem"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.deleteItem": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUIDv7 generated by the client */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "vault.updateItem": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUIDv7 generated by the client */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateVaultItemRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultItem"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            423: {
                 headers: {
                     [name: string]: unknown;
                 };

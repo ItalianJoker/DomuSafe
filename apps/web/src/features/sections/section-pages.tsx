@@ -2,15 +2,6 @@ import { EmptySection, PageHeader } from '@/components/shell/page.js';
 import { m } from '@/paraglide/messages.js';
 
 /**
- * Cassaforte section before the vault module exists.
- *
- * @returns The empty section.
- */
-export function VaultPage() {
-  return <EmptySection title={m.vaultTitle()} body={m.vaultBody()} />;
-}
-
-/**
  * Print section before sheets and codes exist.
  *
  * @returns The empty section.

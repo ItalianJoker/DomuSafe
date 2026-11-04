@@ -40,6 +40,7 @@ export function createIdentityService(db: Database, tenancy: TenancyService) {
         name: family.name,
         role: family.role,
         plan: family.plan.tier,
+        vaultFamily: family.vaultFamily,
       })),
     };
   }
