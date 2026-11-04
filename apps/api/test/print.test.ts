@@ -22,6 +22,7 @@ let admin: pg.Pool;
 let alice: Client;
 let parent: Client;
 let child: Client;
+let aliceId: string;
 let familyId: string;
 let houseId: string;
 
@@ -33,13 +34,17 @@ function publicationsUrl(): string {
   return `/api/v1/families/${familyId}/houses/${houseId}/publications`;
 }
 
+function readingsUrl(): string {
+  return `/api/v1/families/${familyId}/houses/${houseId}/publication-readings`;
+}
+
 beforeAll(async () => {
   ctx = await createTestApp();
   admin = new pg.Pool({ connectionString: ctx.database.adminUrl, max: 2 });
   alice = new Client(ctx.app);
   parent = new Client(ctx.app);
   child = new Client(ctx.app);
-  await alice.signUp('Alice Rossi', 'alice-stampa@example.test', PASSWORD);
+  aliceId = await alice.signUp('Alice Rossi', 'alice-stampa@example.test', PASSWORD);
   const parentId = await parent.signUp('Paolo Rossi', 'paolo-stampa@example.test', PASSWORD);
   const childId = await child.signUp('Chiara Rossi', 'chiara-stampa@example.test', PASSWORD);
   const created = await alice.create('/api/v1/families', {
@@ -252,5 +257,116 @@ describe('printed codes', () => {
       csrf: false,
     });
     expect(stillGone.statusCode).toBe(410);
+  });
+
+  it('records the time, the code kind and a short device label for Premium editors', async () => {
+    const blocked = await parent.request('GET', readingsUrl());
+    expect(blocked.statusCode).toBe(403);
+    expect(problem(blocked).code).toBe('plan_required');
+    expect(problem(blocked).requiredPlan).toBe('premium');
+
+    for (const plan of ['basic', 'advanced'] as const) {
+      await admin.query(`update families set plan = $2 where id = $1`, [familyId, plan]);
+      const response = await parent.request('GET', readingsUrl());
+      expect(response.statusCode, plan).toBe(403);
+      expect(problem(response).code).toBe('plan_required');
+      expect(problem(response).requiredPlan).toBe('premium');
+    }
+
+    const childDenied = await child.request('GET', readingsUrl());
+    expect(childDenied.statusCode).toBe(403);
+    expect(problem(childDenied).code).toBe('forbidden');
+
+    await admin.query(
+      `insert into premium_trials (account_id, family_id, started_at, ends_at)
+       select $1, $2, t, t + interval '30 days' from (select now() as t) s`,
+      [aliceId, familyId],
+    );
+
+    const houseCode = await parent.create(publicationsUrl(), { kind: 'house_page' });
+    expect(houseCode.statusCode).toBe(200);
+    const houseToken = houseCode.json<Publication>().token ?? '';
+    const rescueCode = await parent.create(publicationsUrl(), { kind: 'rescue_sheet' });
+    expect(rescueCode.statusCode).toBe(200);
+    const rescueToken = rescueCode.json<Publication>().token ?? '';
+
+    const anon = new Client(ctx.app);
+    const phone = await anon.request('GET', `/api/v1/public/house-pages/${houseToken}`, {
+      csrf: false,
+      headers: { 'x-domusafe-device': 'Telefono' },
+    });
+    expect(phone.statusCode).toBe(200);
+    const tablet = await anon.request('GET', `/api/v1/public/rescue-sheets/${rescueToken}`, {
+      csrf: false,
+      headers: { 'x-domusafe-device': 'Tablet' },
+    });
+    expect(tablet.statusCode).toBe(200);
+    const ignored = await anon.request('GET', `/api/v1/public/house-pages/${houseToken}`, {
+      csrf: false,
+      headers: { 'x-domusafe-device': `${ALLERGY} ${BANK_SECRET}` },
+    });
+    expect(ignored.statusCode).toBe(200);
+
+    const listed = await parent.request('GET', readingsUrl());
+    expect(listed.statusCode).toBe(200);
+    const items = listed.json<{ items: { occurredAt: string; kind: string; deviceLabel: string | null }[] }>()
+      .items;
+    expect(items[0]).toMatchObject({ kind: 'house_page', deviceLabel: null });
+    expect(items[1]).toMatchObject({ kind: 'rescue_sheet', deviceLabel: 'Tablet' });
+    expect(items[2]).toMatchObject({ kind: 'house_page', deviceLabel: 'Telefono' });
+    expect(items.every((item) => Object.keys(item).sort().join() === 'deviceLabel,kind,occurredAt')).toBe(
+      true,
+    );
+    for (const secret of [
+      ALLERGY,
+      BANK_SECRET,
+      UTILITY_SECRET,
+      WIFI_SECRET,
+      houseToken,
+      rescueToken,
+      BOILER,
+    ]) {
+      expect(listed.body, secret).not.toContain(secret);
+    }
+
+    const codes = await parent.request('GET', publicationsUrl());
+    const publications = codes.json<{ items: Publication[] }>().items;
+    const house = publications.find((item) => item.kind === 'house_page' && item.token !== null);
+    const rescue = publications.find((item) => item.kind === 'rescue_sheet' && item.token !== null);
+    expect(house?.lastScannedAt).toBe(items[0]?.occurredAt);
+    expect(rescue?.lastScannedAt).toBe(items[1]?.occurredAt);
+
+    const stillDenied = await child.request('GET', readingsUrl());
+    expect(stillDenied.statusCode).toBe(403);
+    expect(problem(stillDenied).code).toBe('forbidden');
+
+    const columns = await admin.query<{ column_name: string }>(
+      `select column_name from information_schema.columns
+       where table_schema = 'public' and table_name = 'publication_readings'`,
+    );
+    expect(columns.rows.map((row) => row.column_name).sort()).toEqual([
+      'device_label',
+      'family_id',
+      'house_id',
+      'id',
+      'kind',
+      'occurred_at',
+    ]);
+    const grants = await admin.query<{ privilege_type: string }>(
+      `select privilege_type from information_schema.role_table_grants
+       where table_name = 'publication_readings' and grantee = 'domusafe_app'`,
+    );
+    expect(grants.rows.map((row) => row.privilege_type).sort()).toEqual(['DELETE', 'INSERT', 'SELECT']);
+    await expect(
+      admin.query(
+        `insert into publication_readings (family_id, house_id, kind, device_label) values ($1, $2, 'house_page', $3)`,
+        [familyId, houseId, BANK_SECRET],
+      ),
+    ).rejects.toThrow(/check/i);
+
+    await admin.query(`delete from premium_trials where family_id = $1`, [familyId]);
+    await admin.query(`update families set plan = 'premium' where id = $1`, [familyId]);
+    expect((await parent.request('GET', readingsUrl())).statusCode).toBe(200);
+    await admin.query(`update families set plan = 'free' where id = $1`, [familyId]);
   });
 });

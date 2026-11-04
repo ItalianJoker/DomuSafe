@@ -1,15 +1,20 @@
 import {
+  HEADERS,
   createPublicationRequestSchema,
+  deviceLabelHeaders,
   houseParamsSchema,
+  parseDeviceLabel,
   publicHousePageSchema,
   publicRescueSheetSchema,
   publicTokenParamsSchema,
   publicationListSchema,
   publicationParamsSchema,
+  publicationReadingListSchema,
   publicationSchema,
   formatEtag,
 } from '@domusafe/contracts';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import type { FastifyRequest } from 'fastify';
 import {
   idempotencyHeaders,
   ifMatchHeaders,
@@ -28,11 +33,28 @@ function tenantOf(request: { tenant: TenantContext | null }): TenantContext {
 }
 
 /**
+ * Reads the device label the browser chose to send.
+ *
+ * Preconditions: the header is optional.
+ * Postconditions: only Telefono, Tablet and Computer are returned.
+ * Data contract: every other value, including health details and account numbers, is null.
+ *
+ * @param request - Public page request.
+ * @returns The label, or null.
+ */
+function deviceLabelOf(request: FastifyRequest): ReturnType<typeof parseDeviceLabel> {
+  const header = request.headers[HEADERS.device];
+  const value = Array.isArray(header) ? header[0] : header;
+  return parseDeviceLabel(value);
+}
+
+/**
  * Routes of the printed sheets: family codes, and the two public pages opened by those codes.
  *
- * Preconditions: family routes require `qr.manage` (people who can edit the house).
- * Postconditions: the public pages do not require a session.
+ * Preconditions: code routes require `qr.manage`. The reading log requires `house.write` and Premium.
+ * Postconditions: the public pages do not require a session. Each opening appends a reading.
  * Data contract: the public house page has no health data; the rescue page is the rescue sheet only.
+ * The reading log stores the time, the code kind and a short device label.
  *
  * @param app - Fastify instance with the Zod type provider.
  * @param options - Print service.
@@ -110,6 +132,23 @@ export const printRoutes: FastifyPluginAsyncZod<{ print: PrintService }> = async
   );
 
   app.get(
+    '/api/v1/families/:familyId/houses/:houseId/publication-readings',
+    {
+      config: { access: 'family', permission: 'house.write', planFeature: 'audit_log' },
+      schema: {
+        tags: ['print'],
+        operationId: 'print.listPublicationReadings',
+        summary: 'Reading log of the public codes of one house, newest first',
+        params: houseParamsSchema,
+        response: { 200: publicationReadingListSchema, ...problemResponses(401, 403, 404) },
+      },
+    },
+    async (request) => ({
+      items: [...(await print.listReadings(tenantOf(request), request.params.houseId))],
+    }),
+  );
+
+  app.get(
     '/api/v1/public/house-pages/:token',
     {
       config: {
@@ -121,10 +160,11 @@ export const printRoutes: FastifyPluginAsyncZod<{ print: PrintService }> = async
         operationId: 'print.getPublicHousePage',
         summary: 'Public house page opened by the wall-sheet code, without a sign-in',
         params: publicTokenParamsSchema,
+        headers: deviceLabelHeaders,
         response: { 200: publicHousePageSchema, ...problemResponses(400, 404, 410, 429) },
       },
     },
-    async (request) => print.openHousePage(request.params.token),
+    async (request) => print.openHousePage(request.params.token, deviceLabelOf(request)),
   );
 
   app.get(
@@ -139,9 +179,10 @@ export const printRoutes: FastifyPluginAsyncZod<{ print: PrintService }> = async
         operationId: 'print.getPublicRescueSheet',
         summary: 'Public rescue sheet opened by the emergency code, without a sign-in',
         params: publicTokenParamsSchema,
+        headers: deviceLabelHeaders,
         response: { 200: publicRescueSheetSchema, ...problemResponses(400, 404, 410, 429) },
       },
     },
-    async (request) => print.openRescueSheet(request.params.token),
+    async (request) => print.openRescueSheet(request.params.token, deviceLabelOf(request)),
   );
 };

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { instantSchema, uuidSchema } from './common.js';
+import { HEADERS, instantSchema, uuidSchema } from './common.js';
 import { rescueSheetPetSchema, rescueSheetResidentSchema } from './personale.js';
 
 /** Which printed code a publication is. `house_page` opens the public house sheet; `rescue_sheet` opens the rescue sheet. */
@@ -9,6 +9,17 @@ export type PublicationKind = (typeof PUBLICATION_KINDS)[number];
 
 /** 128-bit token encoded as base64url without padding (22 characters). */
 export const PUBLIC_TOKEN = /^[A-Za-z0-9_-]{22}$/;
+
+/**
+ * Device labels a browser may send with a public page view.
+ * Anything else is ignored and is not stored.
+ */
+export const DEVICE_LABELS = ['Telefono', 'Tablet', 'Computer'] as const;
+/** A short device label stored in the reading log. */
+export type DeviceLabel = (typeof DEVICE_LABELS)[number];
+
+/** How many readings a house list returns, newest first. */
+export const PUBLICATION_READING_LIMIT = 100;
 
 const publicationKindSchema = z.enum(PUBLICATION_KINDS);
 const publicTokenSchema = z.string().regex(PUBLIC_TOKEN);
@@ -56,6 +67,54 @@ export const createPublicationRequestSchema = z
   .meta({ id: 'CreatePublicationRequest' });
 /** Body of `POST …/publications`. */
 export type CreatePublicationRequest = z.infer<typeof createPublicationRequestSchema>;
+
+const deviceLabelSchema = z.enum(DEVICE_LABELS);
+
+/**
+ * Optional device header on a public page. Unknown headers stay.
+ * A value outside {@link DEVICE_LABELS} is accepted here and dropped by {@link parseDeviceLabel}.
+ */
+export const deviceLabelHeaders = z.looseObject({
+  [HEADERS.device]: z
+    .string()
+    .optional()
+    .meta({ description: 'Short device label. Only Telefono, Tablet and Computer are stored.' }),
+});
+
+/**
+ * Keeps a device label only when it is one of the three closed words.
+ *
+ * Preconditions: `value` is the raw header, or absent.
+ * Postconditions: any other text, including health details and account numbers, becomes null.
+ * Data contract: the result is a {@link DeviceLabel} or null.
+ *
+ * @param value - Header value.
+ * @returns The label to store, or null.
+ */
+export function parseDeviceLabel(value: string | undefined): DeviceLabel | null {
+  const parsed = deviceLabelSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}
+
+/** One opening of a public code. Time, kind and label only. */
+export const publicationReadingSchema = z
+  .object({
+    occurredAt: instantSchema,
+    kind: publicationKindSchema,
+    deviceLabel: deviceLabelSchema.nullable(),
+  })
+  .strict()
+  .meta({ id: 'PublicationReading' });
+/** One opening of a public code. */
+export type PublicationReading = z.infer<typeof publicationReadingSchema>;
+
+/** Response of `GET …/publication-readings`, newest first. */
+export const publicationReadingListSchema = z
+  .object({ items: z.array(publicationReadingSchema).max(PUBLICATION_READING_LIMIT) })
+  .strict()
+  .meta({ id: 'PublicationReadingList' });
+/** Response of `GET …/publication-readings`. */
+export type PublicationReadingList = z.infer<typeof publicationReadingListSchema>;
 
 /** What the public house page may show. No health data, no account numbers, no manual secrets. */
 export const publicHousePageSchema = z

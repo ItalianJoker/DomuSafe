@@ -2,7 +2,9 @@ import {
   BLOOD_GROUPS,
   MOBILITY_STATUSES,
   PET_SPECIES,
+  PUBLICATION_READING_LIMIT,
   formatHouseAddress,
+  type DeviceLabel,
   type PublicHousePage,
   type PublicRescueSheet,
   type PublicationKind,
@@ -15,6 +17,7 @@ import {
   lifesavingMedicines,
   petHouses,
   pets,
+  publicationReadings,
   publications,
   residentHouses,
   residentProfiles,
@@ -366,6 +369,69 @@ export async function findByToken(
     kind: row.kind,
     revokedAt: asDate(row.revoked_at),
   };
+}
+
+/** One stored reading: time, code kind and optional device label. */
+export interface PublicationReadingRow {
+  readonly occurredAt: Date;
+  readonly kind: PublicationKind;
+  readonly deviceLabel: string | null;
+}
+
+/**
+ * Appends a reading. The row has no health data, vault contents or account numbers.
+ *
+ * Preconditions: the transaction is the system principal of this family.
+ * Postconditions: one row exists with the given kind and label.
+ * Data contract: only family, house, time, kind and label are written.
+ *
+ * @param tx - Transaction.
+ * @param input - House, code kind and the label the browser sent, or null.
+ */
+export async function recordReading(
+  tx: Transaction,
+  input: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly kind: PublicationKind;
+    readonly deviceLabel: DeviceLabel | null;
+  },
+): Promise<void> {
+  await tx.insert(publicationReadings).values({
+    familyId: input.familyId,
+    houseId: input.houseId,
+    kind: input.kind,
+    deviceLabel: input.deviceLabel,
+  });
+}
+
+/**
+ * Lists readings of one house, newest first.
+ *
+ * Preconditions: the transaction belongs to a member who can edit the house.
+ * Postconditions: at most {@link PUBLICATION_READING_LIMIT} rows, newest first.
+ * Data contract: each row is time, kind and label.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns The readings.
+ */
+export async function listReadings(
+  tx: Transaction,
+  familyId: string,
+  houseId: string,
+): Promise<readonly PublicationReadingRow[]> {
+  return tx
+    .select({
+      occurredAt: publicationReadings.occurredAt,
+      kind: publicationReadings.kind,
+      deviceLabel: publicationReadings.deviceLabel,
+    })
+    .from(publicationReadings)
+    .where(and(eq(publicationReadings.familyId, familyId), eq(publicationReadings.houseId, houseId)))
+    .orderBy(desc(publicationReadings.occurredAt), desc(publicationReadings.id))
+    .limit(PUBLICATION_READING_LIMIT);
 }
 
 /**

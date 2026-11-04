@@ -5555,6 +5555,61 @@
         ],
         "additionalProperties": false
       },
+      "PublicationReadingInput": {
+        "type": "object",
+        "properties": {
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "house_page",
+              "rescue_sheet"
+            ]
+          },
+          "deviceLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Telefono",
+                  "Tablet",
+                  "Computer"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "occurredAt",
+          "kind",
+          "deviceLabel"
+        ],
+        "additionalProperties": false
+      },
+      "PublicationReadingListInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicationReadingInput"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
       "PublicHousePageInput": {
         "type": "object",
         "properties": {
@@ -13170,6 +13225,61 @@
         },
         "required": [
           "kind"
+        ],
+        "additionalProperties": false
+      },
+      "PublicationReading": {
+        "type": "object",
+        "properties": {
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "house_page",
+              "rescue_sheet"
+            ]
+          },
+          "deviceLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Telefono",
+                  "Tablet",
+                  "Computer"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "occurredAt",
+          "kind",
+          "deviceLabel"
+        ],
+        "additionalProperties": false
+      },
+      "PublicationReadingList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicationReading"
+            }
+          }
+        },
+        "required": [
+          "items"
         ],
         "additionalProperties": false
       },
@@ -24071,6 +24181,81 @@
         }
       }
     },
+    "/api/v1/families/{familyId}/houses/{houseId}/publication-readings": {
+      "get": {
+        "operationId": "print.listPublicationReadings",
+        "summary": "Reading log of the public codes of one house, newest first",
+        "tags": [
+          "print"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "houseId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationReadingList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/public/house-pages/{token}": {
       "get": {
         "operationId": "print.getPublicHousePage",
@@ -24087,6 +24272,15 @@
             "in": "path",
             "name": "token",
             "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-domusafe-device",
+            "required": false,
+            "description": "Short device label. Only Telefono, Tablet and Computer are stored."
           }
         ],
         "responses": {
@@ -24159,6 +24353,15 @@
             "in": "path",
             "name": "token",
             "required": true
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "x-domusafe-device",
+            "required": false,
+            "description": "Short device label. Only Telefono, Tablet and Computer are stored."
           }
         ],
         "responses": {

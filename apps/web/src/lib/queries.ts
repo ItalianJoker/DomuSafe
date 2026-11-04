@@ -180,6 +180,25 @@ export function publicationsQuery(api: DomusafeApi, familyId: string, houseId: s
 }
 
 /**
+ * Query of the reading log of one house, newest first.
+ *
+ * Preconditions: the caller can edit the house and the plan includes the log.
+ * Postconditions: the query is not started by this helper; the screen decides.
+ * Data contract: each item is the time, the code kind and the device label.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function publicationReadingsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['publication-readings', familyId, houseId] as const,
+    queryFn: () => api.listPublicationReadings(familyId, houseId),
+  });
+}
+
+/**
  * Query of the readable rescue sheet of one house.
  *
  * @param api - Shell API.

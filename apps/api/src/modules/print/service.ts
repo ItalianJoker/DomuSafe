@@ -1,5 +1,13 @@
 import { createHash, randomBytes } from 'node:crypto';
-import type { PublicHousePage, PublicRescueSheet, Publication, PublicationKind } from '@domusafe/contracts';
+import {
+  parseDeviceLabel,
+  type DeviceLabel,
+  type PublicHousePage,
+  type PublicRescueSheet,
+  type Publication,
+  type PublicationKind,
+  type PublicationReading,
+} from '@domusafe/contracts';
 import {
   recordAudit,
   recordRevision,
@@ -53,6 +61,14 @@ async function guarded<T>(work: () => Promise<T>): Promise<T> {
   } catch (error) {
     rethrowDatabaseError(error);
   }
+}
+
+function readingView(row: repo.PublicationReadingRow): PublicationReading {
+  return {
+    occurredAt: row.occurredAt.toISOString(),
+    kind: row.kind,
+    deviceLabel: parseDeviceLabel(row.deviceLabel ?? undefined),
+  };
 }
 
 function view(row: repo.PublicationRow): Publication {
@@ -126,19 +142,33 @@ export interface PrintService {
     expectedVersion: number,
   ): Promise<Publication>;
   /**
+   * Lists readings of the public codes, newest first.
+   *
+   * Preconditions: the route already required `house.write` and the Premium plan or the trial.
+   * Postconditions: an unknown house is `not_found`.
+   * Data contract: each item is the time, the code kind and the device label.
+   *
+   * @param tenant - Resolved tenant.
+   * @param houseId - House id.
+   * @returns Newest readings first.
+   */
+  listReadings(tenant: TenantContext, houseId: string): Promise<readonly PublicationReading[]>;
+  /**
    * Opens the public house page and records the reading.
    *
    * @param token - Token from the printed address.
+   * @param deviceLabel - Label the browser sent, or null.
    * @returns The page.
    */
-  openHousePage(token: string): Promise<PublicHousePage>;
+  openHousePage(token: string, deviceLabel: DeviceLabel | null): Promise<PublicHousePage>;
   /**
    * Opens the public rescue sheet and records the reading.
    *
    * @param token - Token from the printed address.
+   * @param deviceLabel - Label the browser sent, or null.
    * @returns The rescue sheet.
    */
-  openRescueSheet(token: string): Promise<PublicRescueSheet>;
+  openRescueSheet(token: string, deviceLabel: DeviceLabel | null): Promise<PublicRescueSheet>;
 }
 
 /**
@@ -195,6 +225,16 @@ export function createPrintService(db: Database): PrintService {
         }
         const rows = await repo.listPublications(tx, tenant.familyId, houseId);
         return rows.map(view);
+      });
+    },
+
+    async listReadings(tenant, houseId) {
+      return inFamily(tenant, async (tx) => {
+        if ((await repo.findHouse(tx, tenant.familyId, houseId)) === null) {
+          throw new ProblemError('not_found');
+        }
+        const rows = await repo.listReadings(tx, tenant.familyId, houseId);
+        return rows.map(readingView);
       });
     },
 
@@ -280,16 +320,16 @@ export function createPrintService(db: Database): PrintService {
       );
     },
 
-    async openHousePage(token) {
-      const opened = await open(token, 'house_page', repo.loadHousePage);
+    async openHousePage(token, deviceLabel) {
+      const opened = await open(token, 'house_page', deviceLabel, repo.loadHousePage);
       if (opened === null) {
         throw new ProblemError('not_found');
       }
       return opened;
     },
 
-    async openRescueSheet(token) {
-      const opened = await open(token, 'rescue_sheet', repo.loadRescueSheet);
+    async openRescueSheet(token, deviceLabel) {
+      const opened = await open(token, 'rescue_sheet', deviceLabel, repo.loadRescueSheet);
       if (opened === null) {
         throw new ProblemError('not_found');
       }
@@ -304,6 +344,7 @@ export function createPrintService(db: Database): PrintService {
   async function open<T>(
     token: string,
     kind: PublicationKind,
+    deviceLabel: DeviceLabel | null,
     load: (tx: Transaction, familyId: string, houseId: string) => Promise<T | null>,
   ): Promise<T | null> {
     const result = await withContext(db, { principal: system }, async (tx) => {
@@ -315,6 +356,12 @@ export function createPrintService(db: Database): PrintService {
         return { state: 'missing' as const };
       }
       await setFamilyContext(tx, system, hit.familyId);
+      await repo.recordReading(tx, {
+        familyId: hit.familyId,
+        houseId: hit.houseId,
+        kind: hit.kind,
+        deviceLabel,
+      });
       await repo.markScanned(tx, hit.familyId, hit.id);
       if (hit.revokedAt !== null) {
         return { state: 'revoked' as const };
