@@ -1,5 +1,6 @@
 export * from './access.js';
 export * from './common.js';
+export * from './deadlines.js';
 export * from './house.js';
 export * from './personale.js';
 export * from './print.js';

@@ -33,6 +33,7 @@ import {
   taxChecklistSchema,
   vehiclePageSchema,
   vehicleSchema,
+  deadlineBoardSchema,
   maintenanceTaskPageSchema,
   maintenanceTaskSchema,
   meSchema,
@@ -45,6 +46,7 @@ import {
   wasteCollectionSchema,
   problemDetailsSchema,
   problemType,
+  type DeadlineBoard,
   type Contact,
   type CreateContactRequest,
   type CreateFamilyRequest,
@@ -791,6 +793,14 @@ export interface DomusafeApi {
    * @param version - Version the form was loaded with.
    */
   deleteSuccessionItem(familyId: string, itemId: string, version: number): Promise<void>;
+  /**
+   * Deadlines of the open house, grouped in the family time zone.
+   *
+   * @param familyId - Family id.
+   * @param houseId - Open house. Maintenance is limited to this house.
+   * @returns Overdue, this week and this month.
+   */
+  listDeadlines(familyId: string, houseId: string): Promise<DeadlineBoard>;
 }
 
 /** Options of {@link createApi}. */
@@ -1181,6 +1191,12 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         headers: { [HEADERS.idempotencyKey]: idempotencyKey },
       });
       return unwrap(maintenanceTaskSchema, result);
+    },
+    async listDeadlines(familyId, houseId) {
+      const result = await client.GET('/api/v1/families/{familyId}/deadlines', {
+        params: { path: { familyId }, query: { houseId } },
+      });
+      return unwrap(deadlineBoardSchema, result);
     },
     async updateMaintenance(familyId, houseId, taskId, version, patch) {
       const result = await client.PATCH(
