@@ -62,9 +62,12 @@ export function AppShell(props: {
               key={link.id}
               to={link.to}
               params={params}
-              activeOptions={{ exact: true }}
-              className="flex h-8 items-center rounded-md px-2 text-[13px] text-muted-foreground hover:bg-accent hover:text-foreground"
-              activeProps={{ className: 'bg-accent text-foreground' }}
+              aria-current={current === link.id ? 'page' : undefined}
+              className={
+                current === link.id
+                  ? 'flex h-8 items-center rounded-md bg-accent px-2 text-[13px] text-foreground'
+                  : 'flex h-8 items-center rounded-md px-2 text-[13px] text-muted-foreground hover:bg-accent hover:text-foreground'
+              }
             >
               {LABELS[link.id]()}
             </Link>
@@ -133,10 +136,12 @@ export function AppShell(props: {
             key={link.id}
             to={link.to}
             params={params}
-            activeOptions={{ exact: true }}
             aria-current={current === link.id ? 'page' : undefined}
-            className="flex h-10 shrink-0 items-center rounded-md px-2.5 text-[12px] text-muted-foreground"
-            activeProps={{ className: 'bg-accent text-foreground' }}
+            className={
+              current === link.id
+                ? 'flex h-10 shrink-0 items-center rounded-md bg-accent px-2.5 text-[12px] text-foreground'
+                : 'flex h-10 shrink-0 items-center rounded-md px-2.5 text-[12px] text-muted-foreground'
+            }
           >
             {LABELS[link.id]()}
           </Link>

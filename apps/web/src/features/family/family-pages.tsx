@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { currencySchema, localeSchema, type Me } from '@domusafe/contracts';
 import { PLAN_DEFINITIONS } from '@domusafe/plans';
@@ -118,7 +118,7 @@ export function CreateFamilyPage(props: { readonly me: Me }) {
  * @param props - Account and the open family.
  * @returns The section.
  */
-export function FamilyPage(props: { readonly me: Me; readonly familyId: string }) {
+export function FamilyPage(props: { readonly me: Me; readonly familyId: string; readonly houseId: string }) {
   const api = useApi();
   const openPlace = useOpenPlace();
   const queryClient = useQueryClient();
@@ -291,6 +291,19 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string }
             ))}
           </ul>
         )}
+      </div>
+
+      <div>
+        <h2 className="text-[13px] font-medium">
+          <Link
+            to="/f/$familyId/c/$houseId/famiglia/successione"
+            params={{ familyId: props.familyId, houseId: props.houseId }}
+            className="underline-offset-4 hover:underline"
+          >
+            {m.successionFamilyLink()}
+          </Link>
+        </h2>
+        <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{m.successionFamilyBody()}</p>
       </div>
 
       <Separator />

@@ -146,6 +146,16 @@ export const taxItemKeyEnum = pgEnum('tax_item_key', [
 export const taxItemStatusEnum = pgEnum('tax_item_status', ['todo', 'in_progress', 'done', 'not_applicable']);
 /** Which public page a printed code opens. */
 export const publicationKindEnum = pgEnum('publication_kind', ['house_page', 'rescue_sheet']);
+/** Activity of the family succession checklist. */
+export const successionKindEnum = pgEnum('succession_kind', [
+  'documents',
+  'will',
+  'notary',
+  'titles',
+  'declaration',
+  'utility_transfers',
+  'custom',
+]);
 /** Section of a family vault document. Personal sections are not created in this migration. */
 export const vaultSectionEnum = pgEnum('vault_section', [
   'family_accounts',

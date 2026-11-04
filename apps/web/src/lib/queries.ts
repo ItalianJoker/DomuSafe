@@ -286,6 +286,20 @@ export function taxQuery(api: DomusafeApi, familyId: string, residentId: string,
 }
 
 /**
+ * Query of the family succession checklist.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function successionQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['succession', familyId] as const,
+    queryFn: () => api.listSuccession(familyId),
+  });
+}
+
+/**
  * Query of heating maintenance, used for the boiler deadline.
  *
  * @param api - Shell API.
