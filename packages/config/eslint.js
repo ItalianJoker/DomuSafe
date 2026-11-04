@@ -24,9 +24,12 @@ export function domusafeEslint({ rootDir }) {
       'docs/**',
       '**/*.js',
       '**/*.mjs',
+      'apps/web/src/paraglide/**',
+      'apps/web/src/lib/api.generated.ts',
+      'apps/web/src/sw.ts',
     ]),
     {
-      files: ['**/*.ts'],
+      files: ['**/*.{ts,tsx}'],
       extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
       languageOptions: {
         parserOptions: { projectService: true, tsconfigRootDir: rootDir },
@@ -44,8 +47,8 @@ export function domusafeEslint({ rootDir }) {
       },
     },
     {
-      files: ['**/src/**/*.ts'],
-      ignores: ['**/*.test.ts'],
+      files: ['**/src/**/*.{ts,tsx}'],
+      ignores: ['**/*.test.ts', '**/*.test.tsx'],
       plugins: { jsdoc, tsdoc },
       rules: {
         'tsdoc/syntax': 'error',
@@ -87,9 +90,34 @@ export function domusafeEslint({ rootDir }) {
       },
     },
     {
-      files: ['**/*.test.ts', '**/test/**/*.ts'],
+      files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**/*.ts', '**/test/**/*.tsx'],
       rules: {
         '@typescript-eslint/no-non-null-assertion': 'off',
+      },
+    },
+    {
+      files: ['**/*.tsx'],
+      rules: {
+        // JSX handlers such as onClick={() => setState(value)} return void on purpose.
+        '@typescript-eslint/no-confusing-void-expression': 'off',
+      },
+    },
+    {
+      files: ['apps/web/src/**/*.{ts,tsx}'],
+      ignores: ['apps/web/src/components/ui/**'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['@radix-ui/*', 'react-aria-components'],
+                message:
+                  'Use the shared components in apps/web/src/components/ui. Do not add a second component kit.',
+              },
+            ],
+          },
+        ],
       },
     },
   );

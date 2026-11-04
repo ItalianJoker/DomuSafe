@@ -7,6 +7,7 @@ Documento di riferimento per persone e agenti AI. Le specifiche complete sono in
 ```text
 apps/
   api/                 Fastify 5: /api/v1 (REST, OpenAPI 3.1), /api/auth (Better Auth)
+  web/                 PWA React: shell, token, componenti condivisi, sezioni
     src/app.ts         composizione: plugin di sicurezza, accesso, idempotenza, OpenAPI, moduli
     src/auth/          Better Auth (email e password Argon2id, TOTP, sessioni su database)
     src/http/          Problem Details (RFC 9457), convenzioni ETag/If-Match, cursori
@@ -69,3 +70,14 @@ docs/adr/              decisioni architetturali
 | `tenancy`  | famiglie, case, membri                       | limiti di piano sotto `SELECT … FOR UPDATE`, revisioni delle case, rotazione delle chiavi segnalata alla rimozione o riduzione di un membro |
 
 I moduli successivi seguono l'ordine della fase 3 §12.
+
+## Interfaccia
+
+Vincolante per tutta l'applicazione, non solo per la prima schermata. Vedi anche [ADR 0005](docs/adr/0005-interfaccia.md).
+
+- **Linguaggio visivo** ispirato a Linear: denso, calmo, preciso. Il tema scuro è la tavolozza di base, progettata per prima; il tema chiaro è una variante completa. La preferenza dell'account è chiara, scura o automatica e sta in `data-theme` sul documento. I token sono variabili CSS in `apps/web/src/styles/app.css`. I componenti usano i colori semantici e non si biforcano sul tema.
+- **Componenti** copiati nel repository secondo il modello shadcn/ui (primitive Radix, Tailwind, `class-variance-authority`): `apps/web/src/components/ui`. Non si aggiunge una libreria di componenti a runtime e non si introduce un secondo sistema visivo. Il lint rifiuta `@radix-ui/*` fuori da quella cartella. Un modulo nuovo importa da lì (`@/components/ui/button` e gli altri) e, se gli serve un controllo che non c'è, lo aggiunge nello stesso modo, con lo stesso file `components.json`.
+- **Shell** `AppShell`: menu, selettori di famiglia e casa, contenuto. Una sezione nuova è una rotta figlia di `/f/$familyId/c/$houseId` e una voce in `apps/web/src/lib/navigation.ts` (`SECTIONS` e `NAV_LINKS` insieme). Non si costruisce un altro telaio.
+- **Densità e sicurezza.** I controlli ordinari restano compatti (altezza 32 pixel). Le azioni di soccorso e di sicurezza usano `Button` con `size="emergency"`, almeno 48 pixel. Non si allarga tutta l'interfaccia a quella misura.
+- **Testi** solo tramite Paraglide (`apps/web/messages/it.json` e `en.json`). Italiano predefinito, senza acronimi.
+- La fase 1 indicava React Aria. La direzione confermata dopo è questa: stessi principi di accessibilità, altro sistema di componenti.
