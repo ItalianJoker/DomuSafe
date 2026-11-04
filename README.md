@@ -31,7 +31,9 @@ Le **fondamenta** già disponibili:
 - crittografia lato dispositivo pronta per Cassaforte e dati sensibili (formati, chiavi, PIN, frase di recupero);
 - documentazione dell'interfaccia di programmazione consultabile su `/api/v1/docs`.
 
-I prossimi passi (chiavi e dispositivi, poi casa, utenze, residenti, emergenza, QR e stampa) seguono l'ordine della [fase 3, §12](docs/design/phase-3-api-rbac.md).
+L'interfaccia web è installabile e parla con questa API: accesso, creazione della famiglia, elenco e cambio casa, tema chiaro, scuro o automatico. Le otto sezioni del menu sono percorsi veri; Famiglia e Casa si usano già, le altre spiegano che il contenuto arriverà con il modulo successivo. Dettaglio visivo in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
+I prossimi passi (chiavi e dispositivi, poi casa, utenze, residenti, emergenza e stampa) seguono l'ordine della [fase 3, §12](docs/design/phase-3-api-rbac.md) e riusano la stessa shell.
 
 ## Per chi sviluppa
 
@@ -53,6 +55,12 @@ createdb -h localhost -U postgres -O domusafe_owner domusafe                    
 DATABASE_MIGRATION_URL=$PGURL/domusafe pnpm db:migrate                                    # schema, RLS, funzioni
 cp apps/api/.env.example apps/api/.env                                                    # poi imposta chiavi e indirizzi
 pnpm --filter @domusafe/api dev
+```
+
+Interfaccia, in un altro terminale (il server di sviluppo inoltra `/api` all'API; aggiungi `http://localhost:5173` a `TRUSTED_ORIGINS`):
+
+```bash
+pnpm --filter @domusafe/web dev
 ```
 
 Guide per lo sviluppo: [`ARCHITECTURE.md`](ARCHITECTURE.md) (come è fatto il sistema) e [`AGENTS.md`](AGENTS.md) (regole operative per persone e agenti AI). Le decisioni architetturali sono in [`docs/adr/`](docs/adr/).

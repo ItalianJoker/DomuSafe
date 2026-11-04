@@ -4,6 +4,8 @@ dist/
 coverage/
 .turbo/
 apps/api/openapi.json
+apps/web/src/lib/api.generated.ts
+apps/web/src/paraglide
 docs/design/
 LICENSE.md
 LICENSE

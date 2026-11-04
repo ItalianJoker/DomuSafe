@@ -19,7 +19,7 @@
     "db:migrate": "pnpm --filter @domusafe/db run migrate",
     "openapi:write": "pnpm --filter @domusafe/api run openapi:write",
     "openapi:check": "pnpm --filter @domusafe/api run openapi:check",
-    "verify": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run openapi:check"
+    "verify": "pnpm run format:check && pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run openapi:check && pnpm --filter @domusafe/web api:check"
   },
   "devDependencies": {
     "@domusafe/config": "workspace:*",

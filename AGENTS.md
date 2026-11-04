@@ -17,6 +17,7 @@ pnpm verify
 - Nessun segnaposto, `TODO`, stub o dipendenza non verificata; versioni esatte in `package.json`.
 - Ogni simbolo esportato da `src/` ha TSDoc con scopo, precondizioni, postcondizioni e contratto dei dati (il lint lo impone).
 - Identificatori e TSDoc in inglese; testi per l'utente solo tramite i18n, in italiano senza acronimi.
+- **Interfaccia:** linguaggio visivo denso e calmo (tema scuro progettato per primo, chiaro e automatico) e un solo kit in `apps/web/src/components/ui` (modello shadcn/ui: Radix + Tailwind, componenti copiati). Vietato un secondo kit o importare `@radix-ui/*` fuori da quella cartella. Le sezioni nuove passano dalla shell e da `apps/web/src/lib/navigation.ts`. I controlli di soccorso usano `size="emergency"` (almeno 48 pixel). Dettaglio in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## Regole di architettura
 
@@ -41,3 +42,4 @@ pnpm verify
 | Contesto transazionale                  | `packages/db/src/context.ts`                                            |
 | Formati cifrati e vettori               | `packages/crypto/src/formats.ts`, `packages/crypto/test/vectors.ts`     |
 | Hook di autenticazione e autorizzazione | `apps/api/src/plugins/access.ts`                                        |
+| Interfaccia, token, shell               | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`             |
