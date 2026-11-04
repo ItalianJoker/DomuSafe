@@ -756,6 +756,75 @@ export interface paths {
         patch: operations["personale.updateTaxItem"];
         trace?: never;
     };
+    "/api/v1/families/{familyId}/houses/{houseId}/publications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Printed codes of one house, with the last reading */
+        get: operations["print.listPublications"];
+        put?: never;
+        /** Prepare a printed code, or return the active one */
+        post: operations["print.createPublication"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/publications/{publicationId}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke a printed code */
+        post: operations["print.revokePublication"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/house-pages/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public house page opened by the wall-sheet code, without a sign-in */
+        get: operations["print.getPublicHousePage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/rescue-sheets/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public rescue sheet opened by the emergency code, without a sign-in */
+        get: operations["print.getPublicRescueSheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/keys": {
         parameters: {
             query?: never;
@@ -1958,6 +2027,73 @@ export interface components {
             dueDate?: string | null;
             /** @enum {string} */
             status?: "todo" | "in_progress" | "done" | "not_applicable";
+        };
+        PublicationInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /** @enum {string} */
+            kind: "house_page" | "rescue_sheet";
+            token: string | null;
+            revokedAt: string | null;
+            lastScannedAt: string | null;
+            scanCount: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        PublicationListInput: {
+            items: components["schemas"]["PublicationInput"][];
+        };
+        CreatePublicationRequestInput: {
+            /** @enum {string} */
+            kind: "house_page" | "rescue_sheet";
+        };
+        PublicHousePageInput: {
+            houseName: string;
+            address: string | null;
+            shutoffs: {
+                /** @enum {string} */
+                kind: "water" | "gas" | "electricity";
+                location: string;
+                instructions: string;
+            }[];
+            tradespeople: {
+                displayName: string;
+                trade: string | null;
+                phone: string | null;
+                company: string | null;
+            }[];
+            primaryContact: {
+                displayName: string;
+                phone: string | null;
+                relationship: string | null;
+            } | null;
+        };
+        PublicRescueSheetInput: {
+            houseName: string;
+            residents: components["schemas"]["RescueSheetResidentInput"][];
+            pets: components["schemas"]["RescueSheetPetInput"][];
         };
         ProblemIssueInput: {
             path: string;
@@ -3451,6 +3587,73 @@ export interface components {
             dueDate?: string | null;
             /** @enum {string} */
             status?: "todo" | "in_progress" | "done" | "not_applicable";
+        };
+        Publication: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /** @enum {string} */
+            kind: "house_page" | "rescue_sheet";
+            token: string | null;
+            revokedAt: string | null;
+            lastScannedAt: string | null;
+            scanCount: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        PublicationList: {
+            items: components["schemas"]["Publication"][];
+        };
+        CreatePublicationRequest: {
+            /** @enum {string} */
+            kind: "house_page" | "rescue_sheet";
+        };
+        PublicHousePage: {
+            houseName: string;
+            address: string | null;
+            shutoffs: {
+                /** @enum {string} */
+                kind: "water" | "gas" | "electricity";
+                location: string;
+                instructions: string;
+            }[];
+            tradespeople: {
+                displayName: string;
+                trade: string | null;
+                phone: string | null;
+                company: string | null;
+            }[];
+            primaryContact: {
+                displayName: string;
+                phone: string | null;
+                relationship: string | null;
+            } | null;
+        };
+        PublicRescueSheet: {
+            houseName: string;
+            residents: components["schemas"]["RescueSheetResident"][];
+            pets: components["schemas"]["RescueSheetPet"][];
         };
         ProblemIssue: {
             path: string;
@@ -9724,6 +9927,344 @@ export interface operations {
             };
             /** @description Default Response */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "print.listPublications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationList"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "print.createPublication": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePublicationRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Publication"];
+                };
+            };
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Publication"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "print.revokePublication": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                publicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Publication"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "print.getPublicHousePage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicHousePage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "print.getPublicRescueSheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicRescueSheet"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
