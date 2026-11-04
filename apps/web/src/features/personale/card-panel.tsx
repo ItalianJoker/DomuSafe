@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import type { RescueCard, Resident } from '@domusafe/contracts';
 import { limitFor, type PlanTier } from '@domusafe/plans';
@@ -7,8 +8,9 @@ import { Field } from '@/components/shell/page.js';
 import { Button } from '@/components/ui/button.js';
 import { Input } from '@/components/ui/input.js';
 import { Textarea } from '@/components/ui/textarea.js';
+import { rescuePath } from '@/features/rescue/path.js';
 import { problemText } from '@/lib/copy.js';
-import { rescueQuery, rescueSheetQuery, residentsQuery } from '@/lib/queries.js';
+import { rescueQuery, residentsQuery } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.js';
 import {
@@ -20,7 +22,6 @@ import {
   mobilityLabel,
 } from './model.js';
 import { compressPhoto } from './photo.js';
-import { RescueView } from './rescue-view.js';
 
 interface MedicineDraft {
   name: string;
@@ -37,10 +38,10 @@ const emptyMedicine = (): MedicineDraft => ({ name: '', location: '' });
 const emptyContact = (): ContactDraft => ({ displayName: '', phone: '', relationship: '', hasKeys: false });
 
 /**
- * Identity and rescue card of the people in the open house, plus the readable sheet.
+ * Identity and rescue card of the people in the open house, plus the control that opens the full-screen view.
  *
  * Preconditions: the caller can read residents. Writes require a manager.
- * Postconditions: saving stores the identity and replaces the rescue card.
+ * Postconditions: saving stores the identity and replaces the rescue card. The rescue control opens the full-screen view.
  * Data contract: the photo is an optional compressed image.
  *
  * @param props - Family, house, plan and whether the person may edit.
@@ -55,9 +56,7 @@ export function CardPanel(props: {
   const api = useApi();
   const queryClient = useQueryClient();
   const people = useQuery(residentsQuery(api, props.familyId, props.houseId));
-  const sheet = useQuery(rescueSheetQuery(api, props.familyId, props.houseId));
   const [selected, setSelected] = useState<string | null>(null);
-  const [open, setOpen] = useState(true);
   const residentId = selected ?? people.data?.[0]?.id ?? null;
   const rescue = useQuery({
     ...rescueQuery(api, props.familyId, residentId ?? ''),
@@ -78,11 +77,10 @@ export function CardPanel(props: {
   return (
     <div className="grid gap-6">
       <div>
-        <Button size="emergency" onClick={() => setOpen((value) => !value)}>
-          {open ? m.personaleCloseRescue() : m.personaleOpenRescue()}
+        <Button size="emergency" asChild>
+          <Link to={rescuePath(props.familyId, props.houseId)}>{m.rescueOpen()}</Link>
         </Button>
       </div>
-      {open && sheet.data !== undefined ? <RescueView sheet={sheet.data} /> : null}
       {props.canWrite && !atLimit ? (
         <CreatePerson
           familyId={props.familyId}
