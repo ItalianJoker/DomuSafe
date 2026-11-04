@@ -42,8 +42,8 @@ const FamilyPage = lazy(() =>
 const HomePage = lazy(() =>
   import('@/features/home/home-page.js').then((mod) => ({ default: mod.HomePage })),
 );
-const HousePage = lazy(() =>
-  import('@/features/house/house-page.js').then((mod) => ({ default: mod.HousePage })),
+const CasaPage = lazy(() =>
+  import('@/features/casa/casa-page.js').then((mod) => ({ default: mod.CasaPage })),
 );
 const AccountPage = lazy(() =>
   import('@/features/account/account-page.js').then((mod) => ({ default: mod.AccountPage })),
@@ -266,7 +266,7 @@ const casaRoute = createRoute({
     const { familyId, houseId } = houseRoute.useParams();
     return (
       <Suspended>
-        <HousePage me={me} familyId={familyId} houseId={houseId} houses={houses} />
+        <CasaPage me={me} familyId={familyId} houseId={houseId} houses={houses} />
       </Suspended>
     );
   },

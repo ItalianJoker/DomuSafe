@@ -7,8 +7,10 @@ import {
   auditEvents,
   createDatabase,
   createPool,
+  houseGuideEntries,
   houses,
   keyScopes,
+  wasteCollections,
   memberships,
   recordAudit,
   recordRevision,
@@ -213,6 +215,72 @@ describe('row-level security', () => {
       tx.select({ id: schema.families.id }).from(schema.families),
     );
     expect(rows.map((row) => row.id)).toEqual([alice.familyId]);
+  });
+
+  it('shows guests the guest manual and waste calendar, not the technical manual', async () => {
+    await withContext(db, { principal: account(ids.alice), familyId: alice.familyId }, async (tx) => {
+      await tx.insert(houseGuideEntries).values([
+        {
+          id: '01900000-0000-7000-8000-00000000e101',
+          familyId: alice.familyId,
+          houseId: aliceSecondHouse,
+          audience: 'guest',
+          topic: 'wifi',
+          title: 'Rete di casa',
+          body: 'Il router è in ingresso',
+          createdBy: ids.alice,
+          updatedBy: ids.alice,
+        },
+        {
+          id: '01900000-0000-7000-8000-00000000e102',
+          familyId: alice.familyId,
+          houseId: aliceSecondHouse,
+          audience: 'technical',
+          topic: 'heating',
+          title: 'Caldaia',
+          body: 'Il quadro è nel ripostiglio',
+          createdBy: ids.alice,
+          updatedBy: ids.alice,
+        },
+      ]);
+      await tx.insert(wasteCollections).values({
+        familyId: alice.familyId,
+        houseId: aliceSecondHouse,
+        fraction: 'organic',
+        rrule: 'FREQ=WEEKLY;BYDAY=TU',
+        collectionTime: '07:00',
+        instructions: 'Bidone marrone',
+        createdBy: ids.alice,
+        updatedBy: ids.alice,
+      });
+    });
+
+    const asGuest = await withContext(db, { principal: account(ids.dave), familyId: alice.familyId }, (tx) =>
+      tx
+        .select({ audience: houseGuideEntries.audience, title: houseGuideEntries.title })
+        .from(houseGuideEntries),
+    );
+    expect(asGuest).toEqual([{ audience: 'guest', title: 'Rete di casa' }]);
+    const waste = await withContext(db, { principal: account(ids.dave), familyId: alice.familyId }, (tx) =>
+      tx.select({ fraction: wasteCollections.fraction }).from(wasteCollections),
+    );
+    expect(waste).toEqual([{ fraction: 'organic' }]);
+    expect(
+      await dbError(
+        withContext(db, { principal: account(ids.dave), familyId: alice.familyId }, (tx) =>
+          tx.insert(houseGuideEntries).values({
+            id: '01900000-0000-7000-8000-00000000e103',
+            familyId: alice.familyId,
+            houseId: aliceSecondHouse,
+            audience: 'guest',
+            topic: 'pets',
+            title: 'Gatto',
+            createdBy: ids.dave,
+            updatedBy: ids.dave,
+          }),
+        ),
+      ),
+    ).toMatch(/row-level security/);
   });
 
   it('restricts guests to their assigned house and expires them', async () => {
