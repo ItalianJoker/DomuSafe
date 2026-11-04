@@ -30,3 +30,79 @@ export const actorKindEnum = pgEnum('actor_kind', ['account', 'kiosk', 'integrat
 export const residentKindEnum = pgEnum('resident_kind', ['adult', 'child', 'elderly']);
 /** `kiosk_profile` enum. */
 export const kioskProfileEnum = pgEnum('kiosk_profile', ['standard', 'elderly']);
+/** Who a house manual entry is written for. */
+export const guideAudienceEnum = pgEnum('guide_audience', ['guest', 'technical']);
+/** Subject of a house manual entry. */
+export const guideTopicEnum = pgEnum('guide_topic', [
+  'wifi',
+  'intercom',
+  'gate',
+  'parcels',
+  'waste',
+  'pets',
+  'plants',
+  'heating',
+  'appliances',
+  'rules',
+  'check_in',
+  'check_out',
+  'other',
+]);
+/** Which supply a cutoff valve or switch controls. */
+export const shutoffKindEnum = pgEnum('shutoff_kind', ['water', 'gas', 'electricity', 'boiler', 'other']);
+/** Waste fraction collected by the municipality. */
+export const wasteFractionEnum = pgEnum('waste_fraction', [
+  'organic',
+  'paper',
+  'plastic',
+  'glass',
+  'metal',
+  'residual',
+  'bulky',
+  'green',
+  'other',
+]);
+/** Kind of a family contact. */
+export const contactKindEnum = pgEnum('contact_kind', [
+  'craftsman',
+  'supplier',
+  'doctor',
+  'veterinarian',
+  'neighbor',
+  'emergency_service',
+  'other',
+]);
+/** Kind of a household utility contract. */
+export const utilityKindEnum = pgEnum('utility_kind', [
+  'electricity',
+  'gas',
+  'water',
+  'internet',
+  'waste_tax',
+  'heating',
+  'other',
+]);
+/** How often a utility or subscription is billed. */
+export const billingFrequencyEnum = pgEnum('billing_frequency', [
+  'monthly',
+  'bimonthly',
+  'quarterly',
+  'semiannual',
+  'annual',
+]);
+/** Category of a maintenance task. */
+export const maintenanceCategoryEnum = pgEnum('maintenance_category', [
+  'heating',
+  'cooling',
+  'plumbing',
+  'electrical',
+  'appliances',
+  'structure',
+  'roof',
+  'garden',
+  'safety',
+  'cleaning',
+  'other',
+]);
+/** Priority of a maintenance task. */
+export const maintenancePriorityEnum = pgEnum('maintenance_priority', ['low', 'medium', 'high', 'urgent']);

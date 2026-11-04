@@ -13,6 +13,8 @@ import { createAuth } from './auth/auth.js';
 import type { ApiConfig } from './config.js';
 import { ProblemError, classifyDatabaseError, sendProblem } from './http/problem.js';
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
+import { houseRoutes } from './modules/house/routes.js';
+import { createHouseService } from './modules/house/service.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import { createIdentityService } from './modules/identity/service.js';
 import { systemRoutes } from './modules/system/routes.js';
@@ -61,6 +63,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const secrets = await ServerSecretBox.create(parseMasterKeys(config.masterKeys), config.masterKeyActive);
 
   const tenancy = createTenancyService(db);
+  const house = createHouseService(db);
   const identity = createIdentityService(db, tenancy);
   const auth = createAuth({
     db,
@@ -154,6 +157,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(systemRoutes, { db, store });
   await app.register(identityRoutes, { identity });
   await app.register(tenancyRoutes, { tenancy });
+  await app.register(houseRoutes, { house });
 
   app.addHook('onClose', async () => {
     if (deps.pool === undefined) {

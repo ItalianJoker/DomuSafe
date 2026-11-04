@@ -4,18 +4,50 @@ import {
   familyListSchema,
   familySchema,
   formatEtag,
+  contactPageSchema,
+  contactSchema,
+  guideEntryPageSchema,
+  guideEntrySchema,
+  guestViewSchema,
   housePageSchema,
   houseSchema,
+  maintenanceTaskPageSchema,
+  maintenanceTaskSchema,
   meSchema,
   membershipPageSchema,
+  shutoffPageSchema,
+  shutoffSchema,
+  utilityPageSchema,
+  utilitySchema,
+  wasteCollectionPageSchema,
+  wasteCollectionSchema,
   problemDetailsSchema,
   problemType,
+  type Contact,
+  type CreateContactRequest,
   type CreateFamilyRequest,
+  type CreateGuideEntryRequest,
   type CreateHouseRequest,
+  type CreateMaintenanceTaskRequest,
+  type CreateShutoffRequest,
+  type CreateUtilityRequest,
+  type CreateWasteCollectionRequest,
   type Family,
+  type GuideEntry,
+  type GuestView,
   type House,
+  type MaintenanceTask,
   type Me,
   type Membership,
+  type Shutoff,
+  type UpdateContactRequest,
+  type UpdateGuideEntryRequest,
+  type UpdateMaintenanceTaskRequest,
+  type UpdateShutoffRequest,
+  type UpdateUtilityRequest,
+  type UpdateWasteCollectionRequest,
+  type Utility,
+  type WasteCollection,
   type ProblemDetails,
   type UpdateFamilyRequest,
   type UpdateHouseRequest,
@@ -127,6 +159,276 @@ export interface DomusafeApi {
    * @returns Every page, in order.
    */
   listMembers(familyId: string): Promise<readonly Membership[]>;
+  /**
+   * Guest projection of one house: manual entries for guests and waste rules.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns What a guest of the house can read.
+   */
+  getGuestView(familyId: string, houseId: string): Promise<GuestView>;
+  /**
+   * Same projection as {@link DomusafeApi.getGuestView}, for the people who edit the house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns The guest projection.
+   */
+  previewGuestView(familyId: string, houseId: string): Promise<GuestView>;
+  /**
+   * Manual entries of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param audience - Optional audience filter.
+   * @returns Every page.
+   */
+  listGuideEntries(
+    familyId: string,
+    houseId: string,
+    audience?: GuideEntry['audience'],
+  ): Promise<readonly GuideEntry[]>;
+  /**
+   * Adds a manual entry. The id is a UUIDv7 from this browser.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields. Secrets belong in `sealed`, never in the text.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The entry.
+   */
+  createGuideEntry(
+    familyId: string,
+    houseId: string,
+    body: CreateGuideEntryRequest,
+    idempotencyKey: string,
+  ): Promise<GuideEntry>;
+  /**
+   * Updates a manual entry.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param entryId - Entry id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The entry.
+   */
+  updateGuideEntry(
+    familyId: string,
+    houseId: string,
+    entryId: string,
+    version: number,
+    patch: UpdateGuideEntryRequest,
+  ): Promise<GuideEntry>;
+  /**
+   * Cutoff locations of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Every page.
+   */
+  listShutoffs(familyId: string, houseId: string): Promise<readonly Shutoff[]>;
+  /**
+   * Adds a cutoff location.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The cutoff.
+   */
+  createShutoff(
+    familyId: string,
+    houseId: string,
+    body: CreateShutoffRequest,
+    idempotencyKey: string,
+  ): Promise<Shutoff>;
+  /**
+   * Updates a cutoff location.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param shutoffId - Cutoff id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The cutoff.
+   */
+  updateShutoff(
+    familyId: string,
+    houseId: string,
+    shutoffId: string,
+    version: number,
+    patch: UpdateShutoffRequest,
+  ): Promise<Shutoff>;
+  /**
+   * Waste rules of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Every page.
+   */
+  listWaste(familyId: string, houseId: string): Promise<readonly WasteCollection[]>;
+  /**
+   * Adds a waste rule.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The rule.
+   */
+  createWaste(
+    familyId: string,
+    houseId: string,
+    body: CreateWasteCollectionRequest,
+    idempotencyKey: string,
+  ): Promise<WasteCollection>;
+  /**
+   * Updates a waste rule.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param collectionId - Rule id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The rule.
+   */
+  updateWaste(
+    familyId: string,
+    houseId: string,
+    collectionId: string,
+    version: number,
+    patch: UpdateWasteCollectionRequest,
+  ): Promise<WasteCollection>;
+  /**
+   * Deletes a waste rule.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param collectionId - Rule id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteWaste(familyId: string, houseId: string, collectionId: string, version: number): Promise<void>;
+  /**
+   * Contacts of a family. Artisans use kind `craftsman`.
+   *
+   * @param familyId - Family id.
+   * @param filter - Optional kind and house.
+   * @returns Every page.
+   */
+  listContacts(
+    familyId: string,
+    filter?: { readonly kind?: Contact['kind']; readonly houseId?: string },
+  ): Promise<readonly Contact[]>;
+  /**
+   * Adds a contact.
+   *
+   * @param familyId - Family id.
+   * @param body - Manual fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The contact.
+   */
+  createContact(familyId: string, body: CreateContactRequest, idempotencyKey: string): Promise<Contact>;
+  /**
+   * Updates a contact.
+   *
+   * @param familyId - Family id.
+   * @param contactId - Contact id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The contact.
+   */
+  updateContact(
+    familyId: string,
+    contactId: string,
+    version: number,
+    patch: UpdateContactRequest,
+  ): Promise<Contact>;
+  /**
+   * Utility contracts of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Every page.
+   */
+  listUtilities(familyId: string, houseId: string): Promise<readonly Utility[]>;
+  /**
+   * Adds a utility contract.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields. Payment secrets belong in `sealed`.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The contract.
+   */
+  createUtility(
+    familyId: string,
+    houseId: string,
+    body: CreateUtilityRequest,
+    idempotencyKey: string,
+  ): Promise<Utility>;
+  /**
+   * Updates a utility contract.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param utilityId - Contract id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The contract.
+   */
+  updateUtility(
+    familyId: string,
+    houseId: string,
+    utilityId: string,
+    version: number,
+    patch: UpdateUtilityRequest,
+  ): Promise<Utility>;
+  /**
+   * Maintenance tasks of one house, including the boiler check.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param category - Optional category filter.
+   * @returns Every page.
+   */
+  listMaintenance(
+    familyId: string,
+    houseId: string,
+    category?: MaintenanceTask['category'],
+  ): Promise<readonly MaintenanceTask[]>;
+  /**
+   * Adds a maintenance task.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The task.
+   */
+  createMaintenance(
+    familyId: string,
+    houseId: string,
+    body: CreateMaintenanceTaskRequest,
+    idempotencyKey: string,
+  ): Promise<MaintenanceTask>;
+  /**
+   * Updates a maintenance task.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param taskId - Task id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The task.
+   */
+  updateMaintenance(
+    familyId: string,
+    houseId: string,
+    taskId: string,
+    version: number,
+    patch: UpdateMaintenanceTaskRequest,
+  ): Promise<MaintenanceTask>;
 }
 
 /** Options of {@link createApi}. */
@@ -161,6 +463,25 @@ function toProblem(error: unknown, response: Response): ApiProblem {
     return new ApiProblem(parsed.data);
   }
   return new ApiProblem(unexpected(response.status));
+}
+
+async function collect<T>(
+  load: (cursor: string | undefined) => Promise<{ items: T[]; nextCursor: string | null }>,
+): Promise<T[]> {
+  const items: T[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await load(cursor);
+    items.push(...page.items);
+    cursor = page.nextCursor ?? undefined;
+  } while (cursor !== undefined);
+  return items;
+}
+
+function ensureOk(result: CallResult): void {
+  if (!result.response.ok) {
+    throw toProblem(result.error, result.response);
+  }
 }
 
 function parseBody<T>(schema: z.ZodType<T>, data: unknown, response: Response): T {
@@ -292,6 +613,223 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         cursor = page.nextCursor ?? undefined;
       } while (cursor !== undefined);
       return items;
+    },
+    getGuestView(familyId, houseId) {
+      return client
+        .GET('/api/v1/families/{familyId}/houses/{houseId}/guest-view', {
+          params: { path: { familyId, houseId } },
+        })
+        .then((result) => unwrap(guestViewSchema, result));
+    },
+    previewGuestView(familyId, houseId) {
+      return client
+        .GET('/api/v1/families/{familyId}/houses/{houseId}/guest-view/preview', {
+          params: { path: { familyId, houseId } },
+        })
+        .then((result) => unwrap(guestViewSchema, result));
+    },
+    listGuideEntries(familyId, houseId, audience) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/guide-entries', {
+            params: {
+              path: { familyId, houseId },
+              query: {
+                limit: 200,
+                ...(cursor === undefined ? {} : { cursor }),
+                ...(audience === undefined ? {} : { audience }),
+              },
+            },
+          })
+          .then((result) => unwrap(guideEntryPageSchema, result)),
+      );
+    },
+    async createGuideEntry(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/guide-entries', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateGuideEntryRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(guideEntrySchema, result);
+    },
+    async updateGuideEntry(familyId, houseId, entryId, version, patch) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/guide-entries/{entryId}',
+        {
+          params: { path: { familyId, houseId, entryId } },
+          body: patch as components['schemas']['UpdateGuideEntryRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(guideEntrySchema, result);
+    },
+    listShutoffs(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/shutoffs', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(shutoffPageSchema, result)),
+      );
+    },
+    async createShutoff(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/shutoffs', {
+        params: { path: { familyId, houseId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(shutoffSchema, result);
+    },
+    async updateShutoff(familyId, houseId, shutoffId, version, patch) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/houses/{houseId}/shutoffs/{shutoffId}', {
+        params: { path: { familyId, houseId, shutoffId } },
+        body: patch as components['schemas']['UpdateShutoffRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(shutoffSchema, result);
+    },
+    listWaste(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/waste-collections', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(wasteCollectionPageSchema, result)),
+      );
+    },
+    async createWaste(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/waste-collections', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateWasteCollectionRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(wasteCollectionSchema, result);
+    },
+    async updateWaste(familyId, houseId, collectionId, version, patch) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/waste-collections/{collectionId}',
+        {
+          params: { path: { familyId, houseId, collectionId } },
+          body: patch as components['schemas']['UpdateWasteCollectionRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(wasteCollectionSchema, result);
+    },
+    async deleteWaste(familyId, houseId, collectionId, version) {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/houses/{houseId}/waste-collections/{collectionId}',
+        {
+          params: { path: { familyId, houseId, collectionId } },
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      ensureOk(result);
+    },
+    listContacts(familyId, filter) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/contacts', {
+            params: {
+              path: { familyId },
+              query: {
+                limit: 200,
+                ...(cursor === undefined ? {} : { cursor }),
+                ...(filter?.kind === undefined ? {} : { kind: filter.kind }),
+                ...(filter?.houseId === undefined ? {} : { houseId: filter.houseId }),
+              },
+            },
+          })
+          .then((result) => unwrap(contactPageSchema, result)),
+      );
+    },
+    async createContact(familyId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/contacts', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateContactRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(contactSchema, result);
+    },
+    async updateContact(familyId, contactId, version, patch) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/contacts/{contactId}', {
+        params: { path: { familyId, contactId } },
+        body: patch as components['schemas']['UpdateContactRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(contactSchema, result);
+    },
+    listUtilities(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/utilities', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(utilityPageSchema, result)),
+      );
+    },
+    async createUtility(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/utilities', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateUtilityRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(utilitySchema, result);
+    },
+    async updateUtility(familyId, houseId, utilityId, version, patch) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}',
+        {
+          params: { path: { familyId, houseId, utilityId } },
+          body: patch as components['schemas']['UpdateUtilityRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(utilitySchema, result);
+    },
+    listMaintenance(familyId, houseId, category) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/maintenance-tasks', {
+            params: {
+              path: { familyId, houseId },
+              query: {
+                limit: 200,
+                ...(cursor === undefined ? {} : { cursor }),
+                ...(category === undefined ? {} : { category }),
+              },
+            },
+          })
+          .then((result) => unwrap(maintenanceTaskPageSchema, result)),
+      );
+    },
+    async createMaintenance(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/maintenance-tasks', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateMaintenanceTaskRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(maintenanceTaskSchema, result);
+    },
+    async updateMaintenance(familyId, houseId, taskId, version, patch) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/maintenance-tasks/{taskId}',
+        {
+          params: { path: { familyId, houseId, taskId } },
+          body: patch as components['schemas']['UpdateMaintenanceTaskRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(maintenanceTaskSchema, result);
     },
   };
 }

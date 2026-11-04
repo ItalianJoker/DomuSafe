@@ -19,13 +19,20 @@ export interface RevisionInput {
   readonly houseId?: string | null;
   readonly residentId?: string | null;
   readonly ownerAccountId?: string | null;
+  /** Class B envelope copied beside the class C snapshot. Omit when the row has no envelope. */
+  readonly envelope?: {
+    readonly scopeId: string;
+    readonly keyVersion: number;
+    readonly dek: Uint8Array<ArrayBuffer>;
+    readonly payload: Uint8Array<ArrayBuffer>;
+  };
 }
 
 /**
  * Appends a revision in the same transaction as the write it describes.
  *
  * @param tx - Transaction of the write.
- * @param input - Resource, version, operation, actor and snapshot of the class C columns.
+ * @param input - Resource, version, operation, actor, class C snapshot and optional class B envelope.
  */
 export async function recordRevision(tx: Transaction, input: RevisionInput): Promise<void> {
   await tx.insert(revisions).values({
@@ -41,6 +48,14 @@ export async function recordRevision(tx: Transaction, input: RevisionInput): Pro
     actorKind: input.actor.kind,
     actorId: input.actor.id,
     data: input.data,
+    ...(input.envelope === undefined
+      ? {}
+      : {
+          encScopeId: input.envelope.scopeId,
+          encKeyVersion: input.envelope.keyVersion,
+          encDek: input.envelope.dek,
+          encPayload: input.envelope.payload,
+        }),
   });
 }
 
