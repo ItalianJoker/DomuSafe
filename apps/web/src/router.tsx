@@ -243,7 +243,7 @@ const homeRoute = createRoute({
     }
     return (
       <Suspended>
-        <HomePage me={me} house={house} familyName={familyName} />
+        <HomePage me={me} familyId={familyId} house={house} familyName={familyName} />
       </Suspended>
     );
   },

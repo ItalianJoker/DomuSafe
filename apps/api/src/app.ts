@@ -14,6 +14,8 @@ import type { ApiConfig } from './config.js';
 import { ProblemError, classifyDatabaseError, sendProblem } from './http/problem.js';
 import { redactRequestUrl } from './http/redact.js';
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
+import { deadlineRoutes } from './modules/deadlines/routes.js';
+import { createDeadlinesService } from './modules/deadlines/service.js';
 import { houseRoutes } from './modules/house/routes.js';
 import { printRoutes } from './modules/print/routes.js';
 import { createPrintService } from './modules/print/service.js';
@@ -73,6 +75,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
 
   const tenancy = createTenancyService(db);
   const house = createHouseService(db);
+  const deadlines = createDeadlinesService(db);
   const personale = createPersonaleService(db);
   const print = createPrintService(db);
   const vault = createVaultService(db, store, secrets);
@@ -185,6 +188,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(identityRoutes, { identity });
   await app.register(tenancyRoutes, { tenancy });
   await app.register(houseRoutes, { house });
+  await app.register(deadlineRoutes, { deadlines });
   await app.register(personaleRoutes, { personale });
   await app.register(printRoutes, { print });
   await app.register(vaultRoutes, { vault });

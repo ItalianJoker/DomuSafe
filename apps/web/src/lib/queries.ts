@@ -300,6 +300,21 @@ export function successionQuery(api: DomusafeApi, familyId: string) {
 }
 
 /**
+ * Query of the overview deadlines for the open house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function deadlinesQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['deadlines', familyId, houseId] as const,
+    queryFn: () => api.listDeadlines(familyId, houseId),
+  });
+}
+
+/**
  * Query of heating maintenance, used for the boiler deadline.
  *
  * @param api - Shell API.

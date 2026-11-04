@@ -69,6 +69,7 @@ docs/adr/              decisioni architetturali
 | `identity`   | `GET /api/v1/me`, `PATCH /api/v1/me/profile` | profilo creato alla registrazione (hook di Better Auth)                                                                                     |
 | `tenancy`    | famiglie, case, membri                       | limiti di piano sotto `SELECT … FOR UPDATE`, revisioni delle case, rotazione delle chiavi segnalata alla rimozione o riduzione di un membro |
 | `house`      | manuale, chiusure, utenze, manutenzioni      | Casa della casa aperta, senza funzione di piano                                                                                             |
+| `deadlines`  | `GET /families/{id}/deadlines`               | Cruscotto: scadute, questa settimana, questo mese. Legge date già salvate. Un lavoro di manutenzione si aggiunge dalle rotte di Casa        |
 | `personale`  | residenti, soccorso, animali, servizi, tasse | scheda di soccorso leggibile; tasse e conti personali solo con Premium o prova                                                              |
 | `vault`      | codice, frase di recupero, documenti cifrati | Cassaforte di famiglia: Argon2id e buste nel browser; il server conserva solo testo cifrato. Avanzato, Premium o prova                      |
 | `succession` | checklist di successione della famiglia      | Attività compilate a mano e kit eredità stampato nel browser. Non legge la Cassaforte. Premium o prova di trenta giorni                     |
