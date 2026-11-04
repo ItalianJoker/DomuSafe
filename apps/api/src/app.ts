@@ -20,6 +20,8 @@ import { createPrintService } from './modules/print/service.js';
 import { createHouseService } from './modules/house/service.js';
 import { personaleRoutes } from './modules/personale/routes.js';
 import { createPersonaleService } from './modules/personale/service.js';
+import { successionRoutes } from './modules/succession/routes.js';
+import { createSuccessionService } from './modules/succession/service.js';
 import { vaultRoutes } from './modules/vault/routes.js';
 import { createVaultService } from './modules/vault/service.js';
 import { identityRoutes } from './modules/identity/routes.js';
@@ -74,6 +76,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const personale = createPersonaleService(db);
   const print = createPrintService(db);
   const vault = createVaultService(db, store, secrets);
+  const succession = createSuccessionService(db);
   const identity = createIdentityService(db, tenancy);
   const auth = createAuth({
     db,
@@ -185,6 +188,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(personaleRoutes, { personale });
   await app.register(printRoutes, { print });
   await app.register(vaultRoutes, { vault });
+  await app.register(successionRoutes, { succession });
 
   app.addHook('onClose', async () => {
     if (deps.pool === undefined) {

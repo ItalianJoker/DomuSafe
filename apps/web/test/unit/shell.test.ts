@@ -48,6 +48,7 @@ describe('navigation', () => {
     expect(sectionFromPath(`/f/${FAMILY}/c/${HOUSE}/casa`)).toBe('casa');
     expect(shellPath(FAMILY, OTHER, 'casa')).toBe(`/f/${FAMILY}/c/${OTHER}/casa`);
     expect(sectionFromPath(`/f/${FAMILY}/c/${HOUSE}`)).toBe('home');
+    expect(sectionFromPath(`/f/${FAMILY}/c/${HOUSE}/famiglia/successione`)).toBe('famiglia');
   });
 });
 

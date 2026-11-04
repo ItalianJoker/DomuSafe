@@ -58,6 +58,9 @@ const PersonalePage = lazy(() =>
 const PrintPage = lazy(() =>
   import('@/features/print/print-page.js').then((mod) => ({ default: mod.PrintPage })),
 );
+const SuccessionPage = lazy(() =>
+  import('@/features/succession/succession-page.js').then((mod) => ({ default: mod.SuccessionPage })),
+);
 const PublicHousePage = lazy(() =>
   import('@/features/print/public-pages.js').then((mod) => ({ default: mod.PublicHousePage })),
 );
@@ -264,10 +267,23 @@ const familySectionRoute = createRoute({
   path: '/famiglia',
   component: function FamilyFrame() {
     const { me } = houseRoute.useRouteContext();
-    const { familyId } = houseRoute.useParams();
+    const { familyId, houseId } = houseRoute.useParams();
     return (
       <Suspended>
-        <FamilyPage me={me} familyId={familyId} />
+        <FamilyPage me={me} familyId={familyId} houseId={houseId} />
+      </Suspended>
+    );
+  },
+});
+const successionRoute = createRoute({
+  getParentRoute: () => houseRoute,
+  path: '/famiglia/successione',
+  component: function SuccessionFrame() {
+    const { me } = houseRoute.useRouteContext();
+    const { familyId, houseId } = houseRoute.useParams();
+    return (
+      <Suspended>
+        <SuccessionPage me={me} familyId={familyId} houseId={houseId} />
       </Suspended>
     );
   },
@@ -388,6 +404,7 @@ const routeTree = rootRoute.addChildren([
       homeRoute,
       vaultRoute,
       familySectionRoute,
+      successionRoute,
       casaRoute,
       personalRoute,
       printRoute,

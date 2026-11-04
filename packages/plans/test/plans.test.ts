@@ -23,6 +23,9 @@ describe('plan catalogue', () => {
   it('gates features as decided in phase 3', () => {
     expect(hasFeature('advanced', 'vault_family')).toBe(true);
     expect(hasFeature('advanced', 'vault_personal')).toBe(false);
+    expect(hasFeature('advanced', 'succession')).toBe(false);
+    expect(hasFeature('premium', 'succession')).toBe(true);
+    expect(minimumPlanFor('succession')).toBe('premium');
     expect(hasFeature('basic', 'finance')).toBe(true);
     expect(hasFeature('free', 'finance')).toBe(false);
     expect(minimumPlanFor('sos')).toBe('premium');

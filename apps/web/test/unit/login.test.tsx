@@ -92,6 +92,11 @@ function unusedApi(partial: Partial<DomusafeApi>): DomusafeApi {
     listTax: fail,
     generateTax: fail,
     updateTaxItem: fail,
+    listSuccession: fail,
+    prepareSuccession: fail,
+    createSuccessionItem: fail,
+    updateSuccessionItem: fail,
+    deleteSuccessionItem: fail,
     ...partial,
   };
 }

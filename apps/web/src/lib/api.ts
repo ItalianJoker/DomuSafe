@@ -27,6 +27,8 @@ import {
   residentSchema,
   subscriptionPageSchema,
   subscriptionSchema,
+  successionItemSchema,
+  successionListSchema,
   taxChecklistItemSchema,
   taxChecklistSchema,
   vehiclePageSchema,
@@ -70,6 +72,10 @@ import {
   type RescueCard,
   type RescueSheet,
   type Resident,
+  type CreateSuccessionItemRequest,
+  type SuccessionItem,
+  type SuccessionList,
+  type UpdateSuccessionItemRequest,
   type TaxChecklist,
   type TaxChecklistItem,
   type Vehicle,
@@ -734,6 +740,57 @@ export interface DomusafeApi {
     version: number,
     patch: UpdateTaxChecklistItemRequest,
   ): Promise<TaxChecklistItem>;
+  /**
+   * Family succession checklist. The route answers 403 without Premium.
+   *
+   * @param familyId - Family id.
+   * @returns The activities. Vault documents are not included.
+   */
+  listSuccession(familyId: string): Promise<SuccessionList>;
+  /**
+   * Adds the standard succession activities that are missing.
+   *
+   * @param familyId - Family id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The checklist.
+   */
+  prepareSuccession(familyId: string, idempotencyKey: string): Promise<SuccessionList>;
+  /**
+   * Adds one activity written by the family.
+   *
+   * @param familyId - Family id.
+   * @param body - Title and optional notes. A run of eight digits is rejected.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The activity.
+   */
+  createSuccessionItem(
+    familyId: string,
+    body: CreateSuccessionItemRequest,
+    idempotencyKey: string,
+  ): Promise<SuccessionItem>;
+  /**
+   * Edits one activity or marks it done.
+   *
+   * @param familyId - Family id.
+   * @param itemId - Activity id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Title, notes or done mark.
+   * @returns The activity.
+   */
+  updateSuccessionItem(
+    familyId: string,
+    itemId: string,
+    version: number,
+    patch: UpdateSuccessionItemRequest,
+  ): Promise<SuccessionItem>;
+  /**
+   * Removes one activity.
+   *
+   * @param familyId - Family id.
+   * @param itemId - Activity id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteSuccessionItem(familyId: string, itemId: string, version: number): Promise<void>;
 }
 
 /** Options of {@link createApi}. */
@@ -1341,6 +1398,42 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         headers: { [HEADERS.ifMatch]: formatEtag(version) },
       });
       return unwrap(taxChecklistItemSchema, result);
+    },
+    async listSuccession(familyId) {
+      const result = await client.GET('/api/v1/families/{familyId}/succession', {
+        params: { path: { familyId } },
+      });
+      return unwrap(successionListSchema, result);
+    },
+    async prepareSuccession(familyId, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/succession/prepare', {
+        params: { path: { familyId } },
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(successionListSchema, result);
+    },
+    async createSuccessionItem(familyId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/succession', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateSuccessionItemRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(successionItemSchema, result);
+    },
+    async updateSuccessionItem(familyId, itemId, version, patch) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/succession/{itemId}', {
+        params: { path: { familyId, itemId } },
+        body: patch as components['schemas']['UpdateSuccessionItemRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(successionItemSchema, result);
+    },
+    async deleteSuccessionItem(familyId, itemId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/succession/{itemId}', {
+        params: { path: { familyId, itemId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
     },
   };
 }
