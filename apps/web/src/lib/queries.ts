@@ -305,6 +305,24 @@ export function taxQuery(api: DomusafeApi, familyId: string, residentId: string,
 }
 
 /**
+ * Query of the family host mark.
+ *
+ * Preconditions: the plan includes branding; otherwise the query stays disabled.
+ * Postconditions: null means the family has not saved a mark.
+ * Data contract: name, color, welcome sentence and logo address.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function brandingQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['branding', familyId] as const,
+    queryFn: () => api.getBranding(familyId),
+  });
+}
+
+/**
  * Query of the family succession checklist.
  *
  * @param api - Shell API.

@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import type { Me } from '@domusafe/contracts';
 import { useApi, useSession } from '@/components/api-context.js';
 import { PageHeader } from '@/components/shell/page.js';
@@ -15,16 +15,21 @@ import { applyTheme, type ThemePreference } from '@/lib/theme.js';
 import { m } from '@/paraglide/messages.js';
 import { setLocale } from '@/paraglide/runtime.js';
 
+const HostMarkPanel = lazy(() =>
+  import('@/features/branding/host-mark-panel.js').then((mod) => ({ default: mod.HostMarkPanel })),
+);
+
 /**
- * Account section: name, language, theme and sign-out.
+ * Account section: name, language, theme, the family host mark and sign-out.
  *
- * Preconditions: `me` is the signed-in account.
+ * Preconditions: `me` is the signed-in account and `familyId` is one of their families.
  * Postconditions: theme is saved on the account and painted immediately; sign-out clears the cache.
+ * The host mark editor loads only for an administrator, and only after this section opens.
  *
- * @param props - Current account.
+ * @param props - Current account and the open family.
  * @returns The section.
  */
-export function AccountPage(props: { readonly me: Me }) {
+export function AccountPage(props: { readonly me: Me; readonly familyId: string }) {
   const api = useApi();
   const session = useSession();
   const navigate = useNavigate();
@@ -33,6 +38,7 @@ export function AccountPage(props: { readonly me: Me }) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, setPending] = useState(false);
+  const membership = props.me.families.find((family) => family.id === props.familyId);
 
   async function saveName(): Promise<void> {
     const trimmed = name.trim();
@@ -120,6 +126,11 @@ export function AccountPage(props: { readonly me: Me }) {
         </Select>
       </div>
       <ThemeControl value={props.me.theme} onChange={(theme) => void saveTheme(theme)} />
+      {membership?.role === 'admin' ? (
+        <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+          <HostMarkPanel me={props.me} familyId={props.familyId} tier={membership.plan} />
+        </Suspense>
+      ) : null}
       {error === null ? null : (
         <p role="alert" className="text-[12px] text-destructive">
           {error}

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sheetMarkSchema } from './branding.js';
 import { HEADERS, instantSchema, uuidSchema } from './common.js';
 import { rescueSheetPetSchema, rescueSheetResidentSchema } from './personale.js';
 
@@ -152,6 +153,7 @@ export const publicHousePageSchema = z
       })
       .strict()
       .nullable(),
+    mark: sheetMarkSchema,
   })
   .strict()
   .meta({ id: 'PublicHousePage' });
@@ -167,6 +169,7 @@ export const publicRescueSheetSchema = z
     houseName: z.string().min(1).max(120),
     residents: z.array(rescueSheetResidentSchema).max(50),
     pets: z.array(rescueSheetPetSchema).max(50),
+    mark: sheetMarkSchema,
   })
   .strict()
   .meta({ id: 'PublicRescueSheet' });

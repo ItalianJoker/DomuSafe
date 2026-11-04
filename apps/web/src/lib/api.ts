@@ -1,6 +1,7 @@
 import {
   HEADERS,
   PROBLEM_TITLES,
+  familyBrandingResponseSchema,
   familyListSchema,
   familySchema,
   formatEtag,
@@ -58,6 +59,7 @@ import {
   type CreateUtilityRequest,
   type CreateWasteCollectionRequest,
   type Family,
+  type FamilyBranding,
   type GuideEntry,
   type GuestView,
   type House,
@@ -67,6 +69,7 @@ import {
   type PersonalSubscription,
   type Pet,
   type PhoneLine,
+  type PutFamilyBrandingRequest,
   type PutRescueRequest,
   type DeviceLabel,
   type Publication,
@@ -597,6 +600,36 @@ export interface DomusafeApi {
    * @returns The readings.
    */
   listPublicationReadings(familyId: string, houseId: string): Promise<readonly PublicationReading[]>;
+  /**
+   * Stored host mark of a family.
+   *
+   * Preconditions: the caller can prepare printed sheets and the plan includes branding.
+   * Postconditions: null when the family has not saved a mark.
+   * Data contract: name, color, welcome sentence, logo address and version.
+   *
+   * @param familyId - Family id.
+   * @returns The mark, or null.
+   */
+  getBranding(familyId: string): Promise<FamilyBranding | null>;
+  /**
+   * Replaces the host mark, or clears it when every field is null.
+   *
+   * Preconditions: the caller is an administrator on Premium or the trial.
+   * Postconditions: a missing version is sent only when no mark is stored yet.
+   * Data contract: the same four fields. The logo stays a small data address.
+   *
+   * @param familyId - Family id.
+   * @param version - Stored version, or null when creating the mark.
+   * @param body - The whole mark.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The stored mark, or null when it was cleared.
+   */
+  putBranding(
+    familyId: string,
+    version: number | null,
+    body: PutFamilyBrandingRequest,
+    idempotencyKey: string,
+  ): Promise<FamilyBranding | null>;
   /**
    * Public house page. No session is required.
    *
@@ -1312,6 +1345,23 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       );
       return unwrap(publicationSchema, result);
+    },
+    async getBranding(familyId) {
+      const result = await client.GET('/api/v1/families/{familyId}/branding', {
+        params: { path: { familyId } },
+      });
+      return (await unwrap(familyBrandingResponseSchema, result)).branding;
+    },
+    async putBranding(familyId, version, body, idempotencyKey) {
+      const result = await client.PUT('/api/v1/families/{familyId}/branding', {
+        params: { path: { familyId } },
+        body,
+        headers: {
+          [HEADERS.idempotencyKey]: idempotencyKey,
+          ...(version === null ? {} : { [HEADERS.ifMatch]: formatEtag(version) }),
+        },
+      });
+      return (await unwrap(familyBrandingResponseSchema, result)).branding;
     },
     async listPublicationReadings(familyId, houseId) {
       const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publication-readings', {

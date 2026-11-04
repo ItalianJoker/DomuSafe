@@ -392,9 +392,10 @@ const accountRoute = createRoute({
   path: '/account',
   component: function AccountFrame() {
     const { me } = houseRoute.useRouteContext();
+    const { familyId } = houseRoute.useParams();
     return (
       <Suspended>
-        <AccountPage me={me} />
+        <AccountPage me={me} familyId={familyId} />
       </Suspended>
     );
   },

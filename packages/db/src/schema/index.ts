@@ -1,4 +1,5 @@
 export * from './audit.js';
+export * from './branding.js';
 export * from './enums.js';
 export * from './house.js';
 export * from './personale.js';

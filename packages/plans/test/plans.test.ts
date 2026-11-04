@@ -24,7 +24,10 @@ describe('plan catalogue', () => {
     expect(hasFeature('advanced', 'vault_family')).toBe(true);
     expect(hasFeature('advanced', 'vault_personal')).toBe(false);
     expect(hasFeature('advanced', 'succession')).toBe(false);
+    expect(hasFeature('advanced', 'branding')).toBe(false);
     expect(hasFeature('premium', 'succession')).toBe(true);
+    expect(hasFeature('premium', 'branding')).toBe(true);
+    expect(minimumPlanFor('branding')).toBe('premium');
     expect(minimumPlanFor('succession')).toBe('premium');
     expect(hasFeature('basic', 'finance')).toBe(true);
     expect(hasFeature('free', 'finance')).toBe(false);
