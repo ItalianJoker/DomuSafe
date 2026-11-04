@@ -2,15 +2,6 @@ import { EmptySection, PageHeader } from '@/components/shell/page.js';
 import { m } from '@/paraglide/messages.js';
 
 /**
- * Print section before sheets and codes exist.
- *
- * @returns The empty section.
- */
-export function PrintPage() {
-  return <EmptySection title={m.printTitle()} body={m.printBody()} />;
-}
-
-/**
  * Extra section before kitchen and finance exist.
  *
  * @returns The empty section.

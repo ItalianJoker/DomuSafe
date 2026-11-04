@@ -52,7 +52,7 @@ export function AppShell(props: {
       >
         {m.skipToContent()}
       </a>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border bg-sidebar md:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border bg-sidebar print:hidden md:flex">
         <div className="flex h-12 items-center px-3">
           <Brand />
         </div>
@@ -71,8 +71,8 @@ export function AppShell(props: {
           ))}
         </nav>
       </aside>
-      <div className="md:pl-56">
-        <header className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-sm md:px-6">
+      <div className="print:pl-0 md:pl-56">
+        <header className="sticky top-0 z-20 flex h-12 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-sm print:hidden md:px-6">
           {props.me.families.length > 1 ? (
             <div className="w-40">
               <Select
@@ -119,13 +119,13 @@ export function AppShell(props: {
             {props.me.displayName}
           </p>
         </header>
-        <main id="contenuto" className="px-4 py-6 pb-24 md:px-8 md:pb-10">
+        <main id="contenuto" className="px-4 py-6 pb-24 print:p-0 md:px-8 md:pb-10">
           {props.children}
         </main>
       </div>
       <nav
         aria-label={m.appName()}
-        className="fixed inset-x-0 bottom-0 z-30 flex gap-1 overflow-x-auto border-t border-border bg-background px-2 pt-1 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex gap-1 overflow-x-auto border-t border-border bg-background px-2 pt-1 print:hidden md:hidden"
         style={{ paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom))' }}
       >
         {NAV_LINKS.map((link) => (

@@ -19,6 +19,10 @@ import {
   phoneLineSchema,
   rescueCardSchema,
   rescueSheetSchema,
+  publicationListSchema,
+  publicationSchema,
+  publicHousePageSchema,
+  publicRescueSheetSchema,
   residentPageSchema,
   residentSchema,
   subscriptionPageSchema,
@@ -59,6 +63,10 @@ import {
   type Pet,
   type PhoneLine,
   type PutRescueRequest,
+  type Publication,
+  type PublicationKind,
+  type PublicHousePage,
+  type PublicRescueSheet,
   type RescueCard,
   type RescueSheet,
   type Resident,
@@ -528,6 +536,58 @@ export interface DomusafeApi {
    * @returns People, medicines, contacts and animals.
    */
   getRescueSheet(familyId: string, houseId: string): Promise<RescueSheet>;
+  /**
+   * Printed codes of one house, newest first, including the last reading.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns The codes the editor may print or revoke.
+   */
+  listPublications(familyId: string, houseId: string): Promise<readonly Publication[]>;
+  /**
+   * Prepares a printed code, or returns the one already active.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param kind - House page or rescue sheet.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The code, with the token while it is active.
+   */
+  ensurePublication(
+    familyId: string,
+    houseId: string,
+    kind: PublicationKind,
+    idempotencyKey: string,
+  ): Promise<Publication>;
+  /**
+   * Revokes a printed code. Sheets that use it stop opening.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param publicationId - Code id.
+   * @param version - Version the screen loaded.
+   * @returns The revoked code. The token is null.
+   */
+  revokePublication(
+    familyId: string,
+    houseId: string,
+    publicationId: string,
+    version: number,
+  ): Promise<Publication>;
+  /**
+   * Public house page. No session is required.
+   *
+   * @param token - Token from the printed address.
+   * @returns Shutoffs, tradespeople and the primary contact.
+   */
+  getPublicHousePage(token: string): Promise<PublicHousePage>;
+  /**
+   * Public rescue sheet. No session is required.
+   *
+   * @param token - Token from the printed address.
+   * @returns The rescue sheet of that house.
+   */
+  getPublicRescueSheet(token: string): Promise<PublicRescueSheet>;
   /**
    * Animals of one house.
    *
@@ -1123,6 +1183,42 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         params: { path: { familyId, houseId } },
       });
       return unwrap(rescueSheetSchema, result);
+    },
+    async listPublications(familyId, houseId) {
+      const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publications', {
+        params: { path: { familyId, houseId } },
+      });
+      return (await unwrap(publicationListSchema, result)).items;
+    },
+    async ensurePublication(familyId, houseId, kind, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/publications', {
+        params: { path: { familyId, houseId } },
+        body: { kind },
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(publicationSchema, result);
+    },
+    async revokePublication(familyId, houseId, publicationId, version) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/houses/{houseId}/publications/{publicationId}/revoke',
+        {
+          params: { path: { familyId, houseId, publicationId } },
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(publicationSchema, result);
+    },
+    async getPublicHousePage(token) {
+      const result = await client.GET('/api/v1/public/house-pages/{token}', {
+        params: { path: { token } },
+      });
+      return unwrap(publicHousePageSchema, result);
+    },
+    async getPublicRescueSheet(token) {
+      const result = await client.GET('/api/v1/public/rescue-sheets/{token}', {
+        params: { path: { token } },
+      });
+      return unwrap(publicRescueSheetSchema, result);
     },
     listPets(familyId, houseId) {
       return collect((cursor) =>

@@ -165,6 +165,21 @@ export function rescueQuery(api: DomusafeApi, familyId: string, residentId: stri
 }
 
 /**
+ * Query of the printed codes of one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function publicationsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['publications', familyId, houseId] as const,
+    queryFn: () => api.listPublications(familyId, houseId),
+  });
+}
+
+/**
  * Query of the readable rescue sheet of one house.
  *
  * @param api - Shell API.

@@ -144,6 +144,8 @@ export const taxItemKeyEnum = pgEnum('tax_item_key', [
 ]);
 /** Progress of a tax checklist item. */
 export const taxItemStatusEnum = pgEnum('tax_item_status', ['todo', 'in_progress', 'done', 'not_applicable']);
+/** Which public page a printed code opens. */
+export const publicationKindEnum = pgEnum('publication_kind', ['house_page', 'rescue_sheet']);
 /** Section of a family vault document. Personal sections are not created in this migration. */
 export const vaultSectionEnum = pgEnum('vault_section', [
   'family_accounts',

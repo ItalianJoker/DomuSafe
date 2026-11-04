@@ -55,7 +55,15 @@ const VaultPage = lazy(() =>
 const PersonalePage = lazy(() =>
   import('@/features/personale/personale-page.js').then((mod) => ({ default: mod.PersonalePage })),
 );
-const PrintPage = lazy(() => sections().then((mod) => ({ default: mod.PrintPage })));
+const PrintPage = lazy(() =>
+  import('@/features/print/print-page.js').then((mod) => ({ default: mod.PrintPage })),
+);
+const PublicHousePage = lazy(() =>
+  import('@/features/print/public-pages.js').then((mod) => ({ default: mod.PublicHousePage })),
+);
+const PublicRescuePage = lazy(() =>
+  import('@/features/print/public-pages.js').then((mod) => ({ default: mod.PublicRescuePage })),
+);
 const ExtraPage = lazy(() => sections().then((mod) => ({ default: mod.ExtraPage })));
 const GuidePage = lazy(() => sections().then((mod) => ({ default: mod.GuidePage })));
 
@@ -294,9 +302,15 @@ const printRoute = createRoute({
   getParentRoute: () => houseRoute,
   path: '/stampa',
   component: function PrintFrame() {
+    const { me, houses } = houseRoute.useRouteContext();
+    const { familyId, houseId } = houseRoute.useParams();
+    const house = houses.find((item: House) => item.id === houseId);
+    if (house === undefined) {
+      return <p className="text-[13px] text-muted-foreground">{m.noHouses()}</p>;
+    }
     return (
       <Suspended>
-        <PrintPage />
+        <PrintPage me={me} familyId={familyId} house={house} />
       </Suspended>
     );
   },
@@ -336,9 +350,37 @@ const accountRoute = createRoute({
   },
 });
 
+const publicHouseRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/p/$token',
+  component: function PublicHouseFrame() {
+    const { token } = publicHouseRoute.useParams();
+    return (
+      <Suspended>
+        <PublicHousePage token={token} />
+      </Suspended>
+    );
+  },
+});
+
+const publicRescueRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/e/$token',
+  component: function PublicRescueFrame() {
+    const { token } = publicRescueRoute.useParams();
+    return (
+      <Suspended>
+        <PublicRescuePage token={token} />
+      </Suspended>
+    );
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   signupRoute,
+  publicHouseRoute,
+  publicRescueRoute,
   appRoute.addChildren([
     entryRoute,
     createFamilyRoute,

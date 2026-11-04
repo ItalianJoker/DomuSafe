@@ -12,8 +12,11 @@ import type pg from 'pg';
 import { createAuth } from './auth/auth.js';
 import type { ApiConfig } from './config.js';
 import { ProblemError, classifyDatabaseError, sendProblem } from './http/problem.js';
+import { redactRequestUrl } from './http/redact.js';
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
 import { houseRoutes } from './modules/house/routes.js';
+import { printRoutes } from './modules/print/routes.js';
+import { createPrintService } from './modules/print/service.js';
 import { createHouseService } from './modules/house/service.js';
 import { personaleRoutes } from './modules/personale/routes.js';
 import { createPersonaleService } from './modules/personale/service.js';
@@ -69,6 +72,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const tenancy = createTenancyService(db);
   const house = createHouseService(db);
   const personale = createPersonaleService(db);
+  const print = createPrintService(db);
   const vault = createVaultService(db, store, secrets);
   const identity = createIdentityService(db, tenancy);
   const auth = createAuth({
@@ -102,6 +106,14 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
           '*.grant',
         ],
         remove: true,
+      },
+      serializers: {
+        req(request) {
+          return {
+            method: request.method,
+            url: redactRequestUrl(request.url),
+          };
+        },
       },
     },
     trustProxy: config.trustProxy,
@@ -171,6 +183,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(tenancyRoutes, { tenancy });
   await app.register(houseRoutes, { house });
   await app.register(personaleRoutes, { personale });
+  await app.register(printRoutes, { print });
   await app.register(vaultRoutes, { vault });
 
   app.addHook('onClose', async () => {

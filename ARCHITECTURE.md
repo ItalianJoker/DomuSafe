@@ -71,6 +71,7 @@ docs/adr/              decisioni architetturali
 | `house`     | manuale, chiusure, utenze, manutenzioni      | Casa della casa aperta, senza funzione di piano                                                                                             |
 | `personale` | residenti, soccorso, animali, servizi, tasse | scheda di soccorso leggibile; tasse e conti personali solo con Premium o prova                                                              |
 | `vault`     | codice, frase di recupero, documenti cifrati | Cassaforte di famiglia: Argon2id e buste nel browser; il server conserva solo testo cifrato. Avanzato, Premium o prova                      |
+| `print`     | codici stampati e pagine pubbliche           | Foglio da parete e foglio di soccorso. Il codice di soccorso si apre senza accesso e si può revocare. Filigrana su Gratuito e Base          |
 
 I moduli successivi seguono l'ordine della fase 3 §12.
 
