@@ -5,6 +5,17 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  build: {
+    rolldownOptions: {
+      output: {
+        // The API client and its schemas are shared with later screens. Keep them in a
+        // preloaded chunk so the first script stays inside the shell budget.
+        codeSplitting: {
+          groups: [{ name: 'api', test: /\/(src\/lib\/api\.ts|packages\/contracts\/src\/)/ }],
+        },
+      },
+    },
+  },
   resolve: {
     alias: { '@': new URL('./src', import.meta.url).pathname },
     conditions: ['@domusafe/source'],

@@ -25,8 +25,8 @@ import {
   wrapAccountKeyForDevice,
   type Bytes,
 } from '@domusafe/crypto';
-import type { DomusafeApi } from '@/lib/api.js';
 import { ApiProblem } from '@/lib/api.js';
+import type { VaultClient } from './client.js';
 import { devicePlatform, type DeviceStore } from './device-store.js';
 import { VaultFlowError } from './model.js';
 
@@ -126,7 +126,7 @@ export function phraseMatches(
  * @param label - Name stored for this browser.
  */
 export async function publishAccount(
-  api: DomusafeApi,
+  api: VaultClient,
   store: DeviceStore,
   accountId: string,
   draft: AccountDraft,
@@ -156,7 +156,7 @@ export async function publishAccount(
  * @returns The account key, or `null` when this browser has not been paired.
  */
 export async function loadLocalAccountKey(
-  api: DomusafeApi,
+  api: VaultClient,
   store: DeviceStore,
   accountId: string,
 ): Promise<Bytes | null> {
@@ -195,7 +195,7 @@ export async function loadLocalAccountKey(
  * @throws VaultFlowError when the phrase is not valid or does not belong to the account.
  */
 export async function pairWithPhrase(
-  api: DomusafeApi,
+  api: VaultClient,
   store: DeviceStore,
   accountId: string,
   phrase: string,
@@ -216,7 +216,7 @@ export async function pairWithPhrase(
  * @param recoveryPublicKey - Recovery public key from the account bundle.
  */
 export async function setFirstCode(
-  api: DomusafeApi,
+  api: VaultClient,
   accountId: string,
   accountKey: Bytes,
   pin: string,
@@ -255,7 +255,7 @@ export async function setFirstCode(
  * @throws VaultFlowError `no-grant` when the family scope belongs to someone else.
  */
 export async function unlockWithCode(
-  api: DomusafeApi,
+  api: VaultClient,
   familyId: string,
   accountId: string,
   accountKey: Bytes,
@@ -296,7 +296,7 @@ export async function unlockWithCode(
  *
  * @param api - Shell API.
  */
-export async function lockVault(api: DomusafeApi): Promise<void> {
+export async function lockVault(api: VaultClient): Promise<void> {
   clearVaultMemory();
   await api.lockVault();
 }
@@ -316,7 +316,7 @@ export async function lockVault(api: DomusafeApi): Promise<void> {
  * @param label - Name stored if this browser is paired now.
  */
 export async function resetWithPhrase(
-  api: DomusafeApi,
+  api: VaultClient,
   store: DeviceStore,
   familyId: string,
   accountId: string,
@@ -375,7 +375,7 @@ export async function resetWithPhrase(
  * @returns Documents. `payload` is null when this device cannot read one of them.
  */
 export async function readDocuments(
-  api: DomusafeApi,
+  api: VaultClient,
   familyId: string,
   section: FamilyVaultSection,
 ): Promise<OpenDocument[]> {
@@ -417,7 +417,7 @@ export async function readDocuments(
  * @param existing - Document being edited. Omit to create one.
  */
 export async function saveDocument(
-  api: DomusafeApi,
+  api: VaultClient,
   familyId: string,
   section: FamilyVaultSection,
   payload: VaultPayload,
@@ -457,7 +457,7 @@ export async function saveDocument(
  * @param version - Version the screen loaded.
  */
 export async function removeDocument(
-  api: DomusafeApi,
+  api: VaultClient,
   familyId: string,
   itemId: string,
   version: number,
@@ -473,7 +473,7 @@ function requireMemory(): OpenMemory {
   return memory;
 }
 
-async function recoverAccount(api: DomusafeApi, accountId: string, phrase: string) {
+async function recoverAccount(api: VaultClient, accountId: string, phrase: string) {
   let entropy: Bytes;
   try {
     entropy = recoveryEntropyFromPhrase(phrase);
@@ -504,7 +504,7 @@ async function recoverAccount(api: DomusafeApi, accountId: string, phrase: strin
 }
 
 async function saveDevice(
-  api: DomusafeApi,
+  api: VaultClient,
   store: DeviceStore,
   accountId: string,
   accountKey: Bytes,
@@ -528,7 +528,7 @@ async function saveDevice(
 }
 
 async function ensureScope(
-  api: DomusafeApi,
+  api: VaultClient,
   familyId: string,
   accountId: string,
   privateKey: CryptoKey,

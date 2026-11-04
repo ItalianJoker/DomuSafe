@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "description": "Zod schemas shared by API and web: conventions, problem details, permissions, resource contracts.",
   "exports": {
     ".": {

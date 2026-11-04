@@ -4,7 +4,7 @@ import { can, type FamilyVaultSection, type VaultPayload } from '@domusafe/contr
 import type { Bytes } from '@domusafe/crypto';
 import { fromBase64Url } from '@domusafe/crypto';
 import { hasFeature, type PlanTier } from '@domusafe/plans';
-import { useApi } from '@/components/api-context.js';
+import { createVaultClient } from './client.js';
 import { Field, PageHeader } from '@/components/shell/page.js';
 import { Button } from '@/components/ui/button.js';
 import { Input } from '@/components/ui/input.js';
@@ -69,7 +69,7 @@ function stageForPin(state: 'not_set' | 'active' | 'locked'): Stage {
  * @returns The section.
  */
 export function VaultPage(props: { readonly me: Me; readonly familyId: string }) {
-  const api = useApi();
+  const api = useMemo(() => createVaultClient(), []);
   const family = props.me.families.find((item) => item.id === props.familyId);
   const plan: PlanTier = family?.plan ?? 'free';
   const role = family?.role;
