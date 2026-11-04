@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button.js';
 import { ApiProblem } from '@/lib/api.js';
 import { m } from '@/paraglide/messages.js';
 import { bloodLabel, mobilityLabel, speciesLabel, telHref } from '@/features/personale/model.js';
+import { readingDeviceLabel } from '@/features/print/device-label.js';
 
 function shutoffLabel(kind: 'water' | 'gas' | 'electricity'): string {
   switch (kind) {
@@ -58,7 +59,11 @@ export function PublicHousePage(props: { readonly token: string }) {
     queryKey: ['public-house', props.token] as const,
     enabled: valid,
     retry: false,
-    queryFn: () => api.getPublicHousePage(props.token),
+    queryFn: () =>
+      api.getPublicHousePage(
+        props.token,
+        readingDeviceLabel({ userAgent: navigator.userAgent, maxTouchPoints: navigator.maxTouchPoints }),
+      ),
   });
   if (!valid || query.isError) {
     return <Outcome error={query.error} />;
@@ -132,7 +137,11 @@ export function PublicRescuePage(props: { readonly token: string }) {
     queryKey: ['public-rescue', props.token] as const,
     enabled: valid,
     retry: false,
-    queryFn: () => api.getPublicRescueSheet(props.token),
+    queryFn: () =>
+      api.getPublicRescueSheet(
+        props.token,
+        readingDeviceLabel({ userAgent: navigator.userAgent, maxTouchPoints: navigator.maxTouchPoints }),
+      ),
   });
   if (!valid || query.isError) {
     return <Outcome error={query.error} />;

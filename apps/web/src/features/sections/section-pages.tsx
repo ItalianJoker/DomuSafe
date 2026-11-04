@@ -1,14 +1,5 @@
-import { EmptySection, PageHeader } from '@/components/shell/page.js';
+import { PageHeader } from '@/components/shell/page.js';
 import { m } from '@/paraglide/messages.js';
-
-/**
- * Extra section before kitchen and finance exist.
- *
- * @returns The empty section.
- */
-export function ExtraPage() {
-  return <EmptySection title={m.extraTitle()} body={m.extraBody()} />;
-}
 
 /**
  * Short guide to the shell that is already usable.

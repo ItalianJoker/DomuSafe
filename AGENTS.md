@@ -43,3 +43,4 @@ pnpm verify
 | Formati cifrati e vettori               | `packages/crypto/src/formats.ts`, `packages/crypto/test/vectors.ts`     |
 | Hook di autenticazione e autorizzazione | `apps/api/src/plugins/access.ts`                                        |
 | Interfaccia, token, shell               | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`             |
+| Registro letture dei codici pubblici    | `packages/db/migrations/0013_publication_readings.sql`                  |

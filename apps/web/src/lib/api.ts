@@ -20,6 +20,7 @@ import {
   rescueCardSchema,
   rescueSheetSchema,
   publicationListSchema,
+  publicationReadingListSchema,
   publicationSchema,
   publicHousePageSchema,
   publicRescueSheetSchema,
@@ -67,8 +68,10 @@ import {
   type Pet,
   type PhoneLine,
   type PutRescueRequest,
+  type DeviceLabel,
   type Publication,
   type PublicationKind,
+  type PublicationReading,
   type PublicHousePage,
   type PublicRescueSheet,
   type RescueCard,
@@ -583,19 +586,41 @@ export interface DomusafeApi {
     version: number,
   ): Promise<Publication>;
   /**
+   * Reading log of the public codes, newest first.
+   *
+   * Preconditions: the caller can edit the house and the plan is Premium or the trial.
+   * Postconditions: lower plans and other roles are refused by the server.
+   * Data contract: each item is the time, the code kind and the device label.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns The readings.
+   */
+  listPublicationReadings(familyId: string, houseId: string): Promise<readonly PublicationReading[]>;
+  /**
    * Public house page. No session is required.
    *
+   * Preconditions: `deviceLabel` is a closed label, or null when the browser did not send one.
+   * Postconditions: the server records the opening.
+   * Data contract: shutoffs, tradespeople and the primary contact.
+   *
    * @param token - Token from the printed address.
-   * @returns Shutoffs, tradespeople and the primary contact.
+   * @param deviceLabel - Short device label, or null.
+   * @returns The public house page.
    */
-  getPublicHousePage(token: string): Promise<PublicHousePage>;
+  getPublicHousePage(token: string, deviceLabel: DeviceLabel | null): Promise<PublicHousePage>;
   /**
    * Public rescue sheet. No session is required.
    *
+   * Preconditions: `deviceLabel` is a closed label, or null when the browser did not send one.
+   * Postconditions: the server records the opening.
+   * Data contract: the rescue sheet of that house.
+   *
    * @param token - Token from the printed address.
-   * @returns The rescue sheet of that house.
+   * @param deviceLabel - Short device label, or null.
+   * @returns The rescue sheet.
    */
-  getPublicRescueSheet(token: string): Promise<PublicRescueSheet>;
+  getPublicRescueSheet(token: string, deviceLabel: DeviceLabel | null): Promise<PublicRescueSheet>;
   /**
    * Animals of one house.
    *
@@ -862,6 +887,13 @@ function parseBody<T>(schema: z.ZodType<T>, data: unknown, response: Response): 
     throw new Error(`Unexpected response from ${response.url}: ${parsed.error.message}`);
   }
   return parsed.data;
+}
+
+function deviceHeaders(deviceLabel: DeviceLabel | null): { readonly [HEADERS.device]?: DeviceLabel } {
+  if (deviceLabel === null) {
+    return {};
+  }
+  return { [HEADERS.device]: deviceLabel };
 }
 
 async function unwrap<T>(schema: z.ZodType<T>, result: CallResult): Promise<T> {
@@ -1281,15 +1313,23 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
       );
       return unwrap(publicationSchema, result);
     },
-    async getPublicHousePage(token) {
+    async listPublicationReadings(familyId, houseId) {
+      const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publication-readings', {
+        params: { path: { familyId, houseId } },
+      });
+      return (await unwrap(publicationReadingListSchema, result)).items;
+    },
+    async getPublicHousePage(token, deviceLabel) {
       const result = await client.GET('/api/v1/public/house-pages/{token}', {
         params: { path: { token } },
+        headers: deviceHeaders(deviceLabel),
       });
       return unwrap(publicHousePageSchema, result);
     },
-    async getPublicRescueSheet(token) {
+    async getPublicRescueSheet(token, deviceLabel) {
       const result = await client.GET('/api/v1/public/rescue-sheets/{token}', {
         params: { path: { token } },
+        headers: deviceHeaders(deviceLabel),
       });
       return unwrap(publicRescueSheetSchema, result);
     },

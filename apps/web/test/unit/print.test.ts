@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Contact, RescueSheet, Shutoff } from '@domusafe/contracts';
 import { describe, expect, it } from 'vitest';
+import { readingDeviceLabel } from '../../src/features/print/device-label.js';
 import {
   currentPublication,
   essentialPeople,
@@ -152,9 +153,51 @@ describe('print sheets', () => {
     const messages = JSON.parse(text) as Record<string, string>;
     const banned = /\b(?:QR|A4|A5|ICE|IBAN|PIN)\b/u;
     for (const key of Object.keys(messages)) {
-      if (key.startsWith('print') || key.startsWith('public')) {
+      if (key.startsWith('print') || key.startsWith('public') || key.startsWith('readings')) {
         expect(messages[key], key).not.toMatch(banned);
       }
     }
+  });
+});
+
+describe('device label', () => {
+  it('sends a short label and nothing when the browser string is empty', () => {
+    expect(readingDeviceLabel({ userAgent: '   ', maxTouchPoints: 0 })).toBeNull();
+    expect(
+      readingDeviceLabel({
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+        maxTouchPoints: 5,
+      }),
+    ).toBe('Telefono');
+    expect(
+      readingDeviceLabel({
+        userAgent: 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)',
+        maxTouchPoints: 5,
+      }),
+    ).toBe('Tablet');
+    expect(
+      readingDeviceLabel({
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        maxTouchPoints: 0,
+      }),
+    ).toBe('Computer');
+    expect(
+      readingDeviceLabel({
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+        maxTouchPoints: 5,
+      }),
+    ).toBe('Tablet');
+    expect(
+      readingDeviceLabel({
+        userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel) Mobile',
+        maxTouchPoints: 5,
+      }),
+    ).toBe('Telefono');
+    expect(
+      readingDeviceLabel({
+        userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-T870)',
+        maxTouchPoints: 5,
+      }),
+    ).toBe('Tablet');
   });
 });

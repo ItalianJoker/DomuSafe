@@ -77,6 +77,7 @@ function unusedApi(partial: Partial<DomusafeApi>): DomusafeApi {
     listPublications: fail,
     ensurePublication: fail,
     revokePublication: fail,
+    listPublicationReadings: fail,
     getPublicHousePage: fail,
     getPublicRescueSheet: fail,
     listPets: fail,

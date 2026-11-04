@@ -68,7 +68,9 @@ const PublicHousePage = lazy(() =>
 const PublicRescuePage = lazy(() =>
   import('@/features/print/public-pages.js').then((mod) => ({ default: mod.PublicRescuePage })),
 );
-const ExtraPage = lazy(() => sections().then((mod) => ({ default: mod.ExtraPage })));
+const ReadingsPage = lazy(() =>
+  import('@/features/readings/readings-page.js').then((mod) => ({ default: mod.ReadingsPage })),
+);
 const GuidePage = lazy(() => sections().then((mod) => ({ default: mod.GuidePage })));
 const RescuePage = lazy(() =>
   import('@/features/rescue/rescue-page.js').then((mod) => ({ default: mod.RescuePage })),
@@ -348,9 +350,11 @@ const extraRoute = createRoute({
   getParentRoute: () => houseRoute,
   path: '/extra',
   component: function ExtraFrame() {
+    const { me } = houseRoute.useRouteContext();
+    const { familyId, houseId } = houseRoute.useParams();
     return (
       <Suspended>
-        <ExtraPage />
+        <ReadingsPage me={me} familyId={familyId} houseId={houseId} />
       </Suspended>
     );
   },

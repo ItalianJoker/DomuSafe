@@ -132,6 +132,7 @@ export const HEADERS = {
   idempotencyKey: 'idempotency-key',
   csrf: 'x-domusafe-request',
   requestId: 'x-request-id',
+  device: 'x-domusafe-device',
 } as const;
 
 /**

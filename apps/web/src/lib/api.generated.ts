@@ -808,6 +808,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/families/{familyId}/houses/{houseId}/publication-readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reading log of the public codes of one house, newest first */
+        get: operations["print.listPublicationReadings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/house-pages/{token}": {
         parameters: {
             query?: never;
@@ -2210,6 +2227,19 @@ export interface components {
         CreatePublicationRequestInput: {
             /** @enum {string} */
             kind: "house_page" | "rescue_sheet";
+        };
+        PublicationReadingInput: {
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            occurredAt: string;
+            /** @enum {string} */
+            kind: "house_page" | "rescue_sheet";
+            deviceLabel: ("Telefono" | "Tablet" | "Computer") | null;
+        };
+        PublicationReadingListInput: {
+            items: components["schemas"]["PublicationReadingInput"][];
         };
         PublicHousePageInput: {
             houseName: string;
@@ -3842,6 +3872,19 @@ export interface components {
         CreatePublicationRequest: {
             /** @enum {string} */
             kind: "house_page" | "rescue_sheet";
+        };
+        PublicationReading: {
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            occurredAt: string;
+            /** @enum {string} */
+            kind: "house_page" | "rescue_sheet";
+            deviceLabel: ("Telefono" | "Tablet" | "Computer") | null;
+        };
+        PublicationReadingList: {
+            items: components["schemas"]["PublicationReading"][];
         };
         PublicHousePage: {
             houseName: string;
@@ -10425,10 +10468,65 @@ export interface operations {
             };
         };
     };
-    "print.getPublicHousePage": {
+    "print.listPublicationReadings": {
         parameters: {
             query?: never;
             header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationReadingList"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "print.getPublicHousePage": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Short device label. Only Telefono, Tablet and Computer are stored. */
+                "x-domusafe-device"?: string;
+            };
             path: {
                 token: string;
             };
@@ -10486,7 +10584,10 @@ export interface operations {
     "print.getPublicRescueSheet": {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Short device label. Only Telefono, Tablet and Computer are stored. */
+                "x-domusafe-device"?: string;
+            };
             path: {
                 token: string;
             };

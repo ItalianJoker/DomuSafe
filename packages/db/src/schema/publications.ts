@@ -25,3 +25,18 @@ export const publications = pgTable('publications', {
   lastScannedAt: instant('last_scanned_at'),
   scanCount: integer('scan_count').notNull().default(0),
 });
+
+/**
+ * One opening of a public code.
+ * The stored facts are the time, the code kind and an optional device label.
+ */
+export const publicationReadings = pgTable('publication_readings', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  familyId: uuid('family_id').notNull(),
+  houseId: uuid('house_id').notNull(),
+  occurredAt: instant('occurred_at').notNull().defaultNow(),
+  kind: publicationKindEnum('kind').notNull(),
+  deviceLabel: text('device_label'),
+});
