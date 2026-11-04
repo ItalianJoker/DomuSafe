@@ -67,7 +67,21 @@ export const tenancyRoutes: FastifyPluginAsyncZod<{ tenancy: TenancyService }> =
         response: { 200: familyListSchema, ...problemResponses(401) },
       },
     },
-    async (request) => ({ items: await tenancy.listFamilies(caller(request).id) }),
+    async (request) => ({
+      items: (await tenancy.listFamilies(caller(request).id)).map((family) => ({
+        id: family.id,
+        name: family.name,
+        ownerAccountId: family.ownerAccountId,
+        timezone: family.timezone,
+        baseCurrency: family.baseCurrency,
+        locale: family.locale,
+        plan: family.plan,
+        role: family.role,
+        version: family.version,
+        createdAt: family.createdAt,
+        updatedAt: family.updatedAt,
+      })),
+    }),
   );
 
   app.post(

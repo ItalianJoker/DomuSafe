@@ -17,6 +17,8 @@ import { houseRoutes } from './modules/house/routes.js';
 import { createHouseService } from './modules/house/service.js';
 import { personaleRoutes } from './modules/personale/routes.js';
 import { createPersonaleService } from './modules/personale/service.js';
+import { vaultRoutes } from './modules/vault/routes.js';
+import { createVaultService } from './modules/vault/service.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import { createIdentityService } from './modules/identity/service.js';
 import { systemRoutes } from './modules/system/routes.js';
@@ -67,6 +69,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const tenancy = createTenancyService(db);
   const house = createHouseService(db);
   const personale = createPersonaleService(db);
+  const vault = createVaultService(db, store, secrets);
   const identity = createIdentityService(db, tenancy);
   const auth = createAuth({
     db,
@@ -89,8 +92,14 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
           '*.password',
           '*.pin',
           '*.verifier',
+          '*.recoveryVerifier',
+          '*.serverShare',
           '*.token',
           '*.secret',
+          '*.wrappedAccountKey',
+          '*.wrappedVaultPrivateKey',
+          '*.recoverySealedVaultKey',
+          '*.grant',
         ],
         remove: true,
       },
@@ -162,6 +171,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(tenancyRoutes, { tenancy });
   await app.register(houseRoutes, { house });
   await app.register(personaleRoutes, { personale });
+  await app.register(vaultRoutes, { vault });
 
   app.addHook('onClose', async () => {
     if (deps.pool === undefined) {

@@ -206,7 +206,15 @@ export const meSchema = z
     lastFamilyId: uuidSchema.nullable(),
     lastHouseId: uuidSchema.nullable(),
     families: z.array(
-      z.object({ id: uuidSchema, name: z.string(), role: memberRoleSchema, plan: planTierSchema }).strict(),
+      z
+        .object({
+          id: uuidSchema,
+          name: z.string(),
+          role: memberRoleSchema,
+          plan: planTierSchema,
+          vaultFamily: z.boolean(),
+        })
+        .strict(),
     ),
   })
   .strict()

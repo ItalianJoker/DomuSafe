@@ -6058,13 +6058,17 @@
                 },
                 "plan": {
                   "$ref": "#/components/schemas/PlanTierInput"
+                },
+                "vaultFamily": {
+                  "type": "boolean"
                 }
               },
               "required": [
                 "id",
                 "name",
                 "role",
-                "plan"
+                "plan",
+                "vaultFamily"
               ],
               "additionalProperties": false
             }
@@ -6136,6 +6140,773 @@
             ]
           }
         },
+        "additionalProperties": false
+      },
+      "AccountKeysInput": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "const": "ready"
+          },
+          "publicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "vaultPublicKey": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wrappedVaultPrivateKey": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recoverySealedVaultKey": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-z]+( [a-z]+){5}$"
+          }
+        },
+        "required": [
+          "state",
+          "publicKey",
+          "wrappedPrivateKey",
+          "recoveryPublicKey",
+          "vaultPublicKey",
+          "wrappedVaultPrivateKey",
+          "recoverySealedVaultKey",
+          "fingerprint"
+        ],
+        "additionalProperties": false
+      },
+      "MissingAccountKeysInput": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "const": "missing"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "PutAccountKeysRequestInput": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedAccountKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryVerifierSha256": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-z]+( [a-z]+){5}$"
+          }
+        },
+        "required": [
+          "publicKey",
+          "wrappedPrivateKey",
+          "recoveryPublicKey",
+          "recoveryWrappedPrivateKey",
+          "recoveryWrappedAccountKey",
+          "recoveryVerifierSha256",
+          "fingerprint"
+        ],
+        "additionalProperties": false
+      },
+      "DeviceInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "android",
+              "ios",
+              "windows",
+              "macos",
+              "linux",
+              "other"
+            ]
+          },
+          "wrappedAccountKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "pairedVia": {
+            "type": "string",
+            "enum": [
+              "signup",
+              "pairing",
+              "recovery"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "platform",
+          "wrappedAccountKey",
+          "pairedVia"
+        ],
+        "additionalProperties": false
+      },
+      "RegisterDeviceRequestInput": {
+        "$ref": "#/components/schemas/DeviceInput"
+      },
+      "VerifyRecoveryRequestInput": {
+        "type": "object",
+        "properties": {
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "verifier"
+        ],
+        "additionalProperties": false
+      },
+      "RecoveryMaterialInput": {
+        "type": "object",
+        "properties": {
+          "recoveryPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedAccountKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "recoveryPublicKey",
+          "recoveryWrappedPrivateKey",
+          "recoveryWrappedAccountKey"
+        ],
+        "additionalProperties": false
+      },
+      "VaultPinStatusInput": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_set",
+              "active",
+              "locked"
+            ]
+          },
+          "salt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kdf": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "memoryKib": {
+                    "type": "number",
+                    "const": 65536
+                  },
+                  "iterations": {
+                    "type": "number",
+                    "const": 3
+                  },
+                  "parallelism": {
+                    "type": "number",
+                    "const": 1
+                  }
+                },
+                "required": [
+                  "memoryKib",
+                  "iterations",
+                  "parallelism"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "remainingAttempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "pinGeneration": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "salt",
+          "kdf",
+          "remainingAttempts",
+          "pinGeneration"
+        ],
+        "additionalProperties": false
+      },
+      "SetVaultPinRequestInput": {
+        "type": "object",
+        "properties": {
+          "salt": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "kdf": {
+            "type": "object",
+            "properties": {
+              "memoryKib": {
+                "type": "number",
+                "const": 65536
+              },
+              "iterations": {
+                "type": "number",
+                "const": 3
+              },
+              "parallelism": {
+                "type": "number",
+                "const": 1
+              }
+            },
+            "required": [
+              "memoryKib",
+              "iterations",
+              "parallelism"
+            ],
+            "additionalProperties": false
+          },
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "serverShare": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedVaultPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "pinGeneration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "vaultPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoverySealedVaultKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "salt",
+          "kdf",
+          "verifier",
+          "serverShare",
+          "wrappedVaultPrivateKey",
+          "pinGeneration"
+        ],
+        "additionalProperties": false
+      },
+      "UnlockVaultRequestInput": {
+        "type": "object",
+        "properties": {
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "verifier"
+        ],
+        "additionalProperties": false
+      },
+      "UnlockVaultResponseInput": {
+        "type": "object",
+        "properties": {
+          "serverShare": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "unlockedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "pinGeneration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "serverShare",
+          "unlockedUntil",
+          "pinGeneration"
+        ],
+        "additionalProperties": false
+      },
+      "ResetVaultPinRequestInput": {
+        "type": "object",
+        "properties": {
+          "salt": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "kdf": {
+            "type": "object",
+            "properties": {
+              "memoryKib": {
+                "type": "number",
+                "const": 65536
+              },
+              "iterations": {
+                "type": "number",
+                "const": 3
+              },
+              "parallelism": {
+                "type": "number",
+                "const": 1
+              }
+            },
+            "required": [
+              "memoryKib",
+              "iterations",
+              "parallelism"
+            ],
+            "additionalProperties": false
+          },
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "serverShare": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedVaultPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "pinGeneration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "vaultPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoverySealedVaultKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryVerifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "salt",
+          "kdf",
+          "verifier",
+          "serverShare",
+          "wrappedVaultPrivateKey",
+          "pinGeneration",
+          "recoveryVerifier"
+        ],
+        "additionalProperties": false
+      },
+      "VaultScopeInput": {
+        "type": "object",
+        "properties": {
+          "scopeId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grant": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "scopeId",
+          "version",
+          "grant"
+        ],
+        "additionalProperties": false
+      },
+      "PutVaultScopeRequestInput": {
+        "type": "object",
+        "properties": {
+          "scopeId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "grant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "scopeId",
+          "grant"
+        ],
+        "additionalProperties": false
+      },
+      "VaultItemInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "section": {
+            "type": "string",
+            "enum": [
+              "family_accounts",
+              "mortgages",
+              "credit_protection",
+              "insurance_policies",
+              "bills_and_cancellations",
+              "digital_legacy"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "sealed": {
+            "type": "object",
+            "properties": {
+              "scopeId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              "keyVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "dek": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              "payload": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              }
+            },
+            "required": [
+              "scopeId",
+              "keyVersion",
+              "dek",
+              "payload"
+            ],
+            "additionalProperties": false
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "section",
+          "version",
+          "sealed",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "VaultItemPageInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VaultItemInput"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateVaultItemRequestInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "section": {
+            "type": "string",
+            "enum": [
+              "family_accounts",
+              "mortgages",
+              "credit_protection",
+              "insurance_policies",
+              "bills_and_cancellations",
+              "digital_legacy"
+            ]
+          },
+          "sealed": {
+            "type": "object",
+            "properties": {
+              "scopeId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              "keyVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "dek": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              "payload": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              }
+            },
+            "required": [
+              "scopeId",
+              "keyVersion",
+              "dek",
+              "payload"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "section",
+          "sealed"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateVaultItemRequestInput": {
+        "type": "object",
+        "properties": {
+          "sealed": {
+            "type": "object",
+            "properties": {
+              "scopeId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              "keyVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "dek": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              "payload": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              }
+            },
+            "required": [
+              "scopeId",
+              "keyVersion",
+              "dek",
+              "payload"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "sealed"
+        ],
         "additionalProperties": false
       },
       "HealthStatusInput": {
@@ -12219,13 +12990,17 @@
                 },
                 "plan": {
                   "$ref": "#/components/schemas/PlanTier"
+                },
+                "vaultFamily": {
+                  "type": "boolean"
                 }
               },
               "required": [
                 "id",
                 "name",
                 "role",
-                "plan"
+                "plan",
+                "vaultFamily"
               ],
               "additionalProperties": false
             }
@@ -12297,6 +13072,773 @@
             ]
           }
         },
+        "additionalProperties": false
+      },
+      "AccountKeys": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "const": "ready"
+          },
+          "publicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "vaultPublicKey": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wrappedVaultPrivateKey": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recoverySealedVaultKey": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-z]+( [a-z]+){5}$"
+          }
+        },
+        "required": [
+          "state",
+          "publicKey",
+          "wrappedPrivateKey",
+          "recoveryPublicKey",
+          "vaultPublicKey",
+          "wrappedVaultPrivateKey",
+          "recoverySealedVaultKey",
+          "fingerprint"
+        ],
+        "additionalProperties": false
+      },
+      "MissingAccountKeys": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "const": "missing"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "PutAccountKeysRequest": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedAccountKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryVerifierSha256": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-z]+( [a-z]+){5}$"
+          }
+        },
+        "required": [
+          "publicKey",
+          "wrappedPrivateKey",
+          "recoveryPublicKey",
+          "recoveryWrappedPrivateKey",
+          "recoveryWrappedAccountKey",
+          "recoveryVerifierSha256",
+          "fingerprint"
+        ],
+        "additionalProperties": false
+      },
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "android",
+              "ios",
+              "windows",
+              "macos",
+              "linux",
+              "other"
+            ]
+          },
+          "wrappedAccountKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "pairedVia": {
+            "type": "string",
+            "enum": [
+              "signup",
+              "pairing",
+              "recovery"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "platform",
+          "wrappedAccountKey",
+          "pairedVia"
+        ],
+        "additionalProperties": false
+      },
+      "RegisterDeviceRequest": {
+        "$ref": "#/components/schemas/Device"
+      },
+      "VerifyRecoveryRequest": {
+        "type": "object",
+        "properties": {
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "verifier"
+        ],
+        "additionalProperties": false
+      },
+      "RecoveryMaterial": {
+        "type": "object",
+        "properties": {
+          "recoveryPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryWrappedAccountKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "recoveryPublicKey",
+          "recoveryWrappedPrivateKey",
+          "recoveryWrappedAccountKey"
+        ],
+        "additionalProperties": false
+      },
+      "VaultPinStatus": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_set",
+              "active",
+              "locked"
+            ]
+          },
+          "salt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kdf": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "memoryKib": {
+                    "type": "number",
+                    "const": 65536
+                  },
+                  "iterations": {
+                    "type": "number",
+                    "const": 3
+                  },
+                  "parallelism": {
+                    "type": "number",
+                    "const": 1
+                  }
+                },
+                "required": [
+                  "memoryKib",
+                  "iterations",
+                  "parallelism"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "remainingAttempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "pinGeneration": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "salt",
+          "kdf",
+          "remainingAttempts",
+          "pinGeneration"
+        ],
+        "additionalProperties": false
+      },
+      "SetVaultPinRequest": {
+        "type": "object",
+        "properties": {
+          "salt": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "kdf": {
+            "type": "object",
+            "properties": {
+              "memoryKib": {
+                "type": "number",
+                "const": 65536
+              },
+              "iterations": {
+                "type": "number",
+                "const": 3
+              },
+              "parallelism": {
+                "type": "number",
+                "const": 1
+              }
+            },
+            "required": [
+              "memoryKib",
+              "iterations",
+              "parallelism"
+            ],
+            "additionalProperties": false
+          },
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "serverShare": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedVaultPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "pinGeneration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "vaultPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoverySealedVaultKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "salt",
+          "kdf",
+          "verifier",
+          "serverShare",
+          "wrappedVaultPrivateKey",
+          "pinGeneration"
+        ],
+        "additionalProperties": false
+      },
+      "UnlockVaultRequest": {
+        "type": "object",
+        "properties": {
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "verifier"
+        ],
+        "additionalProperties": false
+      },
+      "UnlockVaultResponse": {
+        "type": "object",
+        "properties": {
+          "serverShare": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "unlockedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "pinGeneration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "serverShare",
+          "unlockedUntil",
+          "pinGeneration"
+        ],
+        "additionalProperties": false
+      },
+      "ResetVaultPinRequest": {
+        "type": "object",
+        "properties": {
+          "salt": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "kdf": {
+            "type": "object",
+            "properties": {
+              "memoryKib": {
+                "type": "number",
+                "const": 65536
+              },
+              "iterations": {
+                "type": "number",
+                "const": 3
+              },
+              "parallelism": {
+                "type": "number",
+                "const": 1
+              }
+            },
+            "required": [
+              "memoryKib",
+              "iterations",
+              "parallelism"
+            ],
+            "additionalProperties": false
+          },
+          "verifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "serverShare": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "wrappedVaultPrivateKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "pinGeneration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "vaultPublicKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoverySealedVaultKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          },
+          "recoveryVerifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "salt",
+          "kdf",
+          "verifier",
+          "serverShare",
+          "wrappedVaultPrivateKey",
+          "pinGeneration",
+          "recoveryVerifier"
+        ],
+        "additionalProperties": false
+      },
+      "VaultScope": {
+        "type": "object",
+        "properties": {
+          "scopeId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grant": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "scopeId",
+          "version",
+          "grant"
+        ],
+        "additionalProperties": false
+      },
+      "PutVaultScopeRequest": {
+        "type": "object",
+        "properties": {
+          "scopeId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "grant": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]*$",
+            "description": "Bytes encoded as base64url without padding"
+          }
+        },
+        "required": [
+          "scopeId",
+          "grant"
+        ],
+        "additionalProperties": false
+      },
+      "VaultItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "section": {
+            "type": "string",
+            "enum": [
+              "family_accounts",
+              "mortgages",
+              "credit_protection",
+              "insurance_policies",
+              "bills_and_cancellations",
+              "digital_legacy"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "sealed": {
+            "type": "object",
+            "properties": {
+              "scopeId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              "keyVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "dek": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              "payload": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              }
+            },
+            "required": [
+              "scopeId",
+              "keyVersion",
+              "dek",
+              "payload"
+            ],
+            "additionalProperties": false
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "section",
+          "version",
+          "sealed",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "VaultItemPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VaultItem"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateVaultItemRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "section": {
+            "type": "string",
+            "enum": [
+              "family_accounts",
+              "mortgages",
+              "credit_protection",
+              "insurance_policies",
+              "bills_and_cancellations",
+              "digital_legacy"
+            ]
+          },
+          "sealed": {
+            "type": "object",
+            "properties": {
+              "scopeId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              "keyVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "dek": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              "payload": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              }
+            },
+            "required": [
+              "scopeId",
+              "keyVersion",
+              "dek",
+              "payload"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "section",
+          "sealed"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateVaultItemRequest": {
+        "type": "object",
+        "properties": {
+          "sealed": {
+            "type": "object",
+            "properties": {
+              "scopeId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "description": "UUIDv7 generated by the client"
+              },
+              "keyVersion": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "dek": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              },
+              "payload": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]*$",
+                "description": "Bytes encoded as base64url without padding"
+              }
+            },
+            "required": [
+              "scopeId",
+              "keyVersion",
+              "dek",
+              "payload"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "sealed"
+        ],
         "additionalProperties": false
       },
       "HealthStatus": {
@@ -20730,6 +22272,1331 @@
             }
           },
           "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/keys": {
+      "get": {
+        "operationId": "vault.getKeys",
+        "summary": "Wrapped account keys, without the recovery copies",
+        "tags": [
+          "vault"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MissingAccountKeys"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AccountKeys"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "vault.putKeys",
+        "summary": "Store the account keys once, after the recovery phrase is confirmed",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutAccountKeysRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MissingAccountKeys"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AccountKeys"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/devices": {
+      "post": {
+        "operationId": "vault.registerDevice",
+        "summary": "Register a device and the account key wrapped for it",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeviceRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/devices/{deviceId}": {
+      "get": {
+        "operationId": "vault.getDevice",
+        "summary": "Wrapped account key of one device",
+        "tags": [
+          "vault"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            "in": "path",
+            "name": "deviceId",
+            "required": true,
+            "description": "UUIDv7 generated by the client"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/recovery/verify": {
+      "post": {
+        "operationId": "vault.verifyRecovery",
+        "summary": "Return the recovery-wrapped keys after the phrase verifier matches",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyRecoveryRequestInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryMaterial"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/vault-pin": {
+      "get": {
+        "operationId": "vault.getPin",
+        "summary": "Salt, cost and state of the vault code",
+        "tags": [
+          "vault"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultPinStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "vault.setPin",
+        "summary": "Set or change the vault code",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetVaultPinRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultPinStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/vault-pin/unlock": {
+      "post": {
+        "operationId": "vault.unlock",
+        "summary": "Check the code verifier and open the vault session",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnlockVaultRequestInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlockVaultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/vault-pin/lock": {
+      "post": {
+        "operationId": "vault.lock",
+        "summary": "Close the vault session",
+        "tags": [
+          "vault"
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response"
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/vault-pin/reset": {
+      "post": {
+        "operationId": "vault.resetPin",
+        "summary": "Set a new vault code with the recovery verifier",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetVaultPinRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultPinStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/vault/scope": {
+      "get": {
+        "operationId": "vault.getScope",
+        "summary": "Family vault scope and the caller grant",
+        "tags": [
+          "vault"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultScope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "vault.putScope",
+        "summary": "Create the family vault scope and grant, once",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutVaultScopeRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultScope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/vault/items": {
+      "get": {
+        "operationId": "vault.listItems",
+        "summary": "Ciphertext of the family vault documents",
+        "tags": [
+          "vault"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "in": "query",
+            "name": "cursor",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "family_accounts",
+                "mortgages",
+                "credit_protection",
+                "insurance_policies",
+                "bills_and_cancellations",
+                "digital_legacy"
+              ]
+            },
+            "in": "query",
+            "name": "section",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultItemPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "vault.createItem",
+        "summary": "Store one encrypted family document",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVaultItemRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/vault/items/{itemId}": {
+      "patch": {
+        "operationId": "vault.updateItem",
+        "summary": "Replace the envelope of one family document",
+        "tags": [
+          "vault"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVaultItemRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            "in": "path",
+            "name": "itemId",
+            "required": true,
+            "description": "UUIDv7 generated by the client"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "vault.deleteItem",
+        "summary": "Move one family document to the trash",
+        "tags": [
+          "vault"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            "in": "path",
+            "name": "itemId",
+            "required": true,
+            "description": "UUIDv7 generated by the client"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response"
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
             "description": "Default Response",
             "content": {
               "application/json": {

@@ -5,3 +5,4 @@ export * from './personale.js';
 export * from './identity.js';
 export * from './keys.js';
 export * from './tenancy.js';
+export * from './vault.js';

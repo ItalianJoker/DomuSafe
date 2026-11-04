@@ -70,6 +70,7 @@ docs/adr/              decisioni architetturali
 | `tenancy`   | famiglie, case, membri                       | limiti di piano sotto `SELECT … FOR UPDATE`, revisioni delle case, rotazione delle chiavi segnalata alla rimozione o riduzione di un membro |
 | `house`     | manuale, chiusure, utenze, manutenzioni      | Casa della casa aperta, senza funzione di piano                                                                                             |
 | `personale` | residenti, soccorso, animali, servizi, tasse | scheda di soccorso leggibile; tasse e conti personali solo con Premium o prova                                                              |
+| `vault`     | codice, frase di recupero, documenti cifrati | Cassaforte di famiglia: Argon2id e buste nel browser; il server conserva solo testo cifrato. Avanzato, Premium o prova                      |
 
 I moduli successivi seguono l'ordine della fase 3 §12.
 

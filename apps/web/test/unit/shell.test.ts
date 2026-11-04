@@ -24,7 +24,7 @@ function me(patch: Partial<Me> = {}): Me {
     primaryFamilyId: null,
     lastFamilyId: null,
     lastHouseId: null,
-    families: [{ id: FAMILY, name: 'Rossi', role: 'admin', plan: 'free' }],
+    families: [{ id: FAMILY, name: 'Rossi', role: 'admin', plan: 'free', vaultFamily: true }],
     ...patch,
   };
 }

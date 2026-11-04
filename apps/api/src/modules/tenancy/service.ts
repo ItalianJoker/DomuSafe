@@ -46,6 +46,11 @@ function planView(plan: EffectivePlan): Family['plan'] {
   };
 }
 
+/** A family plus the caller's family-vault concession. List routes strip the concession before responding. */
+export interface FamilyMembership extends Family {
+  readonly vaultFamily: boolean;
+}
+
 function familyView(row: repo.FamilyRow, role: MemberRole, plan: EffectivePlan): Family {
   return {
     id: row.id,
@@ -208,13 +213,16 @@ export function createTenancyService(db: Database, now: () => Date = () => new D
      * @param accountId - Authenticated account.
      * @returns Families ordered by name.
      */
-    async listFamilies(accountId: string): Promise<Family[]> {
+    async listFamilies(accountId: string): Promise<FamilyMembership[]> {
       return withContext(db, { principal: account(accountId) }, async (tx) => {
         const rows = await repo.listAccountFamilies(tx, accountId);
-        const out: Family[] = [];
+        const out: FamilyMembership[] = [];
         for (const row of rows) {
           await setFamilyContext(tx, account(accountId), row.family.id);
-          out.push(familyView(row.family, row.membership.role, await planOf(tx, row.family)));
+          out.push({
+            ...familyView(row.family, row.membership.role, await planOf(tx, row.family)),
+            vaultFamily: row.membership.vaultFamily,
+          });
         }
         return out;
       });
