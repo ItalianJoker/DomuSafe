@@ -165,6 +165,51 @@ export function rescueQuery(api: DomusafeApi, familyId: string, residentId: stri
 }
 
 /**
+ * Query of the «Chi sono» sheet.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @returns Options for TanStack Query.
+ */
+export function aboutQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['about', familyId, residentId] as const,
+    queryFn: () => api.getAbout(familyId, residentId),
+  });
+}
+
+/**
+ * Query of the vital parameters diary.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Person id.
+ * @returns Options for TanStack Query.
+ */
+export function vitalsQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['vitals', familyId, residentId] as const,
+    queryFn: () => api.listVitals(familyId, residentId),
+  });
+}
+
+/**
+ * Query of caregiver handovers for one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function handoversQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['handovers', familyId, houseId] as const,
+    queryFn: () => api.listHandovers(familyId, houseId),
+  });
+}
+
+/**
  * Query of the printed codes of one house.
  *
  * @param api - Shell API.

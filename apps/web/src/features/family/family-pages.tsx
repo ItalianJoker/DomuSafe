@@ -15,6 +15,7 @@ import { familyQuery, meKey, membersQuery } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, setLocale } from '@/paraglide/runtime.js';
 import { FamilyForm } from './family-form.js';
+import { HandoverPanel } from './handover-panel.js';
 
 const EMPTY_CREATE: FamilyFormValues = {
   name: '',
@@ -126,6 +127,8 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string; 
   const role = props.me.families.find((item) => item.id === props.familyId)?.role;
   const canManage = role !== undefined && roleAllows(role, 'family.manage');
   const canReadMembers = role !== undefined && roleAllows(role, 'members.read');
+  const canReadCare = role !== undefined && roleAllows(role, 'care.read');
+  const canWriteCare = role !== undefined && roleAllows(role, 'care.write');
   const members = useQuery({ ...membersQuery(api, props.familyId), enabled: canReadMembers });
   const [values, setValues] = useState<FamilyFormValues | null>(null);
   const [issues, setIssues] = useState<FieldIssues | null>(null);
@@ -305,6 +308,15 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string; 
         </h2>
         <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{m.successionFamilyBody()}</p>
       </div>
+
+      {canReadCare ? (
+        <HandoverPanel
+          familyId={props.familyId}
+          houseId={props.houseId}
+          canWrite={canWriteCare}
+          guestMode={role === 'guest'}
+        />
+      ) : null}
 
       <Separator />
       <div>

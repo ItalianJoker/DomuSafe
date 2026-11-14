@@ -16,6 +16,8 @@ import { redactRequestUrl } from './http/redact.js';
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
 import { brandingRoutes } from './modules/branding/routes.js';
 import { createBrandingService } from './modules/branding/service.js';
+import { careRoutes } from './modules/care/routes.js';
+import { createCareService } from './modules/care/service.js';
 import { deadlineRoutes } from './modules/deadlines/routes.js';
 import { createDeadlinesService } from './modules/deadlines/service.js';
 import { houseRoutes } from './modules/house/routes.js';
@@ -81,6 +83,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const branding = createBrandingService(db, tenancy);
   const house = createHouseService(db);
   const inventory = createInventoryService(db);
+  const care = createCareService(db);
   const deadlines = createDeadlinesService(db);
   const personale = createPersonaleService(db);
   const print = createPrintService(db, branding);
@@ -198,6 +201,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(tenancyRoutes, { tenancy });
   await app.register(houseRoutes, { house });
   await app.register(inventoryRoutes, { inventory });
+  await app.register(careRoutes, { care });
   await app.register(deadlineRoutes, { deadlines });
   await app.register(personaleRoutes, { personale });
   await app.register(printRoutes, { print });

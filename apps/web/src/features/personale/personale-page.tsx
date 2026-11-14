@@ -2,19 +2,23 @@ import { useState } from 'react';
 import type { Me } from '@domusafe/contracts';
 import type { PlanTier } from '@domusafe/plans';
 import { PageHeader } from '@/components/shell/page.js';
+import { roleAllows } from '@/lib/permissions.js';
 import { m } from '@/paraglide/messages.js';
+import { AboutPanel } from './about-panel.js';
 import { AccountsPanel, TaxPanel } from './premium-panels.js';
 import { CardPanel } from './card-panel.js';
 import { personaleTabLabel, personaleTabs, type PersonaleTab } from './model.js';
 import { PetsPanel } from './pets-panel.js';
 import { ServicesPanel } from './services-panel.js';
+import { VitalsPanel } from './vitals-panel.js';
 
 /**
- * Personale section of the open house: rescue cards, services, animals, taxes and accounts.
+ * Personale section of the open house: rescue cards, Chi sono, parameters diary,
+ * services, animals, taxes and accounts.
  *
  * Preconditions: `houseId` belongs to `familyId`.
  * Postconditions: a role only sees the tabs its permissions allow. Taxes and accounts stay closed without Premium.
- * Data contract: edits are manual and persisted by the personale API.
+ * Data contract: edits are manual and persisted by the personale and care APIs.
  *
  * @param props - Account, family and the open house.
  * @returns The section.
@@ -31,6 +35,7 @@ export function PersonalePage(props: {
   const [tab, setTab] = useState<PersonaleTab>('card');
   const active = tabs.includes(tab) ? tab : (tabs[0] ?? 'card');
   const canWrite = role === 'admin' || role === 'parent';
+  const canWriteHealth = role !== undefined && roleAllows(role, 'health.write');
 
   if (tabs.length === 0) {
     return (
@@ -64,6 +69,12 @@ export function PersonalePage(props: {
       </div>
       {active === 'card' ? (
         <CardPanel familyId={props.familyId} houseId={props.houseId} plan={plan} canWrite={canWrite} />
+      ) : null}
+      {active === 'about' ? (
+        <AboutPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteHealth} />
+      ) : null}
+      {active === 'vitals' ? (
+        <VitalsPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteHealth} />
       ) : null}
       {active === 'services' ? (
         <ServicesPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWrite} />
