@@ -955,8 +955,8 @@ export function createFinanceService(db: Database) {
       body: PutFinSplitsRequest,
     ): Promise<FinTransaction> {
       return inFamily(tenant, async (tx) => {
-        const header = await repo.findTransaction(tx, tenant.familyId, transactionId);
-        if (header === null) {
+        const current = await repo.findTransaction(tx, tenant.familyId, transactionId);
+        if (current === null) {
           throw new ProblemError('not_found');
         }
         for (const share of body.shares) {
@@ -980,6 +980,12 @@ export function createFinanceService(db: Database) {
             settledTransactionId: share.settledTransactionId ?? null,
           })),
         );
+        const header = await repo.updateTransaction(tx, tenant.familyId, transactionId, current.version, {
+          updatedBy: tenant.accountId,
+        });
+        if (header === null) {
+          conflict(current.version);
+        }
         await trace(tx, tenant, {
           resourceType: 'fin_transactions',
           resourceId: header.id,
