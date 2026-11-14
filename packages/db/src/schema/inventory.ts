@@ -26,7 +26,7 @@ const tsvector = customType<{ data: string }>({
   },
 });
 
-/** A room of one house. Class C. */
+/** A room of one house. Class C. Day / evening / lights-off photos are optional small addresses. */
 export const rooms = pgTable('rooms', {
   id: uuid('id')
     .primaryKey()
@@ -43,6 +43,12 @@ export const rooms = pgTable('rooms', {
   floor: smallint('floor'),
   sortOrder: smallint('sort_order').notNull().default(0),
   notes: text('notes'),
+  photoDayDataUrl: text('photo_day_data_url'),
+  photoEveningDataUrl: text('photo_evening_data_url'),
+  photoLightsOffDataUrl: text('photo_lights_off_data_url'),
+  photoDayStorageRef: text('photo_day_storage_ref'),
+  photoEveningStorageRef: text('photo_evening_storage_ref'),
+  photoLightsOffStorageRef: text('photo_lights_off_storage_ref'),
   customFields: customFields(),
   deletedAt: instant('deleted_at'),
 });

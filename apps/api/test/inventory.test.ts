@@ -60,7 +60,41 @@ afterAll(async () => {
   await ctx.close();
 });
 
+const TINY_PNG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
 describe('inventory', () => {
+  it('stores day evening and lights-off room photo sets on the Free plan', async () => {
+    const room = await alice.create(houseUrl('/rooms'), {
+      name: 'Soggiorno foto',
+      kind: 'living',
+      photoDayDataUrl: TINY_PNG,
+      photoEveningStorageRef: 'family/demo/evening.webp',
+    });
+    expect(room.statusCode).toBe(201);
+    const created = room.json<Room>();
+    expect(created.photoDayDataUrl).toBe(TINY_PNG);
+    expect(created.photoEveningDataUrl).toBeNull();
+    expect(created.photoEveningStorageRef).toBe('family/demo/evening.webp');
+    expect(created.photoLightsOffDataUrl).toBeNull();
+
+    const patched = await alice.request('PATCH', houseUrl(`/rooms/${created.id}`), {
+      body: {
+        photoLightsOffDataUrl: TINY_PNG,
+        photoEveningDataUrl: TINY_PNG,
+        photoEveningStorageRef: null,
+      },
+      headers: { 'if-match': '"1"' },
+    });
+    expect(patched.statusCode).toBe(200);
+    const body = patched.json<Room>();
+    expect(body.photoDayDataUrl).toBe(TINY_PNG);
+    expect(body.photoEveningDataUrl).toBe(TINY_PNG);
+    expect(body.photoEveningStorageRef).toBeNull();
+    expect(body.photoLightsOffDataUrl).toBe(TINY_PNG);
+    expect(body.version).toBe(2);
+  });
+
   it('stores rooms, closets and items with full-text search on the Free plan', async () => {
     const room = await alice.create(houseUrl('/rooms'), {
       name: 'Cucina',
@@ -71,6 +105,9 @@ describe('inventory', () => {
     expect(room.headers.etag).toBe('"1"');
     const roomBody = room.json<Room>();
     expect(roomBody.name).toBe('Cucina');
+    expect(roomBody.photoDayDataUrl).toBeNull();
+    expect(roomBody.photoEveningDataUrl).toBeNull();
+    expect(roomBody.photoLightsOffDataUrl).toBeNull();
 
     const wardrobe = await alice.create(houseUrl('/storage-units'), {
       roomId: roomBody.id,
