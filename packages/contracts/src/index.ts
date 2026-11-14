@@ -1,4 +1,5 @@
 export * from './access.js';
+export * from './backup.js';
 export * from './branding.js';
 export * from './calendar.js';
 export * from './ics.js';

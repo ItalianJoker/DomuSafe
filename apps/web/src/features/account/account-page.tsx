@@ -19,12 +19,16 @@ const HostMarkPanel = lazy(() =>
   import('@/features/branding/host-mark-panel.js').then((mod) => ({ default: mod.HostMarkPanel })),
 );
 
+const BackupPanel = lazy(() =>
+  import('@/features/account/backup-panel.js').then((mod) => ({ default: mod.BackupPanel })),
+);
+
 /**
- * Account section: name, language, theme, the family host mark and sign-out.
+ * Account section: name, language, theme, family backup export, the family host mark and sign-out.
  *
  * Preconditions: `me` is the signed-in account and `familyId` is one of their families.
  * Postconditions: theme is saved on the account and painted immediately; sign-out clears the cache.
- * The host mark editor loads only for an administrator, and only after this section opens.
+ * The host mark editor and the backup panel load lazily so the shell gzip budget stays intact.
  *
  * @param props - Current account and the open family.
  * @returns The section.
@@ -87,7 +91,7 @@ export function AccountPage(props: { readonly me: Me; readonly familyId: string 
   }
 
   return (
-    <section className="grid max-w-md gap-6">
+    <section className="grid max-w-xl gap-6">
       <PageHeader title={m.accountTitle()} lead={m.accountLead()} />
       <div className="grid gap-1.5">
         <Label htmlFor="account-name">{m.displayNameLabel()}</Label>
@@ -131,6 +135,9 @@ export function AccountPage(props: { readonly me: Me; readonly familyId: string 
           <HostMarkPanel me={props.me} familyId={props.familyId} tier={membership.plan} />
         </Suspense>
       ) : null}
+      <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+        <BackupPanel me={props.me} familyId={props.familyId} />
+      </Suspense>
       {error === null ? null : (
         <p role="alert" className="text-[12px] text-destructive">
           {error}

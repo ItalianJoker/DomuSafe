@@ -1,3 +1,4 @@
+export * from './backup.js';
 export * from './bytes.js';
 export * from './errors.js';
 export * from './formats.js';
