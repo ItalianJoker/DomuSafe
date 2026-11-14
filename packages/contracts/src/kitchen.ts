@@ -1,10 +1,15 @@
 import { z } from 'zod';
-import { instantSchema, pageSchema, uuidSchema } from './common.js';
+import { instantSchema, localDateSchema, pageSchema, uuidSchema } from './common.js';
 
 /** Lifecycle of a recipe URL import. */
 export const RECIPE_IMPORT_STATUSES = ['queued', 'running', 'succeeded', 'failed'] as const;
 /** Lifecycle of a recipe URL import. */
 export type RecipeImportStatus = (typeof RECIPE_IMPORT_STATUSES)[number];
+
+/** Slot of a meal on the weekly plan. */
+export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+/** Slot of a meal on the weekly plan. */
+export type MealSlot = (typeof MEAL_SLOTS)[number];
 
 const titleSchema = z.string().trim().min(1).max(160);
 const listNameSchema = z.string().trim().min(1).max(140);
@@ -366,3 +371,209 @@ export const shoppingItemListQuerySchema = z
   .strict();
 /** Query of shopping items on one list. */
 export type ShoppingItemListQuery = z.infer<typeof shoppingItemListQuerySchema>;
+
+const mealSlotSchema = z.enum(MEAL_SLOTS);
+const barcodeSchema = z.string().trim().min(1).max(64);
+const brandSchema = z.string().trim().min(1).max(120);
+const pantryQuantitySchema = z.number().gte(0).lte(1_000_000_000);
+const notesLongSchema = z.string().trim().max(2000);
+
+/** One meal plan entry. */
+export const mealPlanEntrySchema = z
+  .object({
+    id: uuidSchema,
+    familyId: uuidSchema,
+    houseId: uuidSchema.nullable(),
+    planDate: localDateSchema,
+    slot: mealSlotSchema,
+    recipeId: uuidSchema.nullable(),
+    title: titleSchema.nullable(),
+    servings: servingsSchema.nullable(),
+    notes: notesLongSchema.nullable(),
+    version: z.int().min(1),
+    createdAt: instantSchema,
+    updatedAt: instantSchema,
+  })
+  .strict()
+  .meta({ id: 'MealPlanEntry' });
+/** One meal plan entry. */
+export type MealPlanEntry = z.infer<typeof mealPlanEntrySchema>;
+
+/** Page of meal plan entries. */
+export const mealPlanEntryPageSchema = pageSchema(mealPlanEntrySchema).meta({ id: 'MealPlanEntryPage' });
+/** Page of meal plan entries. */
+export type MealPlanEntryPage = z.infer<typeof mealPlanEntryPageSchema>;
+
+/** Body to create a meal plan entry. */
+export const createMealPlanEntryRequestSchema = z
+  .object({
+    planDate: localDateSchema,
+    slot: mealSlotSchema,
+    houseId: uuidSchema.nullable().optional(),
+    recipeId: uuidSchema.nullable().optional(),
+    title: titleSchema.nullable().optional(),
+    servings: servingsSchema.nullable().optional(),
+    notes: notesLongSchema.nullable().optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      (value.recipeId !== undefined && value.recipeId !== null) ||
+      (value.title !== undefined && value.title !== null),
+    {
+      message: 'A recipe or a title is required',
+    },
+  )
+  .meta({ id: 'CreateMealPlanEntryRequest' });
+/** Body to create a meal plan entry. */
+export type CreateMealPlanEntryRequest = z.infer<typeof createMealPlanEntryRequestSchema>;
+
+/** Body to update a meal plan entry. */
+export const updateMealPlanEntryRequestSchema = z
+  .object({
+    planDate: localDateSchema.optional(),
+    slot: mealSlotSchema.optional(),
+    houseId: uuidSchema.nullable().optional(),
+    recipeId: uuidSchema.nullable().optional(),
+    title: titleSchema.nullable().optional(),
+    servings: servingsSchema.nullable().optional(),
+    notes: notesLongSchema.nullable().optional(),
+  })
+  .strict()
+  .refine(atLeastOneField, { message: 'At least one field is required' })
+  .meta({ id: 'UpdateMealPlanEntryRequest' });
+/** Body to update a meal plan entry. */
+export type UpdateMealPlanEntryRequest = z.infer<typeof updateMealPlanEntryRequestSchema>;
+
+/** Path parameters of one meal plan entry. */
+export const mealPlanEntryParamsSchema = z.object({ familyId: uuidSchema, entryId: uuidSchema }).strict();
+/** Path parameters of one meal plan entry. */
+export type MealPlanEntryParams = z.infer<typeof mealPlanEntryParamsSchema>;
+
+/** Query of the meal plan range. */
+export const mealPlanListQuerySchema = z
+  .object({
+    from: localDateSchema,
+    to: localDateSchema,
+    houseId: uuidSchema.optional(),
+    limit: limitField,
+    cursor: cursorField,
+  })
+  .strict()
+  .refine((value) => value.from <= value.to, { message: '`from` must be on or before `to`' });
+/** Query of the meal plan range. */
+export type MealPlanListQuery = z.infer<typeof mealPlanListQuerySchema>;
+
+/** One pantry stock item. */
+export const pantryItemSchema = z
+  .object({
+    id: uuidSchema,
+    familyId: uuidSchema,
+    houseId: uuidSchema,
+    name: titleSchema,
+    barcode: barcodeSchema.nullable(),
+    quantity: pantryQuantitySchema,
+    unit: unitSchema.nullable(),
+    storageUnitId: uuidSchema.nullable(),
+    expiryDate: localDateSchema.nullable(),
+    minQuantity: pantryQuantitySchema.nullable(),
+    version: z.int().min(1),
+    createdAt: instantSchema,
+    updatedAt: instantSchema,
+  })
+  .strict()
+  .meta({ id: 'PantryItem' });
+/** One pantry stock item. */
+export type PantryItem = z.infer<typeof pantryItemSchema>;
+
+/** Page of pantry items. */
+export const pantryItemPageSchema = pageSchema(pantryItemSchema).meta({ id: 'PantryItemPage' });
+/** Page of pantry items. */
+export type PantryItemPage = z.infer<typeof pantryItemPageSchema>;
+
+/** Body to create a pantry item. */
+export const createPantryItemRequestSchema = z
+  .object({
+    name: titleSchema,
+    barcode: barcodeSchema.nullable().optional(),
+    quantity: pantryQuantitySchema.default(1),
+    unit: unitSchema.nullable().optional(),
+    storageUnitId: uuidSchema.nullable().optional(),
+    expiryDate: localDateSchema.nullable().optional(),
+    minQuantity: pantryQuantitySchema.nullable().optional(),
+  })
+  .strict()
+  .meta({ id: 'CreatePantryItemRequest' });
+/** Body to create a pantry item. */
+export type CreatePantryItemRequest = z.infer<typeof createPantryItemRequestSchema>;
+
+/** Body to update a pantry item. */
+export const updatePantryItemRequestSchema = z
+  .object({
+    name: titleSchema.optional(),
+    barcode: barcodeSchema.nullable().optional(),
+    quantity: pantryQuantitySchema.optional(),
+    unit: unitSchema.nullable().optional(),
+    storageUnitId: uuidSchema.nullable().optional(),
+    expiryDate: localDateSchema.nullable().optional(),
+    minQuantity: pantryQuantitySchema.nullable().optional(),
+  })
+  .strict()
+  .refine(atLeastOneField, { message: 'At least one field is required' })
+  .meta({ id: 'UpdatePantryItemRequest' });
+/** Body to update a pantry item. */
+export type UpdatePantryItemRequest = z.infer<typeof updatePantryItemRequestSchema>;
+
+/** Path parameters of one pantry item. */
+export const pantryItemParamsSchema = z
+  .object({ familyId: uuidSchema, houseId: uuidSchema, itemId: uuidSchema })
+  .strict();
+/** Path parameters of one pantry item. */
+export type PantryItemParams = z.infer<typeof pantryItemParamsSchema>;
+
+/** Query of pantry items in one house. */
+export const pantryItemListQuerySchema = z
+  .object({
+    limit: limitField,
+    cursor: cursorField,
+    q: z.string().trim().min(1).max(120).optional(),
+    barcode: barcodeSchema.optional(),
+    lowStock: z.coerce.boolean().optional(),
+  })
+  .strict();
+/** Query of pantry items in one house. */
+export type PantryItemListQuery = z.infer<typeof pantryItemListQuerySchema>;
+
+/** One remembered barcode product. */
+export const barcodeProductSchema = z
+  .object({
+    id: uuidSchema,
+    familyId: uuidSchema,
+    barcode: barcodeSchema,
+    name: titleSchema,
+    brand: brandSchema.nullable(),
+    defaultUnit: unitSchema.nullable(),
+    createdAt: instantSchema,
+    updatedAt: instantSchema,
+  })
+  .strict()
+  .meta({ id: 'BarcodeProduct' });
+/** One remembered barcode product. */
+export type BarcodeProduct = z.infer<typeof barcodeProductSchema>;
+
+/** Body to create or replace a barcode product. */
+export const upsertBarcodeProductRequestSchema = z
+  .object({
+    name: titleSchema,
+    brand: brandSchema.nullable().optional(),
+    defaultUnit: unitSchema.nullable().optional(),
+  })
+  .strict()
+  .meta({ id: 'UpsertBarcodeProductRequest' });
+/** Body to create or replace a barcode product. */
+export type UpsertBarcodeProductRequest = z.infer<typeof upsertBarcodeProductRequestSchema>;
+
+/** Path parameters of one barcode product. */
+export const barcodeProductParamsSchema = z.object({ familyId: uuidSchema, code: barcodeSchema }).strict();
+/** Path parameters of one barcode product. */
+export type BarcodeProductParams = z.infer<typeof barcodeProductParamsSchema>;

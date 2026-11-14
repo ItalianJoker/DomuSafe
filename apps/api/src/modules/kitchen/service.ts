@@ -1,21 +1,29 @@
 import {
   encodeCursor,
+  type BarcodeProduct,
   type CheckShoppingItemRequest,
+  type CreateMealPlanEntryRequest,
+  type CreatePantryItemRequest,
   type CreateRecipeImportRequest,
   type CreateRecipeRequest,
   type CreateShoppingItemRequest,
   type CreateShoppingListRequest,
   type CreateStoreRequest,
+  type MealPlanEntry,
+  type PantryItem,
   type Recipe,
   type RecipeImport,
   type RecipeIngredient,
   type ShoppingItem,
   type ShoppingList,
   type Store,
+  type UpdateMealPlanEntryRequest,
+  type UpdatePantryItemRequest,
   type UpdateRecipeRequest,
   type UpdateShoppingItemRequest,
   type UpdateShoppingListRequest,
   type UpdateStoreRequest,
+  type UpsertBarcodeProductRequest,
 } from '@domusafe/contracts';
 import { recordAudit, recordRevision, withContext, type Database, type Transaction } from '@domusafe/db';
 import { ProblemError, classifyDatabaseError } from '../../http/problem.js';
@@ -201,6 +209,84 @@ function itemView(row: repo.ShoppingItemRow): ShoppingItem {
   };
 }
 
+function pantryQuantityOf(value: string): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error('Stored pantry quantity is invalid');
+  }
+  return parsed;
+}
+
+function optionalPantryQuantityOf(value: string | null): number | null {
+  if (value === null) {
+    return null;
+  }
+  return pantryQuantityOf(value);
+}
+
+function mealPlanView(row: repo.MealPlanEntryRow): MealPlanEntry {
+  return {
+    id: row.id,
+    familyId: row.familyId,
+    houseId: row.houseId,
+    planDate: row.planDate,
+    slot: row.slot,
+    recipeId: row.recipeId,
+    title: row.title,
+    servings: row.servings,
+    notes: row.notes,
+    version: row.version,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function pantryView(row: repo.PantryItemRow): PantryItem {
+  return {
+    id: row.id,
+    familyId: row.familyId,
+    houseId: row.houseId,
+    name: row.name,
+    barcode: row.barcode,
+    quantity: pantryQuantityOf(row.quantity),
+    unit: row.unit,
+    storageUnitId: row.storageUnitId,
+    expiryDate: row.expiryDate,
+    minQuantity: optionalPantryQuantityOf(row.minQuantity),
+    version: row.version,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function barcodeProductView(row: repo.BarcodeProductRow): BarcodeProduct {
+  return {
+    id: row.id,
+    familyId: row.familyId,
+    barcode: row.barcode,
+    name: row.name,
+    brand: row.brand,
+    defaultUnit: row.defaultUnit,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function pageOfOrdered<TRow extends { id: string }, TView>(
+  rows: TRow[],
+  limit: number,
+  view: (row: TRow) => TView,
+  cursorOf: (row: TRow) => string,
+): Page<TView> {
+  const hasMore = rows.length > limit;
+  const slice = hasMore ? rows.slice(0, limit) : rows;
+  const last = slice.at(-1);
+  return {
+    items: slice.map(view),
+    nextCursor: hasMore && last !== undefined ? cursorOf(last) : null,
+  };
+}
+
 async function trace(
   tx: Transaction,
   tenant: TenantContext,
@@ -249,7 +335,7 @@ async function requireStore(tx: Transaction, familyId: string, storeId: string):
 }
 
 /**
- * Kitchen and shopping use-cases: recipes, URL import, stores and shopping lists.
+ * Kitchen use-cases: recipes, meal plan, pantry, URL import, stores and shopping lists.
  * No plan feature gate — Free includes them (phase 3 §9).
  *
  * @param db - Database pool wrapper.
@@ -826,6 +912,327 @@ export function createKitchenService(db: Database) {
           action: 'kitchen.shopping_items.delete',
           data: { id: row.id },
         });
+      });
+    },
+
+    listMealPlan(
+      tenant: TenantContext,
+      query: {
+        readonly from: string;
+        readonly to: string;
+        readonly houseId?: string | undefined;
+        readonly limit: number;
+        readonly after: readonly [string, string] | null;
+      },
+    ): Promise<Page<MealPlanEntry>> {
+      return inFamily(tenant, async (tx) =>
+        pageOfOrdered(
+          await repo.listMealPlanEntries(tx, { familyId: tenant.familyId, ...query }),
+          query.limit,
+          mealPlanView,
+          (row) => encodeCursor([row.createdAt.toISOString(), row.id]),
+        ),
+      );
+    },
+
+    createMealPlanEntry(tenant: TenantContext, body: CreateMealPlanEntryRequest): Promise<MealPlanEntry> {
+      return inFamily(tenant, async (tx) => {
+        if (body.houseId !== undefined && body.houseId !== null) {
+          await requireHouse(tx, tenant.familyId, body.houseId);
+        }
+        let recipeTitle: string | null = null;
+        if (body.recipeId !== undefined && body.recipeId !== null) {
+          const recipe = await repo.getRecipe(tx, tenant.familyId, body.recipeId);
+          if (recipe === null) {
+            throw new ProblemError('not_found');
+          }
+          recipeTitle = recipe.title;
+        }
+        const title = body.title !== undefined ? body.title : recipeTitle;
+        if ((body.recipeId ?? null) === null && title === null) {
+          throw new ProblemError('validation_failed', { detail: 'A recipe or a title is required' });
+        }
+        const row = await repo.insertMealPlanEntry(tx, {
+          familyId: tenant.familyId,
+          houseId: body.houseId ?? null,
+          planDate: body.planDate,
+          slot: body.slot,
+          recipeId: body.recipeId ?? null,
+          title,
+          servings: body.servings ?? null,
+          notes: body.notes ?? null,
+          createdBy: tenant.accountId,
+        });
+        await trace(tx, tenant, {
+          resourceType: 'meal_plan_entries',
+          resourceId: row.id,
+          op: 'create',
+          version: row.version,
+          action: 'kitchen.meal_plan.create',
+          data: { id: row.id },
+        });
+        return mealPlanView(row);
+      });
+    },
+
+    updateMealPlanEntry(
+      tenant: TenantContext,
+      entryId: string,
+      expectedVersion: number,
+      body: UpdateMealPlanEntryRequest,
+    ): Promise<MealPlanEntry> {
+      return inFamily(tenant, async (tx) => {
+        const current = await repo.getMealPlanEntry(tx, tenant.familyId, entryId);
+        if (current === null) {
+          throw new ProblemError('not_found');
+        }
+        if (body.houseId !== undefined && body.houseId !== null) {
+          await requireHouse(tx, tenant.familyId, body.houseId);
+        }
+        if (body.recipeId !== undefined && body.recipeId !== null) {
+          const recipe = await repo.getRecipe(tx, tenant.familyId, body.recipeId);
+          if (recipe === null) {
+            throw new ProblemError('not_found');
+          }
+        }
+        const nextRecipeId = body.recipeId === undefined ? current.recipeId : body.recipeId;
+        const nextTitle = body.title === undefined ? current.title : body.title;
+        if (nextRecipeId === null && nextTitle === null) {
+          throw new ProblemError('validation_failed', { detail: 'A recipe or a title is required' });
+        }
+        const row = await repo.updateMealPlanEntry(tx, tenant.familyId, entryId, expectedVersion, {
+          ...(body.planDate === undefined ? {} : { planDate: body.planDate }),
+          ...(body.slot === undefined ? {} : { slot: body.slot }),
+          ...(body.houseId === undefined ? {} : { houseId: body.houseId }),
+          ...(body.recipeId === undefined ? {} : { recipeId: body.recipeId }),
+          ...(body.title === undefined ? {} : { title: body.title }),
+          ...(body.servings === undefined ? {} : { servings: body.servings }),
+          ...(body.notes === undefined ? {} : { notes: body.notes }),
+          updatedBy: tenant.accountId,
+        });
+        if (row === null) {
+          conflict(current.version);
+        }
+        await trace(tx, tenant, {
+          resourceType: 'meal_plan_entries',
+          resourceId: row.id,
+          op: 'update',
+          version: row.version,
+          action: 'kitchen.meal_plan.update',
+          data: { id: row.id },
+        });
+        return mealPlanView(row);
+      });
+    },
+
+    deleteMealPlanEntry(tenant: TenantContext, entryId: string, expectedVersion: number): Promise<void> {
+      return inFamily(tenant, async (tx) => {
+        const current = await repo.getMealPlanEntry(tx, tenant.familyId, entryId);
+        if (current === null) {
+          throw new ProblemError('not_found');
+        }
+        const row = await repo.updateMealPlanEntry(tx, tenant.familyId, entryId, expectedVersion, {
+          deletedAt: new Date(),
+          updatedBy: tenant.accountId,
+        });
+        if (row === null) {
+          conflict(current.version);
+        }
+        await trace(tx, tenant, {
+          resourceType: 'meal_plan_entries',
+          resourceId: row.id,
+          op: 'delete',
+          version: row.version,
+          action: 'kitchen.meal_plan.delete',
+          data: { id: row.id },
+        });
+      });
+    },
+
+    listPantryItems(
+      tenant: TenantContext,
+      houseId: string,
+      query: {
+        readonly limit: number;
+        readonly after: readonly [string, string] | null;
+        readonly q?: string | undefined;
+        readonly barcode?: string | undefined;
+        readonly lowStock?: boolean | undefined;
+      },
+    ): Promise<Page<PantryItem>> {
+      return inFamily(tenant, async (tx) => {
+        await requireHouse(tx, tenant.familyId, houseId);
+        return pageOfCreated(
+          await repo.listPantryItems(tx, { familyId: tenant.familyId, houseId, ...query }),
+          query.limit,
+          pantryView,
+        );
+      });
+    },
+
+    getPantryItem(tenant: TenantContext, houseId: string, itemId: string): Promise<PantryItem> {
+      return inFamily(tenant, async (tx) => {
+        const row = await repo.getPantryItem(tx, tenant.familyId, houseId, itemId);
+        if (row === null) {
+          throw new ProblemError('not_found');
+        }
+        return pantryView(row);
+      });
+    },
+
+    createPantryItem(
+      tenant: TenantContext,
+      houseId: string,
+      body: CreatePantryItemRequest,
+    ): Promise<PantryItem> {
+      return inFamily(tenant, async (tx) => {
+        await requireHouse(tx, tenant.familyId, houseId);
+        if (body.storageUnitId !== undefined && body.storageUnitId !== null) {
+          const unit = await repo.findStorageUnitInHouse(tx, tenant.familyId, houseId, body.storageUnitId);
+          if (unit === null) {
+            throw new ProblemError('not_found');
+          }
+        }
+        const row = await repo.insertPantryItem(tx, {
+          familyId: tenant.familyId,
+          houseId,
+          name: body.name,
+          barcode: body.barcode ?? null,
+          quantity: String(body.quantity),
+          unit: body.unit ?? null,
+          storageUnitId: body.storageUnitId ?? null,
+          expiryDate: body.expiryDate ?? null,
+          minQuantity:
+            body.minQuantity === undefined || body.minQuantity === null ? null : String(body.minQuantity),
+          createdBy: tenant.accountId,
+        });
+        if (body.barcode !== undefined && body.barcode !== null) {
+          await repo.upsertBarcodeProduct(tx, {
+            familyId: tenant.familyId,
+            barcode: body.barcode,
+            name: body.name,
+            brand: null,
+            defaultUnit: body.unit ?? null,
+          });
+        }
+        await trace(tx, tenant, {
+          resourceType: 'pantry_items',
+          resourceId: row.id,
+          op: 'create',
+          version: row.version,
+          action: 'kitchen.pantry.create',
+          data: { id: row.id },
+        });
+        return pantryView(row);
+      });
+    },
+
+    updatePantryItem(
+      tenant: TenantContext,
+      houseId: string,
+      itemId: string,
+      expectedVersion: number,
+      body: UpdatePantryItemRequest,
+    ): Promise<PantryItem> {
+      return inFamily(tenant, async (tx) => {
+        const current = await repo.getPantryItem(tx, tenant.familyId, houseId, itemId);
+        if (current === null) {
+          throw new ProblemError('not_found');
+        }
+        if (body.storageUnitId !== undefined && body.storageUnitId !== null) {
+          const unit = await repo.findStorageUnitInHouse(tx, tenant.familyId, houseId, body.storageUnitId);
+          if (unit === null) {
+            throw new ProblemError('not_found');
+          }
+        }
+        const row = await repo.updatePantryItem(tx, tenant.familyId, houseId, itemId, expectedVersion, {
+          ...(body.name === undefined ? {} : { name: body.name }),
+          ...(body.barcode === undefined ? {} : { barcode: body.barcode }),
+          ...(body.quantity === undefined ? {} : { quantity: String(body.quantity) }),
+          ...(body.unit === undefined ? {} : { unit: body.unit }),
+          ...(body.storageUnitId === undefined ? {} : { storageUnitId: body.storageUnitId }),
+          ...(body.expiryDate === undefined ? {} : { expiryDate: body.expiryDate }),
+          ...(body.minQuantity === undefined
+            ? {}
+            : { minQuantity: body.minQuantity === null ? null : String(body.minQuantity) }),
+          updatedBy: tenant.accountId,
+        });
+        if (row === null) {
+          conflict(current.version);
+        }
+        await trace(tx, tenant, {
+          resourceType: 'pantry_items',
+          resourceId: row.id,
+          op: 'update',
+          version: row.version,
+          action: 'kitchen.pantry.update',
+          data: { id: row.id },
+        });
+        return pantryView(row);
+      });
+    },
+
+    deletePantryItem(
+      tenant: TenantContext,
+      houseId: string,
+      itemId: string,
+      expectedVersion: number,
+    ): Promise<void> {
+      return inFamily(tenant, async (tx) => {
+        const current = await repo.getPantryItem(tx, tenant.familyId, houseId, itemId);
+        if (current === null) {
+          throw new ProblemError('not_found');
+        }
+        const row = await repo.updatePantryItem(tx, tenant.familyId, houseId, itemId, expectedVersion, {
+          deletedAt: new Date(),
+          updatedBy: tenant.accountId,
+        });
+        if (row === null) {
+          conflict(current.version);
+        }
+        await trace(tx, tenant, {
+          resourceType: 'pantry_items',
+          resourceId: row.id,
+          op: 'delete',
+          version: row.version,
+          action: 'kitchen.pantry.delete',
+          data: { id: row.id },
+        });
+      });
+    },
+
+    getBarcodeProduct(tenant: TenantContext, code: string): Promise<BarcodeProduct> {
+      return inFamily(tenant, async (tx) => {
+        const row = await repo.getBarcodeProduct(tx, tenant.familyId, code);
+        if (row === null) {
+          throw new ProblemError('not_found');
+        }
+        return barcodeProductView(row);
+      });
+    },
+
+    upsertBarcodeProduct(
+      tenant: TenantContext,
+      code: string,
+      body: UpsertBarcodeProductRequest,
+    ): Promise<BarcodeProduct> {
+      return inFamily(tenant, async (tx) => {
+        const row = await repo.upsertBarcodeProduct(tx, {
+          familyId: tenant.familyId,
+          barcode: code,
+          name: body.name,
+          brand: body.brand ?? null,
+          defaultUnit: body.defaultUnit ?? null,
+        });
+        await trace(tx, tenant, {
+          resourceType: 'barcode_products',
+          resourceId: row.id,
+          op: 'update',
+          version: 1,
+          action: 'kitchen.barcode_products.upsert',
+          data: { id: row.id, barcode: row.barcode },
+        });
+        return barcodeProductView(row);
       });
     },
   };

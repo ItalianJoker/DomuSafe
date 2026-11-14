@@ -1,14 +1,18 @@
 import {
+  barcodeProducts,
   houses,
+  mealPlanEntries,
+  pantryItems,
   recipeImports,
   recipes,
   shoppingItems,
   shoppingLists,
+  storageUnits,
   stores,
   type RecipeIngredientRow,
   type Transaction,
 } from '@domusafe/db';
-import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, isNotNull, isNull, lte, sql } from 'drizzle-orm';
 
 /** Row of `recipes`. */
 export type RecipeRow = typeof recipes.$inferSelect;
@@ -20,6 +24,12 @@ export type StoreRow = typeof stores.$inferSelect;
 export type ShoppingListRow = typeof shoppingLists.$inferSelect;
 /** Row of `shopping_items`. */
 export type ShoppingItemRow = typeof shoppingItems.$inferSelect;
+/** Row of `meal_plan_entries`. */
+export type MealPlanEntryRow = typeof mealPlanEntries.$inferSelect;
+/** Row of `pantry_items`. */
+export type PantryItemRow = typeof pantryItems.$inferSelect;
+/** Row of `barcode_products`. */
+export type BarcodeProductRow = typeof barcodeProducts.$inferSelect;
 
 interface Page {
   readonly limit: number;
@@ -755,4 +765,429 @@ export async function updateShoppingItem(
     )
     .returning();
   return row ?? null;
+}
+
+/**
+ * Confirms a storage unit exists in the house.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @param storageUnitId - Storage unit id.
+ * @returns The id, or `null`.
+ */
+export async function findStorageUnitInHouse(
+  tx: Transaction,
+  familyId: string,
+  houseId: string,
+  storageUnitId: string,
+): Promise<{ id: string } | null> {
+  const [row] = await tx
+    .select({ id: storageUnits.id })
+    .from(storageUnits)
+    .where(
+      and(
+        eq(storageUnits.familyId, familyId),
+        eq(storageUnits.houseId, houseId),
+        eq(storageUnits.id, storageUnitId),
+        isNull(storageUnits.deletedAt),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Inserts a meal plan entry.
+ *
+ * @param tx - Transaction.
+ * @param input - Columns.
+ * @returns The inserted row.
+ */
+export async function insertMealPlanEntry(
+  tx: Transaction,
+  input: {
+    readonly familyId: string;
+    readonly houseId: string | null;
+    readonly planDate: string;
+    readonly slot: MealPlanEntryRow['slot'];
+    readonly recipeId: string | null;
+    readonly title: string | null;
+    readonly servings: number | null;
+    readonly notes: string | null;
+    readonly createdBy: string;
+  },
+): Promise<MealPlanEntryRow> {
+  const [row] = await tx
+    .insert(mealPlanEntries)
+    .values({
+      familyId: input.familyId,
+      houseId: input.houseId,
+      planDate: input.planDate,
+      slot: input.slot,
+      recipeId: input.recipeId,
+      title: input.title,
+      servings: input.servings,
+      notes: input.notes,
+      createdBy: input.createdBy,
+      updatedBy: input.createdBy,
+    })
+    .returning();
+  if (row === undefined) {
+    throw new Error('Meal plan entry insert returned no row');
+  }
+  return row;
+}
+
+/**
+ * Lists meal plan entries in a date range, oldest day first.
+ *
+ * @param tx - Transaction.
+ * @param scope - Family, range, optional house and page.
+ * @returns Up to `limit + 1` rows.
+ */
+export async function listMealPlanEntries(
+  tx: Transaction,
+  scope: {
+    readonly familyId: string;
+    readonly from: string;
+    readonly to: string;
+    readonly houseId?: string | undefined;
+  } & Page,
+): Promise<MealPlanEntryRow[]> {
+  const after =
+    scope.after === null
+      ? undefined
+      : sql`(${mealPlanEntries.createdAt}, ${mealPlanEntries.id}) < (${scope.after[0]}::timestamptz, ${scope.after[1]})`;
+  return tx
+    .select()
+    .from(mealPlanEntries)
+    .where(
+      and(
+        eq(mealPlanEntries.familyId, scope.familyId),
+        isNull(mealPlanEntries.deletedAt),
+        gte(mealPlanEntries.planDate, scope.from),
+        lte(mealPlanEntries.planDate, scope.to),
+        scope.houseId === undefined ? undefined : eq(mealPlanEntries.houseId, scope.houseId),
+        after,
+      ),
+    )
+    .orderBy(asc(mealPlanEntries.planDate), asc(mealPlanEntries.slot), asc(mealPlanEntries.id))
+    .limit(scope.limit + 1);
+}
+
+/**
+ * Loads one meal plan entry.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param entryId - Entry id.
+ * @returns The row, or `null`.
+ */
+export async function getMealPlanEntry(
+  tx: Transaction,
+  familyId: string,
+  entryId: string,
+): Promise<MealPlanEntryRow | null> {
+  const [row] = await tx
+    .select()
+    .from(mealPlanEntries)
+    .where(
+      and(
+        eq(mealPlanEntries.familyId, familyId),
+        eq(mealPlanEntries.id, entryId),
+        isNull(mealPlanEntries.deletedAt),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Updates a meal plan entry when the version matches.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param entryId - Entry id.
+ * @param expectedVersion - Version the client loaded.
+ * @param patch - Columns to set.
+ * @returns The updated row, or `null`.
+ */
+export async function updateMealPlanEntry(
+  tx: Transaction,
+  familyId: string,
+  entryId: string,
+  expectedVersion: number,
+  patch: {
+    readonly planDate?: string | undefined;
+    readonly slot?: MealPlanEntryRow['slot'] | undefined;
+    readonly houseId?: string | null | undefined;
+    readonly recipeId?: string | null | undefined;
+    readonly title?: string | null | undefined;
+    readonly servings?: number | null | undefined;
+    readonly notes?: string | null | undefined;
+    readonly deletedAt?: Date | null | undefined;
+    readonly updatedBy: string;
+  },
+): Promise<MealPlanEntryRow | null> {
+  const [row] = await tx
+    .update(mealPlanEntries)
+    .set({
+      ...(patch.planDate === undefined ? {} : { planDate: patch.planDate }),
+      ...(patch.slot === undefined ? {} : { slot: patch.slot }),
+      ...(patch.houseId === undefined ? {} : { houseId: patch.houseId }),
+      ...(patch.recipeId === undefined ? {} : { recipeId: patch.recipeId }),
+      ...(patch.title === undefined ? {} : { title: patch.title }),
+      ...(patch.servings === undefined ? {} : { servings: patch.servings }),
+      ...(patch.notes === undefined ? {} : { notes: patch.notes }),
+      ...(patch.deletedAt === undefined ? {} : { deletedAt: patch.deletedAt }),
+      updatedBy: patch.updatedBy,
+      version: sql`${mealPlanEntries.version} + 1`,
+    })
+    .where(
+      and(
+        eq(mealPlanEntries.familyId, familyId),
+        eq(mealPlanEntries.id, entryId),
+        eq(mealPlanEntries.version, expectedVersion),
+        isNull(mealPlanEntries.deletedAt),
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Inserts a pantry item.
+ *
+ * @param tx - Transaction.
+ * @param input - Columns.
+ * @returns The inserted row.
+ */
+export async function insertPantryItem(
+  tx: Transaction,
+  input: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly name: string;
+    readonly barcode: string | null;
+    readonly quantity: string;
+    readonly unit: string | null;
+    readonly storageUnitId: string | null;
+    readonly expiryDate: string | null;
+    readonly minQuantity: string | null;
+    readonly createdBy: string;
+  },
+): Promise<PantryItemRow> {
+  const [row] = await tx
+    .insert(pantryItems)
+    .values({
+      familyId: input.familyId,
+      houseId: input.houseId,
+      name: input.name,
+      barcode: input.barcode,
+      quantity: input.quantity,
+      unit: input.unit,
+      storageUnitId: input.storageUnitId,
+      expiryDate: input.expiryDate,
+      minQuantity: input.minQuantity,
+      createdBy: input.createdBy,
+      updatedBy: input.createdBy,
+    })
+    .returning();
+  if (row === undefined) {
+    throw new Error('Pantry item insert returned no row');
+  }
+  return row;
+}
+
+/**
+ * Lists pantry items for a house, newest first.
+ *
+ * @param tx - Transaction.
+ * @param scope - Family, house, optional filters and page.
+ * @returns Up to `limit + 1` rows.
+ */
+export async function listPantryItems(
+  tx: Transaction,
+  scope: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly q?: string | undefined;
+    readonly barcode?: string | undefined;
+    readonly lowStock?: boolean | undefined;
+  } & Page,
+): Promise<PantryItemRow[]> {
+  const after =
+    scope.after === null
+      ? undefined
+      : sql`(${pantryItems.createdAt}, ${pantryItems.id}) < (${scope.after[0]}::timestamptz, ${scope.after[1]})`;
+  const search =
+    scope.q === undefined
+      ? undefined
+      : sql`(${pantryItems.name} ilike ${`%${scope.q}%`} or ${pantryItems.barcode} ilike ${`%${scope.q}%`})`;
+  const lowStock =
+    scope.lowStock === true
+      ? sql`${pantryItems.minQuantity} is not null and ${pantryItems.quantity}::numeric <= ${pantryItems.minQuantity}::numeric`
+      : undefined;
+  return tx
+    .select()
+    .from(pantryItems)
+    .where(
+      and(
+        eq(pantryItems.familyId, scope.familyId),
+        eq(pantryItems.houseId, scope.houseId),
+        isNull(pantryItems.deletedAt),
+        scope.barcode === undefined ? undefined : eq(pantryItems.barcode, scope.barcode),
+        search,
+        lowStock,
+        after,
+      ),
+    )
+    .orderBy(desc(pantryItems.createdAt), desc(pantryItems.id))
+    .limit(scope.limit + 1);
+}
+
+/**
+ * Loads one pantry item.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @param itemId - Item id.
+ * @returns The row, or `null`.
+ */
+export async function getPantryItem(
+  tx: Transaction,
+  familyId: string,
+  houseId: string,
+  itemId: string,
+): Promise<PantryItemRow | null> {
+  const [row] = await tx
+    .select()
+    .from(pantryItems)
+    .where(
+      and(
+        eq(pantryItems.familyId, familyId),
+        eq(pantryItems.houseId, houseId),
+        eq(pantryItems.id, itemId),
+        isNull(pantryItems.deletedAt),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Updates a pantry item when the version matches.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @param itemId - Item id.
+ * @param expectedVersion - Version the client loaded.
+ * @param patch - Columns to set.
+ * @returns The updated row, or `null`.
+ */
+export async function updatePantryItem(
+  tx: Transaction,
+  familyId: string,
+  houseId: string,
+  itemId: string,
+  expectedVersion: number,
+  patch: {
+    readonly name?: string | undefined;
+    readonly barcode?: string | null | undefined;
+    readonly quantity?: string | undefined;
+    readonly unit?: string | null | undefined;
+    readonly storageUnitId?: string | null | undefined;
+    readonly expiryDate?: string | null | undefined;
+    readonly minQuantity?: string | null | undefined;
+    readonly deletedAt?: Date | null | undefined;
+    readonly updatedBy: string;
+  },
+): Promise<PantryItemRow | null> {
+  const [row] = await tx
+    .update(pantryItems)
+    .set({
+      ...(patch.name === undefined ? {} : { name: patch.name }),
+      ...(patch.barcode === undefined ? {} : { barcode: patch.barcode }),
+      ...(patch.quantity === undefined ? {} : { quantity: patch.quantity }),
+      ...(patch.unit === undefined ? {} : { unit: patch.unit }),
+      ...(patch.storageUnitId === undefined ? {} : { storageUnitId: patch.storageUnitId }),
+      ...(patch.expiryDate === undefined ? {} : { expiryDate: patch.expiryDate }),
+      ...(patch.minQuantity === undefined ? {} : { minQuantity: patch.minQuantity }),
+      ...(patch.deletedAt === undefined ? {} : { deletedAt: patch.deletedAt }),
+      updatedBy: patch.updatedBy,
+      version: sql`${pantryItems.version} + 1`,
+    })
+    .where(
+      and(
+        eq(pantryItems.familyId, familyId),
+        eq(pantryItems.houseId, houseId),
+        eq(pantryItems.id, itemId),
+        eq(pantryItems.version, expectedVersion),
+        isNull(pantryItems.deletedAt),
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Loads a barcode product by code.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param barcode - Barcode value.
+ * @returns The row, or `null`.
+ */
+export async function getBarcodeProduct(
+  tx: Transaction,
+  familyId: string,
+  barcode: string,
+): Promise<BarcodeProductRow | null> {
+  const [row] = await tx
+    .select()
+    .from(barcodeProducts)
+    .where(and(eq(barcodeProducts.familyId, familyId), eq(barcodeProducts.barcode, barcode)));
+  return row ?? null;
+}
+
+/**
+ * Inserts or replaces a barcode product for the family.
+ *
+ * @param tx - Transaction.
+ * @param input - Columns.
+ * @returns The upserted row.
+ */
+export async function upsertBarcodeProduct(
+  tx: Transaction,
+  input: {
+    readonly familyId: string;
+    readonly barcode: string;
+    readonly name: string;
+    readonly brand: string | null;
+    readonly defaultUnit: string | null;
+  },
+): Promise<BarcodeProductRow> {
+  const [row] = await tx
+    .insert(barcodeProducts)
+    .values({
+      familyId: input.familyId,
+      barcode: input.barcode,
+      name: input.name,
+      brand: input.brand,
+      defaultUnit: input.defaultUnit,
+    })
+    .onConflictDoUpdate({
+      target: [barcodeProducts.familyId, barcodeProducts.barcode],
+      set: {
+        name: input.name,
+        brand: input.brand,
+        defaultUnit: input.defaultUnit,
+        updatedAt: sql`now()`,
+      },
+    })
+    .returning();
+  if (row === undefined) {
+    throw new Error('Barcode product upsert returned no row');
+  }
+  return row;
 }

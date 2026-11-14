@@ -101,12 +101,15 @@ import {
   type TaxChecklist,
   type TaxChecklistItem,
   type Vehicle,
+  type BarcodeProduct,
   type CheckShoppingItemRequest,
   type Chore,
   type ChoreCompletion,
   type CreateChoreCompletionRequest,
   type CreateChoreRequest,
   type CreateHandoverRequest,
+  type CreateMealPlanEntryRequest,
+  type CreatePantryItemRequest,
   type CreateRecipeImportRequest,
   type CreateRecipeRequest,
   type CreateRedemptionRequest,
@@ -123,6 +126,8 @@ import {
   type CreateVitalEntryRequest,
   type GenerateTaxChecklistRequest,
   type Handover,
+  type MealPlanEntry,
+  type PantryItem,
   type PointsView,
   type PutResidentAboutRequest,
   type Recipe,
@@ -133,10 +138,13 @@ import {
   type ShoppingItem,
   type ShoppingList,
   type Store,
+  type UpdateMealPlanEntryRequest,
+  type UpdatePantryItemRequest,
   type UpdateRecipeRequest,
   type UpdateShoppingItemRequest,
   type UpdateShoppingListRequest,
   type UpdateStoreRequest,
+  type UpsertBarcodeProductRequest,
   type UpdateResidentRequest,
   type UpdateTaxChecklistItemRequest,
   type Membership,
@@ -164,6 +172,11 @@ import {
   handoverPageSchema,
   handoverSchema,
   pointsViewSchema,
+  barcodeProductSchema,
+  mealPlanEntryPageSchema,
+  mealPlanEntrySchema,
+  pantryItemPageSchema,
+  pantryItemSchema,
   recipeImportSchema,
   recipePageSchema,
   recipeSchema,
@@ -990,6 +1003,56 @@ export interface DomusafeApi {
   ): Promise<ShoppingItem>;
   /** Soft-deletes a shopping item. */
   deleteShoppingItem(familyId: string, listId: string, itemId: string, version: number): Promise<void>;
+  /** Lists meal plan entries between two calendar dates. */
+  listMealPlan(
+    familyId: string,
+    from: string,
+    to: string,
+    houseId?: string,
+  ): Promise<readonly MealPlanEntry[]>;
+  /** Adds a meal to the weekly plan. */
+  createMealPlanEntry(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateMealPlanEntryRequest,
+  ): Promise<MealPlanEntry>;
+  /** Updates a meal plan entry. */
+  updateMealPlanEntry(
+    familyId: string,
+    entryId: string,
+    version: number,
+    body: UpdateMealPlanEntryRequest,
+  ): Promise<MealPlanEntry>;
+  /** Deletes a meal plan entry. */
+  deleteMealPlanEntry(familyId: string, entryId: string, version: number): Promise<void>;
+  /** Lists pantry stock for one house. */
+  listPantryItems(familyId: string, houseId: string): Promise<readonly PantryItem[]>;
+  /** Adds a pantry item by hand. */
+  createPantryItem(
+    familyId: string,
+    houseId: string,
+    idempotencyKey: string,
+    body: CreatePantryItemRequest,
+  ): Promise<PantryItem>;
+  /** Updates a pantry item. */
+  updatePantryItem(
+    familyId: string,
+    houseId: string,
+    itemId: string,
+    version: number,
+    body: UpdatePantryItemRequest,
+  ): Promise<PantryItem>;
+  /** Soft-deletes a pantry item. */
+  deletePantryItem(familyId: string, houseId: string, itemId: string, version: number): Promise<void>;
+  /** Looks up a remembered barcode product. */
+  getBarcodeProduct(familyId: string, code: string): Promise<BarcodeProduct>;
+  /** Remembers a product by barcode. */
+  upsertBarcodeProduct(
+    familyId: string,
+    code: string,
+    idempotencyKey: string,
+    body: UpsertBarcodeProductRequest,
+  ): Promise<BarcodeProduct>;
   /**
    * Printed codes of one house, newest first, including the last reading.
    *
@@ -2287,6 +2350,102 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       );
       ensureOk(result);
+    },
+    listMealPlan(familyId, from, to, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/meal-plan', {
+            params: {
+              path: { familyId },
+              query: {
+                from,
+                to,
+                limit: 200,
+                ...(houseId === undefined ? {} : { houseId }),
+                ...(cursor === undefined ? {} : { cursor }),
+              },
+            },
+          })
+          .then((result) => unwrap(mealPlanEntryPageSchema, result)),
+      );
+    },
+    async createMealPlanEntry(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/meal-plan', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateMealPlanEntryRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(mealPlanEntrySchema, result);
+    },
+    async updateMealPlanEntry(familyId, entryId, version, body) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/meal-plan/{entryId}', {
+        params: { path: { familyId, entryId } },
+        body: body as components['schemas']['UpdateMealPlanEntryRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(mealPlanEntrySchema, result);
+    },
+    async deleteMealPlanEntry(familyId, entryId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/meal-plan/{entryId}', {
+        params: { path: { familyId, entryId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
+    },
+    listPantryItems(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/pantry-items', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(pantryItemPageSchema, result)),
+      );
+    },
+    async createPantryItem(familyId, houseId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/pantry-items', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreatePantryItemRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(pantryItemSchema, result);
+    },
+    async updatePantryItem(familyId, houseId, itemId, version, body) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/pantry-items/{itemId}',
+        {
+          params: { path: { familyId, houseId, itemId } },
+          body: body as components['schemas']['UpdatePantryItemRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(pantryItemSchema, result);
+    },
+    async deletePantryItem(familyId, houseId, itemId, version) {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/houses/{houseId}/pantry-items/{itemId}',
+        {
+          params: { path: { familyId, houseId, itemId } },
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      ensureOk(result);
+    },
+    async getBarcodeProduct(familyId, code) {
+      const result = await client.GET('/api/v1/families/{familyId}/barcode-products/{code}', {
+        params: { path: { familyId, code } },
+      });
+      return unwrap(barcodeProductSchema, result);
+    },
+    async upsertBarcodeProduct(familyId, code, idempotencyKey, body) {
+      const result = await client.PUT('/api/v1/families/{familyId}/barcode-products/{code}', {
+        params: { path: { familyId, code } },
+        body: body as components['schemas']['UpsertBarcodeProductRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(barcodeProductSchema, result);
     },
     async listPublications(familyId, houseId) {
       const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publications', {

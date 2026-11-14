@@ -331,6 +331,44 @@ export function shoppingItemsQuery(api: DomusafeApi, familyId: string, listId: s
 }
 
 /**
+ * Query of pantry stock for one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function pantryItemsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['pantry-items', familyId, houseId] as const,
+    queryFn: () => api.listPantryItems(familyId, houseId),
+  });
+}
+
+/**
+ * Query of meal plan entries for a date range.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param from - Inclusive start date.
+ * @param to - Inclusive end date.
+ * @param houseId - Optional house filter.
+ * @returns Options for TanStack Query.
+ */
+export function mealPlanQuery(
+  api: DomusafeApi,
+  familyId: string,
+  from: string,
+  to: string,
+  houseId?: string,
+) {
+  return queryOptions({
+    queryKey: ['meal-plan', familyId, from, to, houseId ?? null] as const,
+    queryFn: () => api.listMealPlan(familyId, from, to, houseId),
+  });
+}
+
+/**
  * Query of the printed codes of one house.
  *
  * @param api - Shell API.
