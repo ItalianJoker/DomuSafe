@@ -90,7 +90,7 @@
   "houseLimit": "Questo piano include al massimo {count} case.",
   "noHouses": "Non ci sono case visibili.",
   "accountTitle": "Account",
-  "accountLead": "Nome, lingua e tema restano sul tuo account. Qui scarichi anche la copia di sicurezza della famiglia.",
+  "accountLead": "Nome, lingua, tema e notifiche del browser restano sul tuo account. Qui scarichi anche la copia di sicurezza della famiglia.",
   "emailReadonly": "L'indirizzo di posta non si cambia da qui.",
   "backupTitle": "Copia di sicurezza",
   "backupLead": "Scarica i dati della famiglia in un file protetto da una frase scelta da te, oppure in tabelle da aprire in un foglio di calcolo. I documenti della cassaforte restano cifrati come sono salvati.",
@@ -1050,5 +1050,14 @@
   "calendarWeekdayThu": "Giovedì",
   "calendarWeekdayFri": "Venerdì",
   "calendarWeekdaySat": "Sabato",
-  "calendarWeekdaySun": "Domenica"
+  "calendarWeekdaySun": "Domenica",
+  "browserNotificationsLabel": "Notifiche del browser per le scadenze",
+  "browserNotificationsHelp": "Quando è attiva, il browser può avvisarti delle scadenze in ritardo o di questa settimana anche se DomuSafe è chiuso.",
+  "browserNotificationsTurnOn": "Attiva le notifiche del browser",
+  "browserNotificationsTurnOff": "Disattiva le notifiche del browser",
+  "browserNotificationsEnabled": "Notifiche del browser attivate per le scadenze.",
+  "browserNotificationsDisabled": "Notifiche del browser disattivate.",
+  "browserNotificationsUnavailable": "Questo server non ha ancora configurato le notifiche del browser.",
+  "browserNotificationsBlocked": "Il browser ha bloccato le notifiche. Puoi riattivarle nelle impostazioni del browser.",
+  "browserNotificationsUnsupported": "Questo browser non supporta le notifiche in background."
 }

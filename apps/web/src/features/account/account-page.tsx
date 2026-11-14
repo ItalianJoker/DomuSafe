@@ -23,12 +23,18 @@ const BackupPanel = lazy(() =>
   import('@/features/account/backup-panel.js').then((mod) => ({ default: mod.BackupPanel })),
 );
 
+const BrowserNotificationsPanel = lazy(() =>
+  import('@/features/account/browser-notifications-panel.js').then((mod) => ({
+    default: mod.BrowserNotificationsPanel,
+  })),
+);
+
 /**
- * Account section: name, language, theme, family backup export, the family host mark and sign-out.
+ * Account section: name, language, theme, browser deadline alerts, family backup export, host mark and sign-out.
  *
  * Preconditions: `me` is the signed-in account and `familyId` is one of their families.
  * Postconditions: theme is saved on the account and painted immediately; sign-out clears the cache.
- * The host mark editor and the backup panel load lazily so the shell gzip budget stays intact.
+ * The host mark editor, backup panel and browser alerts load lazily so the shell gzip budget stays intact.
  *
  * @param props - Current account and the open family.
  * @returns The section.
@@ -130,6 +136,9 @@ export function AccountPage(props: { readonly me: Me; readonly familyId: string 
         </Select>
       </div>
       <ThemeControl value={props.me.theme} onChange={(theme) => void saveTheme(theme)} />
+      <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+        <BrowserNotificationsPanel me={props.me} familyId={props.familyId} />
+      </Suspense>
       {membership?.role === 'admin' ? (
         <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
           <HostMarkPanel me={props.me} familyId={props.familyId} tier={membership.plan} />

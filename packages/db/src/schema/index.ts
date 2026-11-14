@@ -8,6 +8,7 @@ export * from './home-automation.js';
 export * from './house.js';
 export * from './inventory.js';
 export * from './kitchen.js';
+export * from './notifications.js';
 export * from './personale.js';
 export * from './publications.js';
 export * from './rewards.js';

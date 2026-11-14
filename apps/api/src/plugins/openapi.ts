@@ -34,7 +34,12 @@ export const openApiPlugin = fp(
         tags: [
           { name: 'system', description: 'Probes' },
           { name: 'identity', description: 'Account and profile' },
+          {
+            name: 'notifications',
+            description: 'In-app notifications, browser push subscriptions and channel preferences',
+          },
           { name: 'tenancy', description: 'Families, houses and members' },
+          { name: 'deadlines', description: 'Overview deadlines grouped for the dashboard' },
           {
             name: 'backup',
             description:

@@ -12,9 +12,14 @@ const account = (accountId: string): DbPrincipal => ({ kind: 'account', accountI
  *
  * @param db - Database bound to the `domusafe_app` pool.
  * @param tenancy - Tenancy service (families and house visibility).
+ * @param vapidPublicKey - Public application-server key for browser push, or null when unset.
  * @returns The service.
  */
-export function createIdentityService(db: Database, tenancy: TenancyService) {
+export function createIdentityService(
+  db: Database,
+  tenancy: TenancyService,
+  vapidPublicKey: string | null = null,
+) {
   async function getMe(caller: AuthenticatedAccount): Promise<Me> {
     const profile = await withContext(db, { principal: account(caller.id) }, async (tx) => {
       await repo.ensureProfile(tx, caller.id, caller.name);
@@ -35,6 +40,7 @@ export function createIdentityService(db: Database, tenancy: TenancyService) {
       primaryFamilyId: profile.primaryFamilyId,
       lastFamilyId: profile.lastFamilyId,
       lastHouseId: profile.lastHouseId,
+      vapidPublicKey,
       families: families.map((family) => ({
         id: family.id,
         name: family.name,

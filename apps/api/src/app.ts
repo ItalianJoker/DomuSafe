@@ -54,6 +54,9 @@ import { vaultRoutes } from './modules/vault/routes.js';
 import { createVaultService } from './modules/vault/service.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import { createIdentityService } from './modules/identity/service.js';
+import { notificationRoutes } from './modules/notifications/routes.js';
+import { createWebPushSender, type PushSender } from './modules/notifications/push.js';
+import { createNotificationsService } from './modules/notifications/service.js';
 import { systemRoutes } from './modules/system/routes.js';
 import { tenancyRoutes } from './modules/tenancy/routes.js';
 import { createTenancyService } from './modules/tenancy/service.js';
@@ -74,6 +77,8 @@ export interface AppDependencies {
   readonly realtime?: boolean;
   /** Outbound home-automation bridge; tests inject {@link MockHomeAutomationAdapter}. */
   readonly homeAutomationAdapter?: HomeAutomationAdapter;
+  /** Outbound browser push; tests inject a recording sender. */
+  readonly pushSender?: PushSender | null;
 }
 
 const REQUEST_ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -127,7 +132,21 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
     deps.homeAutomationAdapter ??
     (config.nodeEnv === 'test' ? new MockHomeAutomationAdapter() : new LiveHomeAutomationAdapter());
   const homeAutomation = createHomeAutomationService(db, secrets, store, homeAutomationAdapter);
-  const identity = createIdentityService(db, tenancy);
+  const pushSender =
+    deps.pushSender !== undefined
+      ? deps.pushSender
+      : config.vapidPublicKey !== null && config.vapidPrivateKey !== null
+        ? createWebPushSender({
+            publicKey: config.vapidPublicKey,
+            privateKey: config.vapidPrivateKey,
+            subject: config.vapidSubject,
+          })
+        : null;
+  const notifications = createNotificationsService(db, tenancy, {
+    vapidPublicKey: config.vapidPublicKey,
+    pushSender,
+  });
+  const identity = createIdentityService(db, tenancy, config.vapidPublicKey);
   const auth = createAuth({
     db,
     secret: await secrets.betterAuthSecret(),
@@ -239,6 +258,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(authRoutesPlugin, { auth, publicOrigin: config.publicOrigin });
   await app.register(systemRoutes, { db, store });
   await app.register(identityRoutes, { identity });
+  await app.register(notificationRoutes, { notifications });
   await app.register(tenancyRoutes, { tenancy });
   await app.register(houseRoutes, { house });
   await app.register(inventoryRoutes, { inventory });

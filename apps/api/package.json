@@ -18,6 +18,8 @@
     "test": "vitest run",
     "dev": "tsx watch --conditions=@domusafe/source src/server.ts",
     "start": "node dist/server.js",
+    "worker": "tsx --conditions=@domusafe/source src/worker.ts",
+    "worker:start": "node dist/worker.js",
     "openapi:write": "tsx --conditions=@domusafe/source scripts/openapi.ts write",
     "openapi:check": "tsx --conditions=@domusafe/source scripts/openapi.ts check"
   },
@@ -40,12 +42,14 @@
     "ioredis": "6.0.0",
     "openapi-types": "12.1.3",
     "pg": "8.23.1",
+    "web-push": "3.6.7",
     "ws": "8.23.0",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@domusafe/config": "workspace:*",
     "@types/pg": "8.23.1",
+    "@types/web-push": "3.6.4",
     "@types/ws": "8.18.1"
   }
 }

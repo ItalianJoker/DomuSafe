@@ -20,6 +20,7 @@ describe('api client', () => {
               primaryFamilyId: null,
               lastFamilyId: null,
               lastHouseId: null,
+              vapidPublicKey: null,
               families: [],
             }
           : { family: familyBody(), house: houseBody() };

@@ -205,6 +205,8 @@ export const meSchema = z
     primaryFamilyId: uuidSchema.nullable(),
     lastFamilyId: uuidSchema.nullable(),
     lastHouseId: uuidSchema.nullable(),
+    /** Public application-server key for browser push, or null when push is not configured. */
+    vapidPublicKey: z.string().min(1).max(200).nullable(),
     families: z.array(
       z
         .object({
