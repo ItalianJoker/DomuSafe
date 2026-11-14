@@ -570,6 +570,29 @@ export function deadlinesQuery(api: DomusafeApi, familyId: string, houseId: stri
 }
 
 /**
+ * Query of the family calendar board for a date range.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @param from - Inclusive start date.
+ * @param to - Inclusive end date.
+ * @returns Options for TanStack Query.
+ */
+export function calendarBoardQuery(
+  api: DomusafeApi,
+  familyId: string,
+  houseId: string,
+  from: string,
+  to: string,
+) {
+  return queryOptions({
+    queryKey: ['calendar-board', familyId, houseId, from, to] as const,
+    queryFn: () => api.getCalendarBoard(familyId, houseId, from, to),
+  });
+}
+
+/**
  * Query of heating maintenance, used for the boiler deadline.
  *
  * @param api - Shell API.

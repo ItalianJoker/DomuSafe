@@ -16,6 +16,8 @@ import { redactRequestUrl } from './http/redact.js';
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
 import { brandingRoutes } from './modules/branding/routes.js';
 import { createBrandingService } from './modules/branding/service.js';
+import { calendarRoutes } from './modules/calendar/routes.js';
+import { createCalendarService } from './modules/calendar/service.js';
 import { careRoutes } from './modules/care/routes.js';
 import { createCareService } from './modules/care/service.js';
 import { deadlineRoutes } from './modules/deadlines/routes.js';
@@ -110,6 +112,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const kitchen = createKitchenService(db);
   const finance = createFinanceService(db);
   const care = createCareService(db);
+  const calendar = createCalendarService(db);
   const rewards = createRewardsService(db);
   const deadlines = createDeadlinesService(db);
   const personale = createPersonaleService(db);
@@ -240,6 +243,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(homeAutomationRoutes, { homeAutomation });
   await app.register(financeRoutes, { finance });
   await app.register(careRoutes, { care });
+  await app.register(calendarRoutes, { calendar });
   await app.register(rewardsRoutes, { rewards });
   await app.register(deadlineRoutes, { deadlines });
   await app.register(personaleRoutes, { personale });

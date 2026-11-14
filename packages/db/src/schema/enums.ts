@@ -214,6 +214,20 @@ export const rewardRedemptionStatusEnum = pgEnum('reward_redemption_status', [
   'fulfilled',
 ]);
 
+/** Category of a family calendar appointment. */
+export const calendarCategoryEnum = pgEnum('calendar_category', [
+  'appointment',
+  'school',
+  'work',
+  'health',
+  'birthday',
+  'holiday',
+  'other',
+]);
+
+/** How a calendar event entered the family calendar. */
+export const calendarSourceEnum = pgEnum('calendar_source', ['internal', 'ics_import']);
+
 /** Lifecycle of a recipe URL import. */
 export const recipeImportStatusEnum = pgEnum('recipe_import_status', [
   'queued',

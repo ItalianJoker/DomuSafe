@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { currencySchema, localeSchema, type Me } from '@domusafe/contracts';
 import { PLAN_DEFINITIONS } from '@domusafe/plans';
 import { useApi } from '@/components/api-context.js';
@@ -18,6 +18,11 @@ import { kioskPath } from '@/features/kiosk/path.js';
 import { ChoresPanel } from './chores-panel.js';
 import { FamilyForm } from './family-form.js';
 import { HandoverPanel } from './handover-panel.js';
+
+const CalendarPanel = lazy(async () => {
+  const module = await import('./calendar-panel.js');
+  return { default: module.CalendarPanel };
+});
 
 const EMPTY_CREATE: FamilyFormValues = {
   name: '',
@@ -136,6 +141,8 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string; 
   const canReadRewards = role !== undefined && roleAllows(role, 'rewards.read');
   const canApproveRewards = role !== undefined && roleAllows(role, 'rewards.approve');
   const canRequestRewards = role !== undefined && roleAllows(role, 'rewards.request');
+  const canReadCalendar = role !== undefined && roleAllows(role, 'calendar.read');
+  const canWriteCalendar = role !== undefined && roleAllows(role, 'calendar.write');
   const members = useQuery({ ...membersQuery(api, props.familyId), enabled: canReadMembers });
   const [values, setValues] = useState<FamilyFormValues | null>(null);
   const [issues, setIssues] = useState<FieldIssues | null>(null);
@@ -321,6 +328,12 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string; 
         </h2>
         <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{m.successionFamilyBody()}</p>
       </div>
+
+      {canReadCalendar ? (
+        <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+          <CalendarPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteCalendar} />
+        </Suspense>
+      ) : null}
 
       {canReadCare ? (
         <HandoverPanel

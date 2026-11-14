@@ -26,6 +26,7 @@ export function HomePage(props: {
   const role = props.me.families.find((family) => family.id === props.familyId)?.role;
   const canRead = role !== undefined && roleAllows(role, 'deadlines.read');
   const canWrite = role !== undefined && roleAllows(role, 'maintenance.write');
+  const canReadCalendar = role !== undefined && roleAllows(role, 'calendar.read');
   return (
     <section className="grid gap-8">
       <div>
@@ -33,11 +34,24 @@ export function HomePage(props: {
         <p className="text-[13px] text-muted-foreground">
           {props.house.name} · {props.familyName}
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-3">
           <Button size="emergency" asChild>
             <Link to={rescuePath(props.familyId, props.house.id)}>{m.rescueOpen()}</Link>
           </Button>
+          {canReadCalendar ? (
+            <Button size="emergency" variant="outline" asChild>
+              <Link
+                to="/f/$familyId/c/$houseId/famiglia"
+                params={{ familyId: props.familyId, houseId: props.house.id }}
+              >
+                {m.calendarHomeLink()}
+              </Link>
+            </Button>
+          ) : null}
         </div>
+        {canReadCalendar ? (
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{m.calendarHomeLead()}</p>
+        ) : null}
       </div>
       {canRead ? (
         <DeadlinesPanel familyId={props.familyId} houseId={props.house.id} canWrite={canWrite} />

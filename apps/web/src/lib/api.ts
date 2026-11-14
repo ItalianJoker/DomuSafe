@@ -42,9 +42,14 @@ import {
   taxChecklistSchema,
   vehiclePageSchema,
   vehicleSchema,
+  calendarBoardSchema,
+  calendarEventSchema,
+  calendarExportSchema,
   deadlineBoardSchema,
   maintenanceTaskPageSchema,
   maintenanceTaskSchema,
+  timetableSlotPageSchema,
+  timetableSlotSchema,
   meSchema,
   membershipPageSchema,
   shutoffPageSchema,
@@ -55,7 +60,13 @@ import {
   wasteCollectionSchema,
   problemDetailsSchema,
   problemType,
+  type CalendarBoard,
+  type CalendarEvent,
+  type CalendarExport,
+  type CreateCalendarEventRequest,
+  type CreateTimetableSlotRequest,
   type DeadlineBoard,
+  type TimetableSlot,
   type Contact,
   type CreateContactRequest,
   type CreateFamilyRequest,
@@ -1667,6 +1678,60 @@ export interface DomusafeApi {
    * @returns Overdue, this week and this month.
    */
   listDeadlines(familyId: string, houseId: string): Promise<DeadlineBoard>;
+  /**
+   * Family calendar board: appointments, weekly schedules, chores and deadlines.
+   *
+   * @param familyId - Family id.
+   * @param houseId - Open house.
+   * @param from - Inclusive start date.
+   * @param to - Inclusive end date.
+   * @returns Sorted occurrences.
+   */
+  getCalendarBoard(familyId: string, houseId: string, from: string, to: string): Promise<CalendarBoard>;
+  /**
+   * Downloadable calendar file for the same range as the board.
+   *
+   * @param familyId - Family id.
+   * @param houseId - Open house.
+   * @param from - Inclusive start date.
+   * @param to - Inclusive end date.
+   * @returns Filename and calendar-file body.
+   */
+  exportCalendar(familyId: string, houseId: string, from: string, to: string): Promise<CalendarExport>;
+  /**
+   * Creates a family calendar appointment.
+   *
+   * @param familyId - Family id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Manual fields.
+   * @returns The created event.
+   */
+  createCalendarEvent(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateCalendarEventRequest,
+  ): Promise<CalendarEvent>;
+  /**
+   * Weekly timetable slots of the family.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Optional resident filter.
+   * @returns Slots.
+   */
+  listTimetableSlots(familyId: string, residentId?: string): Promise<readonly TimetableSlot[]>;
+  /**
+   * Creates a weekly timetable slot.
+   *
+   * @param familyId - Family id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Manual fields.
+   * @returns The created slot.
+   */
+  createTimetableSlot(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateTimetableSlotRequest,
+  ): Promise<TimetableSlot>;
 }
 
 /** Options of {@link createApi}. */
@@ -2070,6 +2135,50 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         params: { path: { familyId }, query: { houseId } },
       });
       return unwrap(deadlineBoardSchema, result);
+    },
+    async getCalendarBoard(familyId, houseId, from, to) {
+      const result = await client.GET('/api/v1/families/{familyId}/calendar', {
+        params: { path: { familyId }, query: { houseId, from, to } },
+      });
+      return unwrap(calendarBoardSchema, result);
+    },
+    async exportCalendar(familyId, houseId, from, to) {
+      const result = await client.GET('/api/v1/families/{familyId}/calendar/export', {
+        params: { path: { familyId }, query: { houseId, from, to } },
+      });
+      return unwrap(calendarExportSchema, result);
+    },
+    async createCalendarEvent(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/calendar/events', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateCalendarEventRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(calendarEventSchema, result);
+    },
+    listTimetableSlots(familyId, residentId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/calendar/timetable', {
+            params: {
+              path: { familyId },
+              query: {
+                limit: 200,
+                ...(residentId === undefined ? {} : { residentId }),
+                ...(cursor === undefined ? {} : { cursor }),
+              },
+            },
+          })
+          .then((result) => unwrap(timetableSlotPageSchema, result)),
+      );
+    },
+    async createTimetableSlot(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/calendar/timetable', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateTimetableSlotRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(timetableSlotSchema, result);
     },
     async updateMaintenance(familyId, houseId, taskId, version, patch) {
       const result = await client.PATCH(
