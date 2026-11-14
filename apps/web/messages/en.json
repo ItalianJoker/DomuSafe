@@ -90,7 +90,7 @@
   "houseLimit": "This plan includes at most {count} homes.",
   "noHouses": "There are no visible homes.",
   "accountTitle": "Account",
-  "accountLead": "Name, language and theme stay on your account. You can also download the family safety copy here.",
+  "accountLead": "Name, language, theme and browser notifications stay on your account. You can also download the family safety copy here.",
   "emailReadonly": "The email address cannot be changed here.",
   "backupTitle": "Safety copy",
   "backupLead": "Download the family data in a file protected by a phrase you choose, or as tables for a spreadsheet. Vault documents stay encrypted as they are stored.",
@@ -1050,5 +1050,14 @@
   "calendarWeekdayThu": "Thursday",
   "calendarWeekdayFri": "Friday",
   "calendarWeekdaySat": "Saturday",
-  "calendarWeekdaySun": "Sunday"
+  "calendarWeekdaySun": "Sunday",
+  "browserNotificationsLabel": "Browser notifications for deadlines",
+  "browserNotificationsHelp": "When enabled, the browser can alert you about overdue or this-week deadlines even if DomuSafe is closed.",
+  "browserNotificationsTurnOn": "Turn on browser notifications",
+  "browserNotificationsTurnOff": "Turn off browser notifications",
+  "browserNotificationsEnabled": "Browser notifications enabled for deadlines.",
+  "browserNotificationsDisabled": "Browser notifications turned off.",
+  "browserNotificationsUnavailable": "This server has not configured browser notifications yet.",
+  "browserNotificationsBlocked": "The browser blocked notifications. You can allow them again in the browser settings.",
+  "browserNotificationsUnsupported": "This browser does not support background notifications."
 }

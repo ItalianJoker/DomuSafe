@@ -56,6 +56,8 @@ import {
   timetableSlotSchema,
   meSchema,
   membershipPageSchema,
+  notificationPreferenceListSchema,
+  pushSubscriptionSchema,
   shutoffPageSchema,
   shutoffSchema,
   utilityPageSchema,
@@ -65,6 +67,10 @@ import {
   problemDetailsSchema,
   problemType,
   type CalendarBoard,
+  type CreatePushSubscriptionRequest,
+  type NotificationPreferenceList,
+  type PushSubscription,
+  type UpdateNotificationPreferencesRequest,
   type CalendarEvent,
   type CalendarExport,
   type CreateCalendarEventRequest,
@@ -315,6 +321,38 @@ export interface DomusafeApi {
    * @returns The updated profile.
    */
   updateProfile(patch: UpdateProfileRequest): Promise<Me>;
+  /**
+   * Notification channel preferences of the current account.
+   *
+   * @returns Preference rows (missing categories mean push is off).
+   */
+  listNotificationPreferences(): Promise<NotificationPreferenceList>;
+  /**
+   * Replaces notification channel preferences for families the account belongs to.
+   *
+   * @param body - Preference items.
+   * @returns The updated list.
+   */
+  updateNotificationPreferences(
+    body: UpdateNotificationPreferencesRequest,
+  ): Promise<NotificationPreferenceList>;
+  /**
+   * Registers a browser push subscription.
+   *
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Endpoint and client keys.
+   * @returns The stored subscription.
+   */
+  createPushSubscription(
+    idempotencyKey: string,
+    body: CreatePushSubscriptionRequest,
+  ): Promise<PushSubscription>;
+  /**
+   * Disables a browser push subscription.
+   *
+   * @param subscriptionId - Row id.
+   */
+  deletePushSubscription(subscriptionId: string): Promise<void>;
   /**
    * Families of the current account.
    *
@@ -1937,6 +1975,29 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         body: patch as components['schemas']['UpdateProfileRequestInput'],
       });
       return unwrap(meSchema, result);
+    },
+    async listNotificationPreferences() {
+      const result = await client.GET('/api/v1/me/notification-preferences');
+      return unwrap(notificationPreferenceListSchema, result);
+    },
+    async updateNotificationPreferences(body) {
+      const result = await client.PUT('/api/v1/me/notification-preferences', {
+        body: body as components['schemas']['UpdateNotificationPreferencesRequestInput'],
+      });
+      return unwrap(notificationPreferenceListSchema, result);
+    },
+    async createPushSubscription(idempotencyKey, body) {
+      const result = await client.POST('/api/v1/me/push-subscriptions', {
+        body: body as components['schemas']['CreatePushSubscriptionRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(pushSubscriptionSchema, result);
+    },
+    async deletePushSubscription(subscriptionId) {
+      const result = await client.DELETE('/api/v1/me/push-subscriptions/{subscriptionId}', {
+        params: { path: { subscriptionId } },
+      });
+      ensureOk(result);
     },
     async listFamilies() {
       const result = await client.GET('/api/v1/families');

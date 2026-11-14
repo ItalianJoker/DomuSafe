@@ -19,6 +19,7 @@ function account(plan: Me['families'][number]['plan'], role: Me['families'][numb
     primaryFamilyId: FAMILY,
     lastFamilyId: FAMILY,
     lastHouseId: HOUSE,
+    vapidPublicKey: null,
     families: [{ id: FAMILY, name: 'Rossi', role, plan, vaultFamily: true }],
   };
 }

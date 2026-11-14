@@ -4,6 +4,12 @@ const booleanFromEnv = z
   .enum(['true', 'false', '1', '0'])
   .transform((value) => value === 'true' || value === '1');
 
+const vapidKeySchema = z
+  .string()
+  .regex(/^[A-Za-z0-9_-]+$/, 'Expected URL-safe base64 without padding')
+  .min(20)
+  .max(200);
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -18,6 +24,12 @@ const envSchema = z
     VALKEY_URL: z.string().optional(),
     DOMUSAFE_MASTER_KEYS: z.string().min(1),
     DOMUSAFE_MASTER_KEY_ACTIVE: z.coerce.number().int().min(1).max(65_535),
+    VAPID_PUBLIC_KEY: vapidKeySchema.optional(),
+    VAPID_PRIVATE_KEY: vapidKeySchema.optional(),
+    VAPID_SUBJECT: z
+      .string()
+      .regex(/^(mailto:|https:\/\/).+/, 'Expected mailto: or https: contact for push')
+      .default('mailto:noreply@localhost'),
   })
   .refine((env) => env.NODE_ENV !== 'production' || (env.VALKEY_URL !== undefined && env.VALKEY_URL !== ''), {
     message: 'VALKEY_URL is required in production (shared rate limits, sessions and idempotency)',
@@ -26,7 +38,16 @@ const envSchema = z
   .refine((env) => env.NODE_ENV !== 'production' || env.PUBLIC_ORIGIN.startsWith('https://'), {
     message: 'PUBLIC_ORIGIN must use https in production',
     path: ['PUBLIC_ORIGIN'],
-  });
+  })
+  .refine(
+    (env) =>
+      (env.VAPID_PUBLIC_KEY === undefined && env.VAPID_PRIVATE_KEY === undefined) ||
+      (env.VAPID_PUBLIC_KEY !== undefined && env.VAPID_PRIVATE_KEY !== undefined),
+    {
+      message: 'VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY must be set together',
+      path: ['VAPID_PUBLIC_KEY'],
+    },
+  );
 
 /** Validated runtime configuration of the API process. */
 export interface ApiConfig {
@@ -44,6 +65,12 @@ export interface ApiConfig {
   readonly valkeyUrl: string | null;
   readonly masterKeys: string;
   readonly masterKeyActive: number;
+  /** Public VAPID key for browser push, or null when push is disabled. */
+  readonly vapidPublicKey: string | null;
+  /** Private VAPID key, or null when push is disabled. Never sent to clients. */
+  readonly vapidPrivateKey: string | null;
+  /** Contact subject advertised to push services (`mailto:` or `https:`). */
+  readonly vapidSubject: string;
 }
 
 /**
@@ -78,5 +105,8 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
     valkeyUrl: value.VALKEY_URL === undefined || value.VALKEY_URL === '' ? null : value.VALKEY_URL,
     masterKeys: value.DOMUSAFE_MASTER_KEYS,
     masterKeyActive: value.DOMUSAFE_MASTER_KEY_ACTIVE,
+    vapidPublicKey: value.VAPID_PUBLIC_KEY ?? null,
+    vapidPrivateKey: value.VAPID_PRIVATE_KEY ?? null,
+    vapidSubject: value.VAPID_SUBJECT,
   };
 }

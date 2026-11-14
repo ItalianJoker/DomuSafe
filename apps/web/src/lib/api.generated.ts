@@ -72,6 +72,109 @@ export interface paths {
         patch: operations["identity.updateProfile"];
         trace?: never;
     };
+    "/api/v1/me/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** In-app notifications of the current account */
+        get: operations["notifications.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/{notificationId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark one notification as read */
+        post: operations["notifications.markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark every notification as read */
+        post: operations["notifications.markAllRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notification channel preferences */
+        get: operations["notifications.listPreferences"];
+        /** Replace notification channel preferences */
+        put: operations["notifications.updatePreferences"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/push-subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register a browser push subscription */
+        post: operations["notifications.createPushSubscription"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/push-subscriptions/{subscriptionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Disable a browser push subscription */
+        delete: operations["notifications.deletePushSubscription"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/families": {
         parameters: {
             query?: never;
@@ -5879,6 +5982,99 @@ export interface components {
             brand?: string | null;
             defaultUnit?: string | null;
         };
+        /** @enum {string} */
+        NotificationCategoryInput: "deadline" | "vault_reminder" | "emergency_scan" | "sos" | "chore" | "approval" | "security" | "system";
+        NotificationInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            category: components["schemas"]["NotificationCategoryInput"];
+            title: string;
+            body: string;
+            link: string | null;
+            resourceType: string | null;
+            resourceId: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            readAt: string | null;
+            pushSentAt: string | null;
+        };
+        NotificationPageInput: {
+            items: components["schemas"]["NotificationInput"][];
+            nextCursor: string | null;
+        };
+        PushSubscriptionInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /** Format: uri */
+            endpoint: string;
+            deviceId: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            lastSuccessAt: string | null;
+            disabledAt: string | null;
+        };
+        CreatePushSubscriptionRequestInput: {
+            /** Format: uri */
+            endpoint: string;
+            /** @description Bytes encoded as base64url without padding */
+            p256dh: string;
+            /** @description Bytes encoded as base64url without padding */
+            auth: string;
+            deviceId?: string | null;
+        };
+        NotificationPreferenceInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            category: components["schemas"]["NotificationCategoryInput"];
+            inApp: boolean;
+            push: boolean;
+            email: boolean;
+            quietStart: string | null;
+            quietEnd: string | null;
+        };
+        NotificationPreferenceListInput: {
+            items: components["schemas"]["NotificationPreferenceInput"][];
+        };
+        UpdateNotificationPreferencesRequestInput: {
+            items: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                familyId: string;
+                category: components["schemas"]["NotificationCategoryInput"];
+                inApp: boolean;
+                push: boolean;
+                email: boolean;
+                quietStart?: string | null;
+                quietEnd?: string | null;
+            }[];
+        };
+        PushPayloadInput: {
+            title: string;
+            body: string;
+            url: string;
+        };
         PublicationInput: {
             /**
              * Format: uuid
@@ -6574,6 +6770,7 @@ export interface components {
             primaryFamilyId: string | null;
             lastFamilyId: string | null;
             lastHouseId: string | null;
+            vapidPublicKey: string | null;
             families: {
                 /**
                  * Format: uuid
@@ -10036,6 +10233,99 @@ export interface components {
             brand?: string | null;
             defaultUnit?: string | null;
         };
+        /** @enum {string} */
+        NotificationCategory: "deadline" | "vault_reminder" | "emergency_scan" | "sos" | "chore" | "approval" | "security" | "system";
+        Notification: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            category: components["schemas"]["NotificationCategory"];
+            title: string;
+            body: string;
+            link: string | null;
+            resourceType: string | null;
+            resourceId: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            readAt: string | null;
+            pushSentAt: string | null;
+        };
+        NotificationPage: {
+            items: components["schemas"]["Notification"][];
+            nextCursor: string | null;
+        };
+        PushSubscription: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /** Format: uri */
+            endpoint: string;
+            deviceId: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            lastSuccessAt: string | null;
+            disabledAt: string | null;
+        };
+        CreatePushSubscriptionRequest: {
+            /** Format: uri */
+            endpoint: string;
+            /** @description Bytes encoded as base64url without padding */
+            p256dh: string;
+            /** @description Bytes encoded as base64url without padding */
+            auth: string;
+            deviceId?: string | null;
+        };
+        NotificationPreference: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            category: components["schemas"]["NotificationCategory"];
+            inApp: boolean;
+            push: boolean;
+            email: boolean;
+            quietStart: string | null;
+            quietEnd: string | null;
+        };
+        NotificationPreferenceList: {
+            items: components["schemas"]["NotificationPreference"][];
+        };
+        UpdateNotificationPreferencesRequest: {
+            items: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                familyId: string;
+                category: components["schemas"]["NotificationCategory"];
+                inApp: boolean;
+                push: boolean;
+                email: boolean;
+                quietStart?: string | null;
+                quietEnd?: string | null;
+            }[];
+        };
+        PushPayload: {
+            title: string;
+            body: string;
+            url: string;
+        };
         Publication: {
             /**
              * Format: uuid
@@ -10731,6 +11021,7 @@ export interface components {
             primaryFamilyId: string | null;
             lastFamilyId: string | null;
             lastHouseId: string | null;
+            vapidPublicKey: string | null;
             families: {
                 /**
                  * Format: uuid
@@ -11109,6 +11400,293 @@ export interface operations {
             };
             /** @description Default Response */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "notifications.list": {
+        parameters: {
+            query?: {
+                unreadOnly?: boolean;
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "notifications.markRead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                notificationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "notifications.markAllRead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "notifications.listPreferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferenceList"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "notifications.updatePreferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationPreferencesRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferenceList"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "notifications.createPushSubscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePushSubscriptionRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushSubscription"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "notifications.deletePushSubscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                subscriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

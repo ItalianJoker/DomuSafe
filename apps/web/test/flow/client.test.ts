@@ -31,6 +31,9 @@ describe('shell client against the API', () => {
         valkeyUrl: null,
         masterKeys: `1:${randomBytes(32).toString('base64url')}`,
         masterKeyActive: 1,
+        vapidPublicKey: null,
+        vapidPrivateKey: null,
+        vapidSubject: 'mailto:test@example.test',
       },
       globalRateLimitPerMinute: 100_000,
     });

@@ -1,12 +1,17 @@
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { createTestDatabase, requireAdminUrl, type TestDatabase } from '@domusafe/db/testing';
 import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
+import webpush from 'web-push';
 import { inject } from 'vitest';
 import { buildApp } from '../src/app.js';
 import { loadConfig } from '../src/config.js';
 import { MemoryStore } from '../src/infra/kv.js';
+import type { PushSender } from '../src/modules/notifications/push.js';
 
 export const ORIGIN = 'http://localhost:3000';
+
+/** Deterministic VAPID pair shared by API tests that exercise browser push. */
+export const TEST_VAPID = webpush.generateVAPIDKeys();
 
 export interface TestApp {
   readonly app: FastifyInstance;
@@ -14,7 +19,9 @@ export interface TestApp {
   readonly close: () => Promise<void>;
 }
 
-export async function createTestApp(options: { rateLimitPerMinute?: number } = {}): Promise<TestApp> {
+export async function createTestApp(
+  options: { rateLimitPerMinute?: number; pushSender?: PushSender | null } = {},
+): Promise<TestApp> {
   const database = await createTestDatabase(requireAdminUrl(), inject('templateDatabase'));
   const config = loadConfig({
     NODE_ENV: 'test',
@@ -24,11 +31,15 @@ export async function createTestApp(options: { rateLimitPerMinute?: number } = {
     DATABASE_POOL_SIZE: '4',
     DOMUSAFE_MASTER_KEYS: `1:${randomBytes(32).toString('base64url')}`,
     DOMUSAFE_MASTER_KEY_ACTIVE: '1',
+    VAPID_PUBLIC_KEY: TEST_VAPID.publicKey,
+    VAPID_PRIVATE_KEY: TEST_VAPID.privateKey,
+    VAPID_SUBJECT: 'mailto:test@example.test',
   });
   const app = await buildApp({
     config,
     store: new MemoryStore(),
     globalRateLimitPerMinute: options.rateLimitPerMinute ?? 100_000,
+    ...(options.pushSender === undefined ? {} : { pushSender: options.pushSender }),
   });
   await app.ready();
   return {
