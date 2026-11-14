@@ -12,6 +12,11 @@ const SyncStatus = lazy(async () => {
   return { default: module.SyncStatus };
 });
 
+const NotificationInbox = lazy(async () => {
+  const module = await import('@/features/notifications/notification-inbox.js');
+  return { default: module.NotificationInbox };
+});
+
 const LABELS = {
   home: () => m.navHome(),
   cassaforte: () => m.navCassaforte(),
@@ -126,6 +131,9 @@ export function AppShell(props: {
           <div className="ml-auto flex min-w-0 items-center gap-3">
             <Suspense fallback={null}>
               <SyncStatus familyId={props.familyId} houseId={props.houseId} plan={family?.plan ?? 'free'} />
+            </Suspense>
+            <Suspense fallback={null}>
+              <NotificationInbox familyId={props.familyId} houseId={props.houseId} />
             </Suspense>
             <p className="hidden truncate text-[13px] text-muted-foreground sm:block">
               {props.me.displayName}

@@ -570,6 +570,24 @@ export function deadlinesQuery(api: DomusafeApi, familyId: string, houseId: stri
   });
 }
 
+/** Cache key of the in-app notification inbox. */
+export const notificationsKey = ['notifications'] as const;
+
+/**
+ * Query of recent in-app notifications for the signed-in account.
+ *
+ * @param api - Shell API.
+ * @param limit - Page size (default 30).
+ * @returns Options for TanStack Query.
+ */
+export function notificationsQuery(api: DomusafeApi, limit = 30) {
+  return queryOptions({
+    queryKey: notificationsKey,
+    queryFn: () => api.listNotifications({ limit, unreadOnly: false }),
+    refetchInterval: 60_000,
+  });
+}
+
 /**
  * Query of the family calendar board for a date range.
  *

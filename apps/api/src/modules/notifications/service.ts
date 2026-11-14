@@ -306,6 +306,7 @@ export function createNotificationsService(
             const created: {
               accountId: string;
               notificationId: string;
+              pushOn: boolean;
               locale: 'it' | 'en';
               payload: PushPayload;
             }[] = [];
@@ -317,7 +318,9 @@ export function createNotificationsService(
               if (!decide({ role, isOwner: false, vaultFamilyConcession: false }, 'deadlines.read').allowed) {
                 continue;
               }
-              if (!(await repo.isDeadlinePushEnabled(tx, member.accountId, family.familyId))) {
+              const inApp = await repo.isDeadlineInAppEnabled(tx, member.accountId, family.familyId);
+              const pushOn = await repo.isDeadlinePushEnabled(tx, member.accountId, family.familyId);
+              if (!inApp && !pushOn) {
                 continue;
               }
               for (const task of tasks) {
@@ -344,6 +347,7 @@ export function createNotificationsService(
                 created.push({
                   accountId: member.accountId,
                   notificationId: row.id,
+                  pushOn,
                   locale: 'it',
                   payload: { title: copy.title, body: copy.body, url: '/' },
                 });
@@ -356,7 +360,7 @@ export function createNotificationsService(
         notificationCount += work.length;
 
         for (const item of work) {
-          if (options.pushSender === null) {
+          if (!item.pushOn || options.pushSender === null) {
             continue;
           }
           const subscriptions = await withContext(db, { principal: systemPrincipal }, (tx) =>
@@ -378,6 +382,23 @@ export function createNotificationsService(
                 await repo.markPushSuccess(tx, subscription.id, instant);
               } else {
                 await repo.markPushFailure(tx, subscription.id, instant, result.gone);
+                if (result.gone) {
+                  await repo.insertNotificationIfNew(
+                    tx,
+                    {
+                      accountId: item.accountId,
+                      familyId: family.familyId,
+                      category: 'system',
+                      title: 'Avviso del browser non più attivo',
+                      body: 'Questo dispositivo non riceve più gli avvisi. Puoi riattivarli da Account.',
+                      link: '/',
+                      resourceType: 'push_subscriptions',
+                      resourceId: subscription.id,
+                    },
+                    dayStart,
+                    dayEnd,
+                  );
+                }
               }
             });
             if (result.ok) {

@@ -56,6 +56,7 @@ import {
   timetableSlotSchema,
   meSchema,
   membershipPageSchema,
+  notificationPageSchema,
   notificationPreferenceListSchema,
   pushSubscriptionSchema,
   shutoffPageSchema,
@@ -68,6 +69,7 @@ import {
   problemType,
   type CalendarBoard,
   type CreatePushSubscriptionRequest,
+  type NotificationPage,
   type NotificationPreferenceList,
   type PushSubscription,
   type UpdateNotificationPreferencesRequest,
@@ -321,6 +323,27 @@ export interface DomusafeApi {
    * @returns The updated profile.
    */
   updateProfile(patch: UpdateProfileRequest): Promise<Me>;
+  /**
+   * Recent in-app notifications of the current account.
+   *
+   * @param query - Unread filter, cursor and page size.
+   * @returns A page of notifications, newest first.
+   */
+  listNotifications(query?: {
+    readonly unreadOnly?: boolean;
+    readonly cursor?: string;
+    readonly limit?: number;
+  }): Promise<NotificationPage>;
+  /**
+   * Marks one notification as read.
+   *
+   * @param notificationId - Row id.
+   */
+  markNotificationRead(notificationId: string): Promise<void>;
+  /**
+   * Marks every notification of the account as read.
+   */
+  markAllNotificationsRead(): Promise<void>;
   /**
    * Notification channel preferences of the current account.
    *
@@ -1975,6 +1998,28 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         body: patch as components['schemas']['UpdateProfileRequestInput'],
       });
       return unwrap(meSchema, result);
+    },
+    async listNotifications(query = {}) {
+      const result = await client.GET('/api/v1/me/notifications', {
+        params: {
+          query: {
+            unreadOnly: query.unreadOnly ?? false,
+            limit: query.limit ?? 50,
+            ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
+          },
+        },
+      });
+      return unwrap(notificationPageSchema, result);
+    },
+    async markNotificationRead(notificationId) {
+      const result = await client.POST('/api/v1/me/notifications/{notificationId}/read', {
+        params: { path: { notificationId } },
+      });
+      ensureOk(result);
+    },
+    async markAllNotificationsRead() {
+      const result = await client.POST('/api/v1/me/notifications/read-all', {});
+      ensureOk(result);
     },
     async listNotificationPreferences() {
       const result = await client.GET('/api/v1/me/notification-preferences');

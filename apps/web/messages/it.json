@@ -1059,5 +1059,18 @@
   "browserNotificationsDisabled": "Notifiche del browser disattivate.",
   "browserNotificationsUnavailable": "Questo server non ha ancora configurato le notifiche del browser.",
   "browserNotificationsBlocked": "Il browser ha bloccato le notifiche. Puoi riattivarle nelle impostazioni del browser.",
-  "browserNotificationsUnsupported": "Questo browser non supporta le notifiche in background."
+  "browserNotificationsUnsupported": "Questo browser non supporta le notifiche in background.",
+  "notificationInboxLabel": "Avvisi",
+  "notificationInboxTitle": "Avvisi recenti",
+  "notificationInboxEmpty": "Nessun avviso per ora.",
+  "notificationInboxLoading": "Caricamento degli avvisi…",
+  "notificationMarkAllRead": "Segna tutti come letti",
+  "notificationCategoryDeadline": "Scadenza",
+  "notificationCategorySystem": "Avviso di sistema",
+  "notificationCategoryVault": "Promemoria cassaforte",
+  "notificationCategoryEmergencyScan": "Foglio di soccorso aperto",
+  "notificationCategorySos": "Richiesta di soccorso urgente",
+  "notificationCategoryChore": "Facenda",
+  "notificationCategoryApproval": "Approvazione",
+  "notificationCategorySecurity": "Sicurezza"
 }

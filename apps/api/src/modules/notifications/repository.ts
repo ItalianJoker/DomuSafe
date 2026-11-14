@@ -315,6 +315,52 @@ export async function upsertPreference(
 }
 
 /**
+ * Loads the deadline preference row for one account in a family, if any.
+ *
+ * @param tx - Transaction.
+ * @param accountId - Account.
+ * @param familyId - Family.
+ * @returns Preference flags, or null when the row is missing.
+ */
+export async function findDeadlinePreference(
+  tx: Transaction,
+  accountId: string,
+  familyId: string,
+): Promise<{ readonly inApp: boolean; readonly push: boolean } | null> {
+  const [row] = await tx
+    .select({
+      inApp: notificationPreferences.inApp,
+      push: notificationPreferences.push,
+    })
+    .from(notificationPreferences)
+    .where(
+      and(
+        eq(notificationPreferences.accountId, accountId),
+        eq(notificationPreferences.familyId, familyId),
+        eq(notificationPreferences.category, 'deadline'),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Whether the in-app inbox should receive deadline alerts for one account in a family.
+ *
+ * @param tx - Transaction.
+ * @param accountId - Account.
+ * @param familyId - Family.
+ * @returns True when no preference row exists (default) or `in_app` is on.
+ */
+export async function isDeadlineInAppEnabled(
+  tx: Transaction,
+  accountId: string,
+  familyId: string,
+): Promise<boolean> {
+  const row = await findDeadlinePreference(tx, accountId, familyId);
+  return row === null || row.inApp;
+}
+
+/**
  * Whether push is enabled for deadline alerts for one account in a family.
  *
  * @param tx - Transaction.
@@ -327,16 +373,7 @@ export async function isDeadlinePushEnabled(
   accountId: string,
   familyId: string,
 ): Promise<boolean> {
-  const [row] = await tx
-    .select({ push: notificationPreferences.push })
-    .from(notificationPreferences)
-    .where(
-      and(
-        eq(notificationPreferences.accountId, accountId),
-        eq(notificationPreferences.familyId, familyId),
-        eq(notificationPreferences.category, 'deadline'),
-      ),
-    );
+  const row = await findDeadlinePreference(tx, accountId, familyId);
   return row?.push === true;
 }
 

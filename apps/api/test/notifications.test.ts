@@ -115,8 +115,17 @@ describe('browser push and deadline alerts', () => {
 
     const inbox = await alice.request('GET', '/api/v1/me/notifications?unreadOnly=true');
     expect(inbox.statusCode).toBe(200);
-    const items = inbox.json<{ items: { resourceId: string | null; category: string }[] }>().items;
-    expect(items.some((item) => item.category === 'deadline' && item.resourceId === taskId)).toBe(true);
+    const items = inbox.json<{ items: { id: string; resourceId: string | null; category: string }[] }>()
+      .items;
+    const deadline = items.find((item) => item.category === 'deadline' && item.resourceId === taskId);
+    expect(deadline).toBeDefined();
+
+    const marked = await alice.request('POST', `/api/v1/me/notifications/${deadline!.id}/read`);
+    expect(marked.statusCode).toBe(204);
+    const afterRead = await alice.request('GET', '/api/v1/me/notifications?unreadOnly=true');
+    expect(afterRead.json<{ items: { id: string }[] }>().items.some((item) => item.id === deadline!.id)).toBe(
+      false,
+    );
 
     const again = await notifications.processDeadlineAlerts();
     expect(again.notifications).toBe(0);
@@ -126,6 +135,60 @@ describe('browser push and deadline alerts', () => {
     expect(
       (await alice.request('DELETE', `/api/v1/me/push-subscriptions/${subscription.id}`)).statusCode,
     ).toBe(204);
+
+    await pool.end();
+  });
+
+  it('creates in-app deadline notices without browser push and supports mark-all-read', async () => {
+    const today = calendarDateInTimeZone(new Date(), 'Europe/Rome');
+    const overdue = shiftCalendarDate(today, -2);
+    const task = await alice.create(`/api/v1/families/${familyId}/houses/${houseId}/maintenance-tasks`, {
+      title: 'Controllo estintore',
+      category: 'safety',
+      nextDueDate: overdue,
+      active: true,
+    });
+    expect(task.statusCode).toBe(201);
+    const taskId = task.json<{ id: string }>().id;
+
+    const prefs = await alice.request('PUT', '/api/v1/me/notification-preferences', {
+      body: {
+        items: [
+          {
+            familyId,
+            category: 'deadline',
+            inApp: true,
+            push: false,
+            email: false,
+            quietStart: null,
+            quietEnd: null,
+          },
+        ],
+      },
+    });
+    expect(prefs.statusCode).toBe(200);
+
+    const pool = createPool(ctx.database.appUrl, { max: 2, applicationName: 'domusafe-test-inbox' });
+    const db = createDatabase(pool);
+    const notifications = createNotificationsService(
+      db,
+      createTenancyService(db),
+      { vapidPublicKey: TEST_VAPID.publicKey, pushSender: null },
+      () => new Date(),
+    );
+    const summary = await notifications.processDeadlineAlerts();
+    expect(summary.notifications).toBeGreaterThanOrEqual(1);
+    expect(summary.pushAttempts).toBe(0);
+
+    const inbox = await alice.request('GET', '/api/v1/me/notifications?limit=20');
+    expect(inbox.statusCode).toBe(200);
+    const page = inbox.json<{ items: { id: string; category: string; resourceId: string | null }[] }>();
+    expect(page.items.some((item) => item.category === 'deadline' && item.resourceId === taskId)).toBe(true);
+
+    const allRead = await alice.request('POST', '/api/v1/me/notifications/read-all');
+    expect(allRead.statusCode).toBe(204);
+    const unread = await alice.request('GET', '/api/v1/me/notifications?unreadOnly=true');
+    expect(unread.json<{ items: unknown[] }>().items).toEqual([]);
 
     await pool.end();
   });

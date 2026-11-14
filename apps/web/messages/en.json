@@ -1059,5 +1059,18 @@
   "browserNotificationsDisabled": "Browser notifications turned off.",
   "browserNotificationsUnavailable": "This server has not configured browser notifications yet.",
   "browserNotificationsBlocked": "The browser blocked notifications. You can allow them again in the browser settings.",
-  "browserNotificationsUnsupported": "This browser does not support background notifications."
+  "browserNotificationsUnsupported": "This browser does not support background notifications.",
+  "notificationInboxLabel": "Notices",
+  "notificationInboxTitle": "Recent notices",
+  "notificationInboxEmpty": "No notices for now.",
+  "notificationInboxLoading": "Loading notices…",
+  "notificationMarkAllRead": "Mark all as read",
+  "notificationCategoryDeadline": "Deadline",
+  "notificationCategorySystem": "System notice",
+  "notificationCategoryVault": "Vault reminder",
+  "notificationCategoryEmergencyScan": "Rescue sheet opened",
+  "notificationCategorySos": "Urgent rescue request",
+  "notificationCategoryChore": "Chore",
+  "notificationCategoryApproval": "Approval",
+  "notificationCategorySecurity": "Security"
 }
