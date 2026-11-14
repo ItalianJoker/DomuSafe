@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { instantSchema, pageSchema, uuidSchema } from './common.js';
+import { instantSchema, localDateSchema, pageSchema, uuidSchema } from './common.js';
+import { shiftCalendarDate } from './deadlines.js';
 /** Who a handover note is written for. */
 export const HANDOVER_AUDIENCES = ['family', 'guest'] as const;
 /** Who a handover note is written for. */
@@ -240,3 +241,114 @@ export const updateHandoverRequestSchema = z
   .meta({ id: 'UpdateHandoverRequest' });
 /** Body of `PATCH …/handovers/{handoverId}`. */
 export type UpdateHandoverRequest = z.infer<typeof updateHandoverRequestSchema>;
+
+const displayNameSchema = z.string().trim().min(1).max(120);
+const relationSchema = z.string().trim().min(1).max(80);
+const relationshipNotesSchema = z.string().trim().max(4000);
+const contactIntervalSchema = z.int().min(1).max(3660);
+
+/** How a simple contact reminder stands relative to today. */
+export const RELATIONSHIP_REMINDER_STATES = ['none', 'upcoming', 'due', 'overdue'] as const;
+/** How a simple contact reminder stands relative to today. */
+export type RelationshipReminderState = (typeof RELATIONSHIP_REMINDER_STATES)[number];
+
+/** Path parameters of one relationship notebook entry. */
+export const relationshipParamsSchema = z.object({ familyId: uuidSchema, entryId: uuidSchema }).strict();
+/** Path parameters of one relationship notebook entry. */
+export type RelationshipParams = z.infer<typeof relationshipParamsSchema>;
+
+/** Query of the relationship notebook list. */
+export const relationshipListQuerySchema = z.object({ limit: limitField, cursor: cursorField }).strict();
+/** Query of the relationship notebook list. */
+export type RelationshipListQuery = z.infer<typeof relationshipListQuerySchema>;
+
+/**
+ * One ethical personal CRM entry: name, relation, last contact, interval and notes.
+ * Reminder fields are derived on the server from last contact and the interval — never from tracking.
+ */
+export const relationshipEntrySchema = z
+  .object({
+    id: uuidSchema,
+    familyId: uuidSchema,
+    ownerAccountId: uuidSchema,
+    displayName: displayNameSchema,
+    relation: relationSchema.nullable(),
+    lastContactOn: localDateSchema.nullable(),
+    contactIntervalDays: contactIntervalSchema.nullable(),
+    notes: relationshipNotesSchema.nullable(),
+    nextReminderOn: localDateSchema.nullable(),
+    reminderState: z.enum(RELATIONSHIP_REMINDER_STATES),
+    version: z.int().min(1),
+    createdAt: instantSchema,
+    updatedAt: instantSchema,
+  })
+  .strict()
+  .meta({ id: 'RelationshipEntry' });
+/** One ethical personal CRM entry. */
+export type RelationshipEntry = z.infer<typeof relationshipEntrySchema>;
+
+/** Page of relationship notebook entries. */
+export const relationshipEntryPageSchema = pageSchema(relationshipEntrySchema).meta({
+  id: 'RelationshipEntryPage',
+});
+/** Page of relationship notebook entries. */
+export type RelationshipEntryPage = z.infer<typeof relationshipEntryPageSchema>;
+
+/** Body of `POST …/relationships`. */
+export const createRelationshipRequestSchema = z
+  .object({
+    displayName: displayNameSchema,
+    relation: relationSchema.nullable().optional(),
+    lastContactOn: localDateSchema.nullable().optional(),
+    contactIntervalDays: contactIntervalSchema.nullable().optional(),
+    notes: relationshipNotesSchema.nullable().optional(),
+  })
+  .strict()
+  .meta({ id: 'CreateRelationshipRequest' });
+/** Body of `POST …/relationships`. */
+export type CreateRelationshipRequest = z.infer<typeof createRelationshipRequestSchema>;
+
+/** Body of `PATCH …/relationships/{entryId}`. */
+export const updateRelationshipRequestSchema = z
+  .object({
+    displayName: displayNameSchema.optional(),
+    relation: relationSchema.nullable().optional(),
+    lastContactOn: localDateSchema.nullable().optional(),
+    contactIntervalDays: contactIntervalSchema.nullable().optional(),
+    notes: relationshipNotesSchema.nullable().optional(),
+  })
+  .strict()
+  .refine(atLeastOneField, { message: 'At least one field is required' })
+  .meta({ id: 'UpdateRelationshipRequest' });
+/** Body of `PATCH …/relationships/{entryId}`. */
+export type UpdateRelationshipRequest = z.infer<typeof updateRelationshipRequestSchema>;
+
+/**
+ * Derives the next contact reminder from last contact and the interval the person chose.
+ *
+ * Preconditions: `today` is `YYYY-MM-DD` in the family time zone.
+ * Postconditions: no inferred profile — only arithmetic on fields the person wrote.
+ * Data contract: `nextReminderOn` is null when interval or last contact is missing.
+ *
+ * @param lastContactOn - Last contact date, or null.
+ * @param contactIntervalDays - Days between contacts, or null.
+ * @param today - Calendar date in the family time zone.
+ * @returns Next reminder date and state.
+ */
+export function relationshipReminder(
+  lastContactOn: string | null,
+  contactIntervalDays: number | null,
+  today: string,
+): { readonly nextReminderOn: string | null; readonly reminderState: RelationshipReminderState } {
+  if (lastContactOn === null || contactIntervalDays === null) {
+    return { nextReminderOn: null, reminderState: 'none' };
+  }
+  const nextReminderOn = shiftCalendarDate(lastContactOn, contactIntervalDays);
+  if (nextReminderOn < today) {
+    return { nextReminderOn, reminderState: 'overdue' };
+  }
+  if (nextReminderOn === today) {
+    return { nextReminderOn, reminderState: 'due' };
+  }
+  return { nextReminderOn, reminderState: 'upcoming' };
+}

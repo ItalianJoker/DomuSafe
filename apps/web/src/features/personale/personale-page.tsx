@@ -9,12 +9,13 @@ import { AccountsPanel, TaxPanel } from './premium-panels.js';
 import { CardPanel } from './card-panel.js';
 import { personaleTabLabel, personaleTabs, type PersonaleTab } from './model.js';
 import { PetsPanel } from './pets-panel.js';
+import { RelationshipsPanel } from './relationships-panel.js';
 import { ServicesPanel } from './services-panel.js';
 import { VitalsPanel } from './vitals-panel.js';
 
 /**
  * Personale section of the open house: rescue cards, Chi sono, parameters diary,
- * services, animals, taxes and accounts.
+ * relationship notebook, services, animals, taxes and accounts.
  *
  * Preconditions: `houseId` belongs to `familyId`.
  * Postconditions: a role only sees the tabs its permissions allow. Taxes and accounts stay closed without Premium.
@@ -36,6 +37,7 @@ export function PersonalePage(props: {
   const active = tabs.includes(tab) ? tab : (tabs[0] ?? 'card');
   const canWrite = role === 'admin' || role === 'parent';
   const canWriteHealth = role !== undefined && roleAllows(role, 'health.write');
+  const canWriteRelationships = role !== undefined && roleAllows(role, 'care.relationships');
 
   if (tabs.length === 0) {
     return (
@@ -75,6 +77,9 @@ export function PersonalePage(props: {
       ) : null}
       {active === 'vitals' ? (
         <VitalsPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteHealth} />
+      ) : null}
+      {active === 'relationships' ? (
+        <RelationshipsPanel familyId={props.familyId} canWrite={canWriteRelationships} />
       ) : null}
       {active === 'services' ? (
         <ServicesPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWrite} />

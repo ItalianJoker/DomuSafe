@@ -1,12 +1,14 @@
 import {
+  families,
   handovers,
   houses,
+  relationshipEntries,
   residentAboutCards,
   residents,
   vitalEntries,
   type Transaction,
 } from '@domusafe/db';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 
 /** Row of `vital_entries`. */
 export type VitalEntryRow = typeof vitalEntries.$inferSelect;
@@ -14,6 +16,8 @@ export type VitalEntryRow = typeof vitalEntries.$inferSelect;
 export type AboutCardRow = typeof residentAboutCards.$inferSelect;
 /** Row of `handovers`. */
 export type HandoverRow = typeof handovers.$inferSelect;
+/** Row of `relationship_entries`. */
+export type RelationshipRow = typeof relationshipEntries.$inferSelect;
 
 interface Page {
   readonly limit: number;
@@ -526,6 +530,213 @@ export async function softDeleteHandover(
         eq(handovers.id, handoverId),
         eq(handovers.version, expectedVersion),
         isNull(handovers.deletedAt),
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Reads the family time zone used for contact reminders.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @returns The IANA zone, or `null` when the family is missing.
+ */
+export async function familyTimeZone(tx: Transaction, familyId: string): Promise<string | null> {
+  const [row] = await tx
+    .select({ timezone: families.timezone })
+    .from(families)
+    .where(eq(families.id, familyId));
+  return row?.timezone ?? null;
+}
+
+/**
+ * Inserts one personal relationship notebook entry.
+ *
+ * @param tx - Transaction.
+ * @param input - Columns.
+ * @returns The inserted row.
+ */
+export async function insertRelationship(
+  tx: Transaction,
+  input: {
+    readonly familyId: string;
+    readonly ownerAccountId: string;
+    readonly displayName: string;
+    readonly relation: string | null;
+    readonly lastContactOn: string | null;
+    readonly contactIntervalDays: number | null;
+    readonly notes: string | null;
+    readonly createdBy: string;
+  },
+): Promise<RelationshipRow> {
+  const [row] = await tx
+    .insert(relationshipEntries)
+    .values({
+      familyId: input.familyId,
+      visibility: 'personal',
+      ownerAccountId: input.ownerAccountId,
+      displayName: input.displayName,
+      relation: input.relation,
+      lastContactOn: input.lastContactOn,
+      contactIntervalDays: input.contactIntervalDays,
+      notes: input.notes,
+      createdBy: input.createdBy,
+      updatedBy: input.createdBy,
+    })
+    .returning();
+  if (row === undefined) {
+    throw new Error('Relationship insert returned no row');
+  }
+  return row;
+}
+
+/**
+ * Lists the caller's personal relationship notebook, alphabetically.
+ *
+ * @param tx - Transaction.
+ * @param scope - Family, owner and page.
+ * @returns Up to `limit + 1` rows.
+ */
+export async function listRelationships(
+  tx: Transaction,
+  scope: {
+    readonly familyId: string;
+    readonly ownerAccountId: string;
+  } & Page,
+): Promise<RelationshipRow[]> {
+  const after =
+    scope.after === null
+      ? undefined
+      : sql`(${relationshipEntries.displayName}, ${relationshipEntries.id}) > (${scope.after[0]}, ${scope.after[1]}::uuid)`;
+  return tx
+    .select()
+    .from(relationshipEntries)
+    .where(
+      and(
+        eq(relationshipEntries.familyId, scope.familyId),
+        eq(relationshipEntries.ownerAccountId, scope.ownerAccountId),
+        isNull(relationshipEntries.deletedAt),
+        after,
+      ),
+    )
+    .orderBy(asc(relationshipEntries.displayName), asc(relationshipEntries.id))
+    .limit(scope.limit + 1);
+}
+
+/**
+ * Loads one personal relationship notebook entry owned by the caller.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param entryId - Entry id.
+ * @param ownerAccountId - Owner account id.
+ * @returns The row, or `null`.
+ */
+export async function getRelationship(
+  tx: Transaction,
+  familyId: string,
+  entryId: string,
+  ownerAccountId: string,
+): Promise<RelationshipRow | null> {
+  const [row] = await tx
+    .select()
+    .from(relationshipEntries)
+    .where(
+      and(
+        eq(relationshipEntries.familyId, familyId),
+        eq(relationshipEntries.id, entryId),
+        eq(relationshipEntries.ownerAccountId, ownerAccountId),
+        isNull(relationshipEntries.deletedAt),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Updates a personal relationship notebook entry when the version matches.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param entryId - Entry id.
+ * @param ownerAccountId - Owner account id.
+ * @param expectedVersion - Version the client loaded.
+ * @param patch - Columns to change.
+ * @returns The updated row, or `null`.
+ */
+export async function updateRelationship(
+  tx: Transaction,
+  familyId: string,
+  entryId: string,
+  ownerAccountId: string,
+  expectedVersion: number,
+  patch: {
+    readonly displayName?: string | undefined;
+    readonly relation?: string | null | undefined;
+    readonly lastContactOn?: string | null | undefined;
+    readonly contactIntervalDays?: number | null | undefined;
+    readonly notes?: string | null | undefined;
+    readonly updatedBy: string;
+  },
+): Promise<RelationshipRow | null> {
+  const [row] = await tx
+    .update(relationshipEntries)
+    .set({
+      ...(patch.displayName === undefined ? {} : { displayName: patch.displayName }),
+      ...(patch.relation === undefined ? {} : { relation: patch.relation }),
+      ...(patch.lastContactOn === undefined ? {} : { lastContactOn: patch.lastContactOn }),
+      ...(patch.contactIntervalDays === undefined ? {} : { contactIntervalDays: patch.contactIntervalDays }),
+      ...(patch.notes === undefined ? {} : { notes: patch.notes }),
+      updatedBy: patch.updatedBy,
+      version: sql`${relationshipEntries.version} + 1`,
+    })
+    .where(
+      and(
+        eq(relationshipEntries.familyId, familyId),
+        eq(relationshipEntries.id, entryId),
+        eq(relationshipEntries.ownerAccountId, ownerAccountId),
+        eq(relationshipEntries.version, expectedVersion),
+        isNull(relationshipEntries.deletedAt),
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Soft-deletes a personal relationship notebook entry when the version matches.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param entryId - Entry id.
+ * @param ownerAccountId - Owner account id.
+ * @param expectedVersion - Version the client loaded.
+ * @param updatedBy - Actor.
+ * @returns The deleted row, or `null`.
+ */
+export async function softDeleteRelationship(
+  tx: Transaction,
+  familyId: string,
+  entryId: string,
+  ownerAccountId: string,
+  expectedVersion: number,
+  updatedBy: string,
+): Promise<RelationshipRow | null> {
+  const [row] = await tx
+    .update(relationshipEntries)
+    .set({
+      deletedAt: sql`now()`,
+      updatedBy,
+      version: sql`${relationshipEntries.version} + 1`,
+    })
+    .where(
+      and(
+        eq(relationshipEntries.familyId, familyId),
+        eq(relationshipEntries.id, entryId),
+        eq(relationshipEntries.ownerAccountId, ownerAccountId),
+        eq(relationshipEntries.version, expectedVersion),
+        isNull(relationshipEntries.deletedAt),
       ),
     )
     .returning();

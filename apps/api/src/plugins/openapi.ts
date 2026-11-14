@@ -36,7 +36,11 @@ export const openApiPlugin = fp(
           { name: 'identity', description: 'Account and profile' },
           { name: 'tenancy', description: 'Families, houses and members' },
           { name: 'inventory', description: 'Rooms, storage units, inventory items and search' },
-          { name: 'care', description: 'Vital diary, Chi sono identity sheet and caregiver handovers' },
+          {
+            name: 'care',
+            description:
+              'Vital diary, Chi sono identity sheet, caregiver handovers and ethical personal relationship notebook',
+          },
           {
             name: 'rewards',
             description: 'Family chores, points, streaks and the rewards store',

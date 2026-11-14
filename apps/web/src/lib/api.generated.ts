@@ -1451,6 +1451,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/families/{familyId}/relationships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Personal relationship notebook of the caller */
+        get: operations["care.listRelationships"];
+        put?: never;
+        /** Add a personal relationship notebook entry */
+        post: operations["care.createRelationship"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/relationships/{entryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a personal relationship notebook entry */
+        delete: operations["care.deleteRelationship"];
+        options?: never;
+        head?: never;
+        /** Update a personal relationship notebook entry */
+        patch: operations["care.updateRelationship"];
+        trace?: never;
+    };
     "/api/v1/families/{familyId}/chores": {
         parameters: {
             query?: never;
@@ -2515,183 +2551,6 @@ export interface components {
             welcome: string | null;
             logoDataUrl: string | null;
         };
-        VitalEntryInput: {
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            familyId: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            residentId: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            measuredAt: string;
-            systolicMmhg: number | null;
-            diastolicMmhg: number | null;
-            heartRateBpm: number | null;
-            temperatureCelsius: number | null;
-            bloodGlucoseMgDl: number | null;
-            weightKg: number | null;
-            oxygenSaturationPercent: number | null;
-            notes: string | null;
-            version: number;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            updatedAt: string;
-        };
-        VitalEntryPageInput: {
-            items: components["schemas"]["VitalEntryInput"][];
-            nextCursor: string | null;
-        };
-        CreateVitalEntryRequestInput: {
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            measuredAt: string;
-            systolicMmhg?: number | null;
-            diastolicMmhg?: number | null;
-            heartRateBpm?: number | null;
-            temperatureCelsius?: number | null;
-            bloodGlucoseMgDl?: number | null;
-            weightKg?: number | null;
-            oxygenSaturationPercent?: number | null;
-            notes?: string | null;
-        };
-        UpdateVitalEntryRequestInput: {
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            measuredAt?: string;
-            systolicMmhg?: number | null;
-            diastolicMmhg?: number | null;
-            heartRateBpm?: number | null;
-            temperatureCelsius?: number | null;
-            bloodGlucoseMgDl?: number | null;
-            weightKg?: number | null;
-            oxygenSaturationPercent?: number | null;
-            notes?: string | null;
-        };
-        ResidentAboutCardInput: {
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            residentId: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            familyId: string;
-            preferredName: string | null;
-            howToAddress: string | null;
-            likes: string[];
-            dislikes: string[];
-            dailyRoutine: string | null;
-            calmingTips: string | null;
-            communicationTips: string | null;
-            importantNotes: string | null;
-            version: number;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            updatedAt: string;
-        };
-        PutResidentAboutRequestInput: {
-            preferredName: string | null;
-            howToAddress: string | null;
-            likes: string[];
-            dislikes: string[];
-            dailyRoutine: string | null;
-            calmingTips: string | null;
-            communicationTips: string | null;
-            importantNotes: string | null;
-        };
-        HandoverInput: {
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            familyId: string;
-            houseId: string | null;
-            residentId: string | null;
-            /** @enum {string} */
-            audience: "family" | "guest";
-            body: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            postedAt: string;
-            acknowledgedAt: string | null;
-            acknowledgedBy: string | null;
-            version: number;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            updatedAt: string;
-        };
-        HandoverPageInput: {
-            items: components["schemas"]["HandoverInput"][];
-            nextCursor: string | null;
-        };
-        CreateHandoverRequestInput: {
-            body: string;
-            /**
-             * @default family
-             * @enum {string}
-             */
-            audience: "family" | "guest";
-            houseId?: string | null;
-            residentId?: string | null;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            postedAt?: string;
-        };
-        UpdateHandoverRequestInput: {
-            body?: string;
-            /** @enum {string} */
-            audience?: "family" | "guest";
-            houseId?: string | null;
-            residentId?: string | null;
-        };
         ResidentInput: {
             /**
              * Format: uuid
@@ -3286,6 +3145,237 @@ export interface components {
             overdue: components["schemas"]["DeadlineItemInput"][];
             week: components["schemas"]["DeadlineItemInput"][];
             month: components["schemas"]["DeadlineItemInput"][];
+        };
+        VitalEntryInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            measuredAt: string;
+            systolicMmhg: number | null;
+            diastolicMmhg: number | null;
+            heartRateBpm: number | null;
+            temperatureCelsius: number | null;
+            bloodGlucoseMgDl: number | null;
+            weightKg: number | null;
+            oxygenSaturationPercent: number | null;
+            notes: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        VitalEntryPageInput: {
+            items: components["schemas"]["VitalEntryInput"][];
+            nextCursor: string | null;
+        };
+        CreateVitalEntryRequestInput: {
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            measuredAt: string;
+            systolicMmhg?: number | null;
+            diastolicMmhg?: number | null;
+            heartRateBpm?: number | null;
+            temperatureCelsius?: number | null;
+            bloodGlucoseMgDl?: number | null;
+            weightKg?: number | null;
+            oxygenSaturationPercent?: number | null;
+            notes?: string | null;
+        };
+        UpdateVitalEntryRequestInput: {
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            measuredAt?: string;
+            systolicMmhg?: number | null;
+            diastolicMmhg?: number | null;
+            heartRateBpm?: number | null;
+            temperatureCelsius?: number | null;
+            bloodGlucoseMgDl?: number | null;
+            weightKg?: number | null;
+            oxygenSaturationPercent?: number | null;
+            notes?: string | null;
+        };
+        ResidentAboutCardInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            preferredName: string | null;
+            howToAddress: string | null;
+            likes: string[];
+            dislikes: string[];
+            dailyRoutine: string | null;
+            calmingTips: string | null;
+            communicationTips: string | null;
+            importantNotes: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        PutResidentAboutRequestInput: {
+            preferredName: string | null;
+            howToAddress: string | null;
+            likes: string[];
+            dislikes: string[];
+            dailyRoutine: string | null;
+            calmingTips: string | null;
+            communicationTips: string | null;
+            importantNotes: string | null;
+        };
+        HandoverInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            houseId: string | null;
+            residentId: string | null;
+            /** @enum {string} */
+            audience: "family" | "guest";
+            body: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            postedAt: string;
+            acknowledgedAt: string | null;
+            acknowledgedBy: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        HandoverPageInput: {
+            items: components["schemas"]["HandoverInput"][];
+            nextCursor: string | null;
+        };
+        CreateHandoverRequestInput: {
+            body: string;
+            /**
+             * @default family
+             * @enum {string}
+             */
+            audience: "family" | "guest";
+            houseId?: string | null;
+            residentId?: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            postedAt?: string;
+        };
+        UpdateHandoverRequestInput: {
+            body?: string;
+            /** @enum {string} */
+            audience?: "family" | "guest";
+            houseId?: string | null;
+            residentId?: string | null;
+        };
+        RelationshipEntryInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            ownerAccountId: string;
+            displayName: string;
+            relation: string | null;
+            lastContactOn: string | null;
+            contactIntervalDays: number | null;
+            notes: string | null;
+            nextReminderOn: string | null;
+            /** @enum {string} */
+            reminderState: "none" | "upcoming" | "due" | "overdue";
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        RelationshipEntryPageInput: {
+            items: components["schemas"]["RelationshipEntryInput"][];
+            nextCursor: string | null;
+        };
+        CreateRelationshipRequestInput: {
+            displayName: string;
+            relation?: string | null;
+            lastContactOn?: string | null;
+            contactIntervalDays?: number | null;
+            notes?: string | null;
+        };
+        UpdateRelationshipRequestInput: {
+            displayName?: string;
+            relation?: string | null;
+            lastContactOn?: string | null;
+            contactIntervalDays?: number | null;
+            notes?: string | null;
         };
         FinAccountInput: {
             /**
@@ -6265,183 +6355,6 @@ export interface components {
             welcome: string | null;
             logoDataUrl: string | null;
         };
-        VitalEntry: {
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            familyId: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            residentId: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            measuredAt: string;
-            systolicMmhg: number | null;
-            diastolicMmhg: number | null;
-            heartRateBpm: number | null;
-            temperatureCelsius: number | null;
-            bloodGlucoseMgDl: number | null;
-            weightKg: number | null;
-            oxygenSaturationPercent: number | null;
-            notes: string | null;
-            version: number;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            updatedAt: string;
-        };
-        VitalEntryPage: {
-            items: components["schemas"]["VitalEntry"][];
-            nextCursor: string | null;
-        };
-        CreateVitalEntryRequest: {
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            measuredAt: string;
-            systolicMmhg?: number | null;
-            diastolicMmhg?: number | null;
-            heartRateBpm?: number | null;
-            temperatureCelsius?: number | null;
-            bloodGlucoseMgDl?: number | null;
-            weightKg?: number | null;
-            oxygenSaturationPercent?: number | null;
-            notes?: string | null;
-        };
-        UpdateVitalEntryRequest: {
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            measuredAt?: string;
-            systolicMmhg?: number | null;
-            diastolicMmhg?: number | null;
-            heartRateBpm?: number | null;
-            temperatureCelsius?: number | null;
-            bloodGlucoseMgDl?: number | null;
-            weightKg?: number | null;
-            oxygenSaturationPercent?: number | null;
-            notes?: string | null;
-        };
-        ResidentAboutCard: {
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            residentId: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            familyId: string;
-            preferredName: string | null;
-            howToAddress: string | null;
-            likes: string[];
-            dislikes: string[];
-            dailyRoutine: string | null;
-            calmingTips: string | null;
-            communicationTips: string | null;
-            importantNotes: string | null;
-            version: number;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            updatedAt: string;
-        };
-        PutResidentAboutRequest: {
-            preferredName: string | null;
-            howToAddress: string | null;
-            likes: string[];
-            dislikes: string[];
-            dailyRoutine: string | null;
-            calmingTips: string | null;
-            communicationTips: string | null;
-            importantNotes: string | null;
-        };
-        Handover: {
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @description UUID in canonical lowercase form
-             */
-            familyId: string;
-            houseId: string | null;
-            residentId: string | null;
-            /** @enum {string} */
-            audience: "family" | "guest";
-            body: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            postedAt: string;
-            acknowledgedAt: string | null;
-            acknowledgedBy: string | null;
-            version: number;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            updatedAt: string;
-        };
-        HandoverPage: {
-            items: components["schemas"]["Handover"][];
-            nextCursor: string | null;
-        };
-        CreateHandoverRequest: {
-            body: string;
-            /**
-             * @default family
-             * @enum {string}
-             */
-            audience: "family" | "guest";
-            houseId?: string | null;
-            residentId?: string | null;
-            /**
-             * Format: date-time
-             * @description RFC 3339 instant in UTC
-             */
-            postedAt?: string;
-        };
-        UpdateHandoverRequest: {
-            body?: string;
-            /** @enum {string} */
-            audience?: "family" | "guest";
-            houseId?: string | null;
-            residentId?: string | null;
-        };
         Resident: {
             /**
              * Format: uuid
@@ -7036,6 +6949,237 @@ export interface components {
             overdue: components["schemas"]["DeadlineItem"][];
             week: components["schemas"]["DeadlineItem"][];
             month: components["schemas"]["DeadlineItem"][];
+        };
+        VitalEntry: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            measuredAt: string;
+            systolicMmhg: number | null;
+            diastolicMmhg: number | null;
+            heartRateBpm: number | null;
+            temperatureCelsius: number | null;
+            bloodGlucoseMgDl: number | null;
+            weightKg: number | null;
+            oxygenSaturationPercent: number | null;
+            notes: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        VitalEntryPage: {
+            items: components["schemas"]["VitalEntry"][];
+            nextCursor: string | null;
+        };
+        CreateVitalEntryRequest: {
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            measuredAt: string;
+            systolicMmhg?: number | null;
+            diastolicMmhg?: number | null;
+            heartRateBpm?: number | null;
+            temperatureCelsius?: number | null;
+            bloodGlucoseMgDl?: number | null;
+            weightKg?: number | null;
+            oxygenSaturationPercent?: number | null;
+            notes?: string | null;
+        };
+        UpdateVitalEntryRequest: {
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            measuredAt?: string;
+            systolicMmhg?: number | null;
+            diastolicMmhg?: number | null;
+            heartRateBpm?: number | null;
+            temperatureCelsius?: number | null;
+            bloodGlucoseMgDl?: number | null;
+            weightKg?: number | null;
+            oxygenSaturationPercent?: number | null;
+            notes?: string | null;
+        };
+        ResidentAboutCard: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            preferredName: string | null;
+            howToAddress: string | null;
+            likes: string[];
+            dislikes: string[];
+            dailyRoutine: string | null;
+            calmingTips: string | null;
+            communicationTips: string | null;
+            importantNotes: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        PutResidentAboutRequest: {
+            preferredName: string | null;
+            howToAddress: string | null;
+            likes: string[];
+            dislikes: string[];
+            dailyRoutine: string | null;
+            calmingTips: string | null;
+            communicationTips: string | null;
+            importantNotes: string | null;
+        };
+        Handover: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            houseId: string | null;
+            residentId: string | null;
+            /** @enum {string} */
+            audience: "family" | "guest";
+            body: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            postedAt: string;
+            acknowledgedAt: string | null;
+            acknowledgedBy: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        HandoverPage: {
+            items: components["schemas"]["Handover"][];
+            nextCursor: string | null;
+        };
+        CreateHandoverRequest: {
+            body: string;
+            /**
+             * @default family
+             * @enum {string}
+             */
+            audience: "family" | "guest";
+            houseId?: string | null;
+            residentId?: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            postedAt?: string;
+        };
+        UpdateHandoverRequest: {
+            body?: string;
+            /** @enum {string} */
+            audience?: "family" | "guest";
+            houseId?: string | null;
+            residentId?: string | null;
+        };
+        RelationshipEntry: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            ownerAccountId: string;
+            displayName: string;
+            relation: string | null;
+            lastContactOn: string | null;
+            contactIntervalDays: number | null;
+            notes: string | null;
+            nextReminderOn: string | null;
+            /** @enum {string} */
+            reminderState: "none" | "upcoming" | "due" | "overdue";
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        RelationshipEntryPage: {
+            items: components["schemas"]["RelationshipEntry"][];
+            nextCursor: string | null;
+        };
+        CreateRelationshipRequest: {
+            displayName: string;
+            relation?: string | null;
+            lastContactOn?: string | null;
+            contactIntervalDays?: number | null;
+            notes?: string | null;
+        };
+        UpdateRelationshipRequest: {
+            displayName?: string;
+            relation?: string | null;
+            lastContactOn?: string | null;
+            contactIntervalDays?: number | null;
+            notes?: string | null;
         };
         FinAccount: {
             /**
@@ -20966,6 +21110,327 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Handover"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "care.listRelationships": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelationshipEntryPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "care.createRelationship": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRelationshipRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelationshipEntry"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "care.deleteRelationship": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                entryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "care.updateRelationship": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                entryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRelationshipRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelationshipEntry"];
                 };
             };
             /** @description Default Response */

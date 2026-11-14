@@ -108,6 +108,7 @@ import {
   type CreateChoreCompletionRequest,
   type CreateChoreRequest,
   type CreateHandoverRequest,
+  type CreateRelationshipRequest,
   type CreateMealPlanEntryRequest,
   type CreatePantryItemRequest,
   type CreateRecipeImportRequest,
@@ -126,6 +127,8 @@ import {
   type CreateVitalEntryRequest,
   type GenerateTaxChecklistRequest,
   type Handover,
+  type RelationshipEntry,
+  type UpdateRelationshipRequest,
   type MealPlanEntry,
   type PantryItem,
   type PointsView,
@@ -182,6 +185,8 @@ import {
   finTransactionSchema,
   handoverPageSchema,
   handoverSchema,
+  relationshipEntryPageSchema,
+  relationshipEntrySchema,
   pointsViewSchema,
   barcodeProductSchema,
   mealPlanEntryPageSchema,
@@ -941,6 +946,49 @@ export interface DomusafeApi {
    * @param version - Version the form was loaded with.
    */
   deleteHandover(familyId: string, handoverId: string, version: number): Promise<void>;
+  /**
+   * Lists the caller's personal relationship notebook.
+   *
+   * @param familyId - Family id.
+   * @returns Every page, alphabetical by name.
+   */
+  listRelationships(familyId: string): Promise<readonly RelationshipEntry[]>;
+  /**
+   * Adds a personal relationship notebook entry.
+   *
+   * @param familyId - Family id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Name, notes and reminder fields.
+   * @returns The stored entry.
+   */
+  createRelationship(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateRelationshipRequest,
+  ): Promise<RelationshipEntry>;
+  /**
+   * Updates a personal relationship notebook entry.
+   *
+   * @param familyId - Family id.
+   * @param entryId - Entry id.
+   * @param version - Version the form was loaded with.
+   * @param body - Fields to change.
+   * @returns The updated entry.
+   */
+  updateRelationship(
+    familyId: string,
+    entryId: string,
+    version: number,
+    body: UpdateRelationshipRequest,
+  ): Promise<RelationshipEntry>;
+  /**
+   * Soft-deletes a personal relationship notebook entry.
+   *
+   * @param familyId - Family id.
+   * @param entryId - Entry id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteRelationship(familyId: string, entryId: string, version: number): Promise<void>;
   /** Lists active chores for one house. */
   listChores(familyId: string, houseId: string): Promise<readonly Chore[]>;
   /** Creates a chore. */
@@ -2297,6 +2345,41 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
     async deleteHandover(familyId, handoverId, version) {
       const result = await client.DELETE('/api/v1/families/{familyId}/handovers/{handoverId}', {
         params: { path: { familyId, handoverId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
+    },
+    listRelationships(familyId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/relationships', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(relationshipEntryPageSchema, result)),
+      );
+    },
+    async createRelationship(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/relationships', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateRelationshipRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(relationshipEntrySchema, result);
+    },
+    async updateRelationship(familyId, entryId, version, body) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/relationships/{entryId}', {
+        params: { path: { familyId, entryId } },
+        body: body as components['schemas']['UpdateRelationshipRequest'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(relationshipEntrySchema, result);
+    },
+    async deleteRelationship(familyId, entryId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/relationships/{entryId}', {
+        params: { path: { familyId, entryId } },
         headers: { [HEADERS.ifMatch]: formatEtag(version) },
       });
       ensureOk(result);

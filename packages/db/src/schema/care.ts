@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
-import { integer, jsonb, numeric, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
+import { date, integer, jsonb, numeric, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
 import { instant } from '../columns.js';
-import { handoverAudienceEnum } from './enums.js';
+import { handoverAudienceEnum, visibilityEnum } from './enums.js';
 
 /**
  * One diary row of vital parameters for a resident.
@@ -73,5 +73,30 @@ export const handovers = pgTable('handovers', {
   postedAt: instant('posted_at').notNull().defaultNow(),
   acknowledgedAt: instant('acknowledged_at'),
   acknowledgedBy: uuid('acknowledged_by'),
+  deletedAt: instant('deleted_at'),
+});
+
+/**
+ * Ethical personal contact notebook entry.
+ * Stores only what the person wrote: name, relation, last contact, interval and notes.
+ * No scores, location, tracking or inferred profiling fields.
+ */
+export const relationshipEntries = pgTable('relationship_entries', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  version: integer('version').notNull().default(1),
+  createdAt: instant('created_at').notNull().defaultNow(),
+  updatedAt: instant('updated_at').notNull().defaultNow(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+  familyId: uuid('family_id').notNull(),
+  visibility: visibilityEnum('visibility').notNull().default('personal'),
+  ownerAccountId: uuid('owner_account_id'),
+  displayName: text('display_name').notNull(),
+  relation: text('relation'),
+  lastContactOn: date('last_contact_on', { mode: 'string' }),
+  contactIntervalDays: smallint('contact_interval_days'),
+  notes: text('notes'),
   deletedAt: instant('deleted_at'),
 });

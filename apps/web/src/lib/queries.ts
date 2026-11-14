@@ -210,6 +210,20 @@ export function handoversQuery(api: DomusafeApi, familyId: string, houseId: stri
 }
 
 /**
+ * Query of the caller's personal relationship notebook.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function relationshipsQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['relationships', familyId] as const,
+    queryFn: () => api.listRelationships(familyId),
+  });
+}
+
+/**
  * Query of active chores for one house.
  *
  * @param api - Shell API.
