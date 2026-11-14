@@ -23,6 +23,26 @@ export const WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const;
 export type CasaTab =
   'guest' | 'technical' | 'utilities' | 'deadline' | 'inventory' | 'automation' | 'houses';
 
+const CASA_TABS: readonly CasaTab[] = [
+  'guest',
+  'technical',
+  'utilities',
+  'deadline',
+  'inventory',
+  'automation',
+  'houses',
+];
+
+/**
+ * Whether a query value is a Casa tab id.
+ *
+ * @param value - Raw search value.
+ * @returns True when it matches {@link CasaTab}.
+ */
+export function isCasaTab(value: string): value is CasaTab {
+  return (CASA_TABS as readonly string[]).includes(value);
+}
+
 /** Room kinds offered when editing the inventory by hand. */
 export const ROOM_KINDS = [
   'kitchen',
