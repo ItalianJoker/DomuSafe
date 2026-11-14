@@ -38,6 +38,10 @@ export const openApiPlugin = fp(
             name: 'notifications',
             description: 'In-app notifications, browser push subscriptions and channel preferences',
           },
+          {
+            name: 'news',
+            description: 'Family-visible product news feed for the overview dashboard',
+          },
           { name: 'tenancy', description: 'Families, houses and members' },
           { name: 'deadlines', description: 'Overview deadlines grouped for the dashboard' },
           {

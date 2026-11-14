@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useApi } from '@/components/api-context.js';
 import { Button } from '@/components/ui/button.js';
 import { problemText } from '@/lib/copy.js';
+import { isSectionId, shellPath } from '@/lib/navigation.js';
 import { notificationsKey, notificationsQuery } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { notificationCategoryLabel } from './category-label.js';
@@ -193,7 +194,10 @@ export function NotificationInbox(props: { readonly familyId: string; readonly h
 }
 
 /**
- * Resolves an internal notice path, or the open house home when the path is the root.
+ * Resolves an internal notice or news path into the open house shell.
+ *
+ * Accepts the house root (`/`), a full `/f/…` path, or a section shortcut
+ * (`/casa`, `/famiglia`, …) that maps onto {@link shellPath}.
  *
  * @param link - Stored path, or null.
  * @param familyId - Open family.
@@ -202,12 +206,19 @@ export function NotificationInbox(props: { readonly familyId: string; readonly h
  */
 export function resolveNoticePath(link: string | null, familyId: string, houseId: string): string | null {
   if (link === null || link === '/' || link === '') {
-    return `/f/${familyId}/c/${houseId}`;
+    return shellPath(familyId, houseId, 'home');
   }
   if (link.startsWith('/f/')) {
     return link;
   }
   if (link.startsWith('/')) {
+    const segment = link.slice(1).split('/')[0] ?? '';
+    if (segment === '') {
+      return shellPath(familyId, houseId, 'home');
+    }
+    if (isSectionId(segment)) {
+      return shellPath(familyId, houseId, segment);
+    }
     return link;
   }
   return null;

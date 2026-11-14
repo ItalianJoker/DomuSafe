@@ -16,6 +16,11 @@ describe('notification inbox helpers', () => {
     );
   });
 
+  it('maps a section shortcut onto the open house', () => {
+    expect(resolveNoticePath('/casa', FAMILY, HOUSE)).toBe(`/f/${FAMILY}/c/${HOUSE}/casa`);
+    expect(resolveNoticePath('/famiglia', FAMILY, HOUSE)).toBe(`/f/${FAMILY}/c/${HOUSE}/famiglia`);
+  });
+
   it('formats a valid instant', () => {
     expect(formatNoticeTime('2026-11-14T10:00:00.000Z').length).toBeGreaterThan(0);
     expect(formatNoticeTime('not-a-date')).toBe('');

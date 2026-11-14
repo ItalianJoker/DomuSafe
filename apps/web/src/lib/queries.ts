@@ -588,6 +588,24 @@ export function notificationsQuery(api: DomusafeApi, limit = 30) {
   });
 }
 
+/** Cache key prefix of the product news feed. */
+export const newsFeedKey = ['news'] as const;
+
+/**
+ * Query of the family-visible product news feed.
+ *
+ * @param api - Shell API.
+ * @param locale - Interface language.
+ * @param limit - Page size (default 20).
+ * @returns Options for TanStack Query.
+ */
+export function newsFeedQuery(api: DomusafeApi, locale: 'it' | 'en', limit = 20) {
+  return queryOptions({
+    queryKey: [...newsFeedKey, locale, limit] as const,
+    queryFn: () => api.listNews({ locale, limit }),
+  });
+}
+
 /**
  * Query of the family calendar board for a date range.
  *

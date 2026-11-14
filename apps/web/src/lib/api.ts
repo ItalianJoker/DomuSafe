@@ -56,6 +56,7 @@ import {
   timetableSlotSchema,
   meSchema,
   membershipPageSchema,
+  newsFeedSchema,
   notificationPageSchema,
   notificationPreferenceListSchema,
   pushSubscriptionSchema,
@@ -69,6 +70,7 @@ import {
   problemType,
   type CalendarBoard,
   type CreatePushSubscriptionRequest,
+  type NewsFeed,
   type NotificationPage,
   type NotificationPreferenceList,
   type PushSubscription,
@@ -323,6 +325,21 @@ export interface DomusafeApi {
    * @returns The updated profile.
    */
   updateProfile(patch: UpdateProfileRequest): Promise<Me>;
+  /**
+   * Family-visible product news for the current account.
+   *
+   * @param query - Locale, cursor and page size.
+   * @returns A page of news items with unread summary.
+   */
+  listNews(query?: {
+    readonly locale?: 'it' | 'en';
+    readonly cursor?: string;
+    readonly limit?: number;
+  }): Promise<NewsFeed>;
+  /**
+   * Marks the news feed as read for the current account.
+   */
+  markNewsRead(): Promise<void>;
   /**
    * Recent in-app notifications of the current account.
    *
@@ -1998,6 +2015,22 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         body: patch as components['schemas']['UpdateProfileRequestInput'],
       });
       return unwrap(meSchema, result);
+    },
+    async listNews(query = {}) {
+      const result = await client.GET('/api/v1/news', {
+        params: {
+          query: {
+            limit: query.limit ?? 20,
+            ...(query.locale === undefined ? {} : { locale: query.locale }),
+            ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
+          },
+        },
+      });
+      return unwrap(newsFeedSchema, result);
+    },
+    async markNewsRead() {
+      const result = await client.POST('/api/v1/news/read', { body: {} });
+      ensureOk(result);
     },
     async listNotifications(query = {}) {
       const result = await client.GET('/api/v1/me/notifications', {
