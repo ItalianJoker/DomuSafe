@@ -11,6 +11,18 @@ export type SignInResult =
 export type SignUpResult =
   { readonly status: 'created' } | { readonly status: 'error'; readonly reason: AuthFailure };
 
+/** Result of starting an external provider redirect. */
+export type SocialRedirectResult =
+  | { readonly status: 'redirect'; readonly url: string }
+  | { readonly status: 'error'; readonly reason: AuthFailure };
+
+/** Linked credential or external provider on the current account. */
+export interface LinkedAccount {
+  readonly id: string;
+  readonly providerId: string;
+  readonly accountId: string;
+}
+
 /** Options of {@link createSession}. */
 export interface SessionOptions {
   /** Origin of the API. Empty uses the page origin. */
@@ -56,6 +68,28 @@ export interface SessionClient {
    * @returns Signed in, or a failure reason.
    */
   verifyCode(code: string): Promise<SignInResult>;
+  /**
+   * Starts sign-in with an external provider and returns the authorize URL.
+   *
+   * @param providerId - Better Auth provider id (`google`, configured OpenID id, …).
+   * @param callbackURL - Path or absolute URL to open after the provider returns.
+   * @returns Authorize URL, or a failure reason.
+   */
+  signInWithProvider(providerId: string, callbackURL: string): Promise<SocialRedirectResult>;
+  /**
+   * Starts linking an external provider to the signed-in account.
+   *
+   * @param providerId - Better Auth provider id.
+   * @param callbackURL - Path or absolute URL to open after the provider returns.
+   * @returns Authorize URL, or a failure reason.
+   */
+  linkProvider(providerId: string, callbackURL: string): Promise<SocialRedirectResult>;
+  /**
+   * Lists credential and external provider links of the signed-in account.
+   *
+   * @returns Provider links without tokens.
+   */
+  listLinkedAccounts(): Promise<LinkedAccount[]>;
   /**
    * Ends the session.
    *
@@ -105,6 +139,34 @@ export function createSession(options: SessionOptions = {}): SessionClient {
     });
   }
 
+  async function get(path: string): Promise<Response> {
+    return fetchImpl(`${base}${path}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { accept: 'application/json' },
+    });
+  }
+
+  async function socialRedirect(
+    path: '/api/auth/sign-in/social' | '/api/auth/link-social',
+    providerId: string,
+    callbackURL: string,
+  ): Promise<SocialRedirectResult> {
+    const response = await post(path, {
+      provider: providerId,
+      callbackURL,
+      disableRedirect: true,
+    });
+    if (!response.ok) {
+      return { status: 'error', reason: await readError(response) };
+    }
+    const payload = (await response.json()) as { url?: string; redirect?: boolean };
+    if (typeof payload.url !== 'string' || payload.url.length === 0) {
+      return { status: 'error', reason: 'generic' };
+    }
+    return { status: 'redirect', url: payload.url };
+  }
+
   return {
     async signIn(email, password) {
       const response = await post('/api/auth/sign-in/email', { email, password });
@@ -130,6 +192,20 @@ export function createSession(options: SessionOptions = {}): SessionClient {
         return { status: 'error', reason: await readError(response) };
       }
       return { status: 'signed-in' };
+    },
+    signInWithProvider(providerId, callbackURL) {
+      return socialRedirect('/api/auth/sign-in/social', providerId, callbackURL);
+    },
+    linkProvider(providerId, callbackURL) {
+      return socialRedirect('/api/auth/link-social', providerId, callbackURL);
+    },
+    async listLinkedAccounts() {
+      const response = await get('/api/auth/list-accounts');
+      if (!response.ok) {
+        return [];
+      }
+      const payload = (await response.json()) as LinkedAccount[];
+      return Array.isArray(payload) ? payload : [];
     },
     async signOut() {
       await post('/api/auth/sign-out', {});

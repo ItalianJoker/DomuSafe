@@ -1,4 +1,4 @@
-import { meSchema, updateProfileRequestSchema } from '@domusafe/contracts';
+import { authProvidersSchema, meSchema, updateProfileRequestSchema } from '@domusafe/contracts';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { problemResponses } from '../../http/conventions.js';
 import { ProblemError } from '../../http/problem.js';
@@ -13,7 +13,8 @@ function caller(request: { account: AuthenticatedAccount | null }): Authenticate
 }
 
 /**
- * Routes of the `identity` module: `GET /me` and `PATCH /me/profile` (phase 3 §5.2).
+ * Routes of the `identity` module: public auth providers, `GET /me` and `PATCH /me/profile`
+ * (phase 3 §5.2; master prompt §1 OAuth/OIDC).
  *
  * @param app - Fastify instance with the Zod type provider.
  * @param options - Identity service.
@@ -22,6 +23,20 @@ export const identityRoutes: FastifyPluginAsyncZod<{ identity: IdentityService }
   app,
   { identity },
 ) => {
+  app.get(
+    '/api/v1/auth/providers',
+    {
+      config: { access: 'public' },
+      schema: {
+        tags: ['identity'],
+        operationId: 'identity.listAuthProviders',
+        summary: 'External sign-in providers configured for this deployment',
+        response: { 200: authProvidersSchema },
+      },
+    },
+    () => identity.listAuthProviders(),
+  );
+
   app.get(
     '/api/v1/me',
     {

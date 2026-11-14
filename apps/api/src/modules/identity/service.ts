@@ -1,4 +1,4 @@
-import type { Me, UpdateProfileRequest } from '@domusafe/contracts';
+import type { AuthProvider, AuthProviders, Me, UpdateProfileRequest } from '@domusafe/contracts';
 import { recordAudit, withContext, type Database, type DbPrincipal } from '@domusafe/db';
 import { ProblemError } from '../../http/problem.js';
 import type { AuthenticatedAccount } from '../../types.js';
@@ -13,12 +13,14 @@ const account = (accountId: string): DbPrincipal => ({ kind: 'account', accountI
  * @param db - Database bound to the `domusafe_app` pool.
  * @param tenancy - Tenancy service (families and house visibility).
  * @param vapidPublicKey - Public application-server key for browser push, or null when unset.
+ * @param authProviders - External sign-in providers configured for this deployment.
  * @returns The service.
  */
 export function createIdentityService(
   db: Database,
   tenancy: TenancyService,
   vapidPublicKey: string | null = null,
+  authProviders: readonly AuthProvider[] = [],
 ) {
   async function getMe(caller: AuthenticatedAccount): Promise<Me> {
     const profile = await withContext(db, { principal: account(caller.id) }, async (tx) => {
@@ -81,6 +83,18 @@ export function createIdentityService(
      * @returns Profile, security state and families.
      */
     getMe,
+
+    /**
+     * Lists external sign-in providers configured for this deployment (no secrets).
+     *
+     * Preconditions: none (public).
+     * Postconditions: the list matches the Better Auth providers enabled at process start.
+     *
+     * @returns Configured providers for the login and Account screens.
+     */
+    listAuthProviders(): AuthProviders {
+      return { providers: [...authProviders] };
+    },
 
     /**
      * Updates display name, language, theme and the last family and house used (quick house switch).

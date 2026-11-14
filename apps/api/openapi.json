@@ -14,6 +14,47 @@
       }
     },
     "schemas": {
+      "AuthProviderKindInput": {
+        "type": "string",
+        "enum": [
+          "google",
+          "openid"
+        ]
+      },
+      "AuthProviderInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9_-]*$"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AuthProviderKindInput"
+          }
+        },
+        "required": [
+          "id",
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "AuthProvidersInput": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthProviderInput"
+            }
+          }
+        },
+        "required": [
+          "providers"
+        ],
+        "additionalProperties": false
+      },
       "MoneyInput": {
         "type": "object",
         "properties": {
@@ -19463,6 +19504,47 @@
         "required": [
           "family",
           "house"
+        ],
+        "additionalProperties": false
+      },
+      "AuthProviderKind": {
+        "type": "string",
+        "enum": [
+          "google",
+          "openid"
+        ]
+      },
+      "AuthProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9_-]*$"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AuthProviderKind"
+          }
+        },
+        "required": [
+          "id",
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "AuthProviders": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthProvider"
+            }
+          }
+        },
+        "required": [
+          "providers"
         ],
         "additionalProperties": false
       },
@@ -38992,6 +39074,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/providers": {
+      "get": {
+        "operationId": "identity.listAuthProviders",
+        "summary": "External sign-in providers configured for this deployment",
+        "tags": [
+          "identity"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthProviders"
                 }
               }
             }

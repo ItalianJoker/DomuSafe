@@ -24,7 +24,7 @@ La Suite procede in quattro fasi, ciascuna documentata in [`docs/design/`](docs/
 
 Le **fondamenta** già disponibili:
 
-- registrazione e accesso con email e password, verifica in due passaggi;
+- registrazione e accesso con email e password, verifica in due passaggi; accesso con account esterno (Google e un fornitore OpenID Connect compatibile, se configurati);
 - famiglie, case e membri con ruoli, ambiti e limiti del piano (Free, Basic, Advanced, Premium);
 - isolamento tra famiglie, case e persone direttamente nel database;
 - registro attività e storico delle versioni;

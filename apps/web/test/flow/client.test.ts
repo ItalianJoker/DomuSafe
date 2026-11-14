@@ -34,6 +34,8 @@ describe('shell client against the API', () => {
         vapidPublicKey: null,
         vapidPrivateKey: null,
         vapidSubject: 'mailto:test@example.test',
+        googleAuth: null,
+        openIdAuth: null,
       },
       globalRateLimitPerMinute: 100_000,
     });

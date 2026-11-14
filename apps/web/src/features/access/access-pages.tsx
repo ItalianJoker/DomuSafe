@@ -6,6 +6,7 @@ import { Brand, Field } from '@/components/shell/page.js';
 import { ThemeControl } from '@/components/shell/theme-control.js';
 import { Button } from '@/components/ui/button.js';
 import { Input } from '@/components/ui/input.js';
+import { ExternalAccessButtons } from '@/features/access/external-access.js';
 import { authFailureText, issueText } from '@/lib/copy.js';
 import { validateSignIn, validateSignUp, type FieldIssues } from '@/lib/fields.js';
 import { meKey } from '@/lib/queries.js';
@@ -155,6 +156,12 @@ export function LoginPage() {
           <Button type="submit" disabled={pending}>
             {m.loginSubmit()}
           </Button>
+          <ExternalAccessButtons
+            mode="sign-in"
+            callbackURL="/"
+            onError={(message) => setError(message === '' ? null : message)}
+            className="mt-1 grid gap-2"
+          />
           <Link
             to="/registrazione"
             className="text-[13px] text-muted-foreground underline-offset-4 hover:underline"
@@ -277,6 +284,12 @@ export function SignupPage() {
         <Button type="submit" disabled={pending}>
           {m.signupSubmit()}
         </Button>
+        <ExternalAccessButtons
+          mode="sign-in"
+          callbackURL="/"
+          onError={(message) => setError(message === '' ? null : message)}
+          className="mt-1 grid gap-2"
+        />
         <Link to="/accesso" className="text-[13px] text-muted-foreground underline-offset-4 hover:underline">
           {m.goToLogin()}
         </Link>

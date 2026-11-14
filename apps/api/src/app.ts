@@ -9,7 +9,7 @@ import {
   validatorCompiler,
 } from 'fastify-type-provider-zod';
 import type pg from 'pg';
-import { createAuth } from './auth/auth.js';
+import { createAuth, listConfiguredAuthProviders } from './auth/auth.js';
 import type { ApiConfig } from './config.js';
 import { ProblemError, classifyDatabaseError, sendProblem } from './http/problem.js';
 import { redactRequestUrl } from './http/redact.js';
@@ -149,7 +149,8 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
     pushSender,
   });
   const news = createNewsService(db);
-  const identity = createIdentityService(db, tenancy, config.vapidPublicKey);
+  const authProviders = listConfiguredAuthProviders(config.googleAuth, config.openIdAuth);
+  const identity = createIdentityService(db, tenancy, config.vapidPublicKey, authProviders);
   const auth = createAuth({
     db,
     secret: await secrets.betterAuthSecret(),
@@ -158,6 +159,8 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
     production: config.nodeEnv === 'production',
     secondaryStorage: store instanceof ValkeyStore ? store : null,
     onUserCreated: (user) => identity.onAccountCreated(user.id, user.name),
+    googleAuth: config.googleAuth,
+    openIdAuth: config.openIdAuth,
   });
 
   const app = Fastify({

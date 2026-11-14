@@ -20,7 +20,12 @@ export interface TestApp {
 }
 
 export async function createTestApp(
-  options: { rateLimitPerMinute?: number; pushSender?: PushSender | null } = {},
+  options: {
+    rateLimitPerMinute?: number;
+    pushSender?: PushSender | null;
+    /** Extra environment variables merged into the test config (OAuth credentials, etc.). */
+    env?: Record<string, string>;
+  } = {},
 ): Promise<TestApp> {
   const database = await createTestDatabase(requireAdminUrl(), inject('templateDatabase'));
   const config = loadConfig({
@@ -34,6 +39,7 @@ export async function createTestApp(
     VAPID_PUBLIC_KEY: TEST_VAPID.publicKey,
     VAPID_PRIVATE_KEY: TEST_VAPID.privateKey,
     VAPID_SUBJECT: 'mailto:test@example.test',
+    ...options.env,
   });
   const app = await buildApp({
     config,
