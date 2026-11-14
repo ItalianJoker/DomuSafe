@@ -10,6 +10,14 @@ const vapidKeySchema = z
   .min(20)
   .max(200);
 
+const oauthSecretSchema = z.string().trim().min(8).max(512);
+const oauthClientIdSchema = z.string().trim().min(1).max(256);
+const oidcProviderIdSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-z][a-z0-9_-]{0,63}$/u, 'Expected a lowercase provider id')
+  .default('openid');
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -30,6 +38,12 @@ const envSchema = z
       .string()
       .regex(/^(mailto:|https:\/\/).+/, 'Expected mailto: or https: contact for push')
       .default('mailto:noreply@localhost'),
+    GOOGLE_CLIENT_ID: oauthClientIdSchema.optional(),
+    GOOGLE_CLIENT_SECRET: oauthSecretSchema.optional(),
+    OIDC_CLIENT_ID: oauthClientIdSchema.optional(),
+    OIDC_CLIENT_SECRET: oauthSecretSchema.optional(),
+    OIDC_DISCOVERY_URL: z.url({ protocol: /^https?$/ }).optional(),
+    OIDC_PROVIDER_ID: oidcProviderIdSchema,
   })
   .refine((env) => env.NODE_ENV !== 'production' || (env.VALKEY_URL !== undefined && env.VALKEY_URL !== ''), {
     message: 'VALKEY_URL is required in production (shared rate limits, sessions and idempotency)',
@@ -47,7 +61,45 @@ const envSchema = z
       message: 'VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY must be set together',
       path: ['VAPID_PUBLIC_KEY'],
     },
-  );
+  )
+  .refine(
+    (env) =>
+      (env.GOOGLE_CLIENT_ID === undefined && env.GOOGLE_CLIENT_SECRET === undefined) ||
+      (env.GOOGLE_CLIENT_ID !== undefined && env.GOOGLE_CLIENT_SECRET !== undefined),
+    {
+      message: 'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set together',
+      path: ['GOOGLE_CLIENT_ID'],
+    },
+  )
+  .refine(
+    (env) => {
+      const parts = [env.OIDC_CLIENT_ID, env.OIDC_CLIENT_SECRET, env.OIDC_DISCOVERY_URL];
+      const set = parts.filter((value) => value !== undefined).length;
+      return set === 0 || set === 3;
+    },
+    {
+      message: 'OIDC_CLIENT_ID, OIDC_CLIENT_SECRET and OIDC_DISCOVERY_URL must be set together',
+      path: ['OIDC_CLIENT_ID'],
+    },
+  )
+  .refine((env) => env.OIDC_PROVIDER_ID !== 'google' && env.OIDC_PROVIDER_ID !== 'credential', {
+    message: 'OIDC_PROVIDER_ID cannot reuse reserved Better Auth provider ids',
+    path: ['OIDC_PROVIDER_ID'],
+  });
+
+/** Google OAuth client credentials when configured. */
+export interface GoogleAuthConfig {
+  readonly clientId: string;
+  readonly clientSecret: string;
+}
+
+/** Generic OpenID Connect provider (Keycloak, Authentik and compatible discovery documents). */
+export interface OpenIdAuthConfig {
+  readonly providerId: string;
+  readonly clientId: string;
+  readonly clientSecret: string;
+  readonly discoveryUrl: string;
+}
 
 /** Validated runtime configuration of the API process. */
 export interface ApiConfig {
@@ -71,6 +123,10 @@ export interface ApiConfig {
   readonly vapidPrivateKey: string | null;
   /** Contact subject advertised to push services (`mailto:` or `https:`). */
   readonly vapidSubject: string;
+  /** Google social provider, or null when unset. */
+  readonly googleAuth: GoogleAuthConfig | null;
+  /** Generic OpenID Connect provider, or null when unset. */
+  readonly openIdAuth: OpenIdAuthConfig | null;
 }
 
 /**
@@ -92,6 +148,21 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0)
     .map((origin) => new URL(origin).origin);
+  const googleAuth =
+    value.GOOGLE_CLIENT_ID === undefined || value.GOOGLE_CLIENT_SECRET === undefined
+      ? null
+      : { clientId: value.GOOGLE_CLIENT_ID, clientSecret: value.GOOGLE_CLIENT_SECRET };
+  const openIdAuth =
+    value.OIDC_CLIENT_ID === undefined ||
+    value.OIDC_CLIENT_SECRET === undefined ||
+    value.OIDC_DISCOVERY_URL === undefined
+      ? null
+      : {
+          providerId: value.OIDC_PROVIDER_ID,
+          clientId: value.OIDC_CLIENT_ID,
+          clientSecret: value.OIDC_CLIENT_SECRET,
+          discoveryUrl: new URL(value.OIDC_DISCOVERY_URL).toString(),
+        };
   return {
     nodeEnv: value.NODE_ENV,
     host: value.HOST,
@@ -108,5 +179,7 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
     vapidPublicKey: value.VAPID_PUBLIC_KEY ?? null,
     vapidPrivateKey: value.VAPID_PRIVATE_KEY ?? null,
     vapidSubject: value.VAPID_SUBJECT,
+    googleAuth,
+    openIdAuth,
   };
 }

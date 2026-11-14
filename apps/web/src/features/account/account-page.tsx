@@ -29,12 +29,19 @@ const BrowserNotificationsPanel = lazy(() =>
   })),
 );
 
+const ExternalAccessPanel = lazy(() =>
+  import('@/features/account/external-access-panel.js').then((mod) => ({
+    default: mod.ExternalAccessPanel,
+  })),
+);
+
 /**
- * Account section: name, language, theme, browser deadline alerts, family backup export, host mark and sign-out.
+ * Account section: name, language, theme, external access, browser deadline alerts, family backup export,
+ * host mark and sign-out.
  *
  * Preconditions: `me` is the signed-in account and `familyId` is one of their families.
  * Postconditions: theme is saved on the account and painted immediately; sign-out clears the cache.
- * The host mark editor, backup panel and browser alerts load lazily so the shell gzip budget stays intact.
+ * Host mark, backup, browser alerts and external access load lazily so the shell gzip budget stays intact.
  *
  * @param props - Current account and the open family.
  * @returns The section.
@@ -136,6 +143,9 @@ export function AccountPage(props: { readonly me: Me; readonly familyId: string 
         </Select>
       </div>
       <ThemeControl value={props.me.theme} onChange={(theme) => void saveTheme(theme)} />
+      <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+        <ExternalAccessPanel />
+      </Suspense>
       <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
         <BrowserNotificationsPanel me={props.me} familyId={props.familyId} />
       </Suspense>

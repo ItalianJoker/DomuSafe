@@ -54,6 +54,7 @@ import {
   maintenanceTaskSchema,
   timetableSlotPageSchema,
   timetableSlotSchema,
+  authProvidersSchema,
   meSchema,
   membershipPageSchema,
   newsFeedSchema,
@@ -110,6 +111,7 @@ import {
   type SavedFilter,
   type StorageUnit,
   type UpdateSavedFilterRequest,
+  type AuthProviders,
   type Me,
   type PersonalBankAccount,
   type PersonalSubscription,
@@ -312,6 +314,12 @@ export class ApiProblem extends Error {
 
 /** Browser-facing calls used by the shell. Later modules add methods here rather than calling `fetch` ad hoc. */
 export interface DomusafeApi {
+  /**
+   * External sign-in providers configured for this deployment (public).
+   *
+   * @returns Providers the login and Account screens may offer.
+   */
+  listAuthProviders(): Promise<AuthProviders>;
   /**
    * Current account, or null when the session is missing.
    *
@@ -2003,6 +2011,10 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
   client.use(middleware);
 
   return {
+    async listAuthProviders() {
+      const result = await client.GET('/api/v1/auth/providers');
+      return unwrap(authProvidersSchema, result);
+    },
     async getMe() {
       const result = await client.GET('/api/v1/me');
       if (result.response.status === 401) {

@@ -11,13 +11,19 @@ const session: SessionClient = {
   signIn: () => Promise.resolve({ status: 'error', reason: 'generic' }),
   signUp: () => Promise.resolve({ status: 'error', reason: 'generic' }),
   verifyCode: () => Promise.resolve({ status: 'error', reason: 'generic' }),
+  signInWithProvider: () => Promise.resolve({ status: 'error', reason: 'generic' }),
+  linkProvider: () => Promise.resolve({ status: 'error', reason: 'generic' }),
+  listLinkedAccounts: () => Promise.resolve([]),
   signOut: () => Promise.resolve(),
 };
 
 describe('access screen', () => {
   it('shows the Italian sign-in form', async () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    const api = unusedApi({ getMe: () => Promise.resolve(null) });
+    const api = unusedApi({
+      getMe: () => Promise.resolve(null),
+      listAuthProviders: () => Promise.resolve({ providers: [] }),
+    });
     const router = createAppRouter(
       { queryClient, api, session },
       createMemoryHistory({ initialEntries: ['/accesso'] }),
@@ -32,11 +38,38 @@ describe('access screen', () => {
     expect(screen.getByLabelText('Password')).toBeTruthy();
     expect(screen.getByRole('radio', { name: 'Automatico' })).toBeTruthy();
   });
+
+  it('offers external account access when providers are configured', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const api = unusedApi({
+      getMe: () => Promise.resolve(null),
+      listAuthProviders: () =>
+        Promise.resolve({
+          providers: [
+            { id: 'google', kind: 'google' },
+            { id: 'openid', kind: 'openid' },
+          ],
+        }),
+    });
+    const router = createAppRouter(
+      { queryClient, api, session },
+      createMemoryHistory({ initialEntries: ['/accesso'] }),
+    );
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByRole('button', { name: 'Continua con Google' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Accesso con account esterno' })).toBeTruthy();
+    expect(screen.getByText('Puoi anche entrare con un account esterno.')).toBeTruthy();
+  });
 });
 
 function unusedApi(partial: Partial<DomusafeApi>): DomusafeApi {
   const fail = (): Promise<never> => Promise.reject(new Error('not used'));
   return {
+    listAuthProviders: fail,
     getMe: fail,
     updateProfile: fail,
     listNews: fail,
