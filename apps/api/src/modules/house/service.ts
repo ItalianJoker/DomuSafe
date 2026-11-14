@@ -7,7 +7,9 @@ import {
   type CreateGuideEntryRequest,
   type CreateMaintenanceTaskRequest,
   type CreateShutoffRequest,
+  type CreateUtilityBillRequest,
   type CreateUtilityRequest,
+  type CreateUtilityTemplateRequest,
   type CreateWasteCollectionRequest,
   type GuideEntry,
   type GuestView,
@@ -19,10 +21,17 @@ import {
   type UpdateGuideEntryRequest,
   type UpdateMaintenanceTaskRequest,
   type UpdateShutoffRequest,
+  type UpdateUtilityBillRequest,
   type UpdateUtilityRequest,
+  type UpdateUtilityTemplateRequest,
   type UpdateWasteCollectionRequest,
   type Utility,
+  type UtilityBill,
+  type UtilityBillExtracted,
+  type UtilityTemplate,
+  type UtilityTemplateList,
   type WasteCollection,
+  utilityBillExtractedSchema,
 } from '@domusafe/contracts';
 import { fromBase64Url, toBase64Url } from '@domusafe/crypto';
 import { recordAudit, recordRevision, withContext, type Database, type Transaction } from '@domusafe/db';
@@ -249,11 +258,67 @@ function utilityView(row: repo.UtilityRow): Utility {
     estimatedCost: money(row.estimatedCostMinor, row.currency),
     autopay: row.autopay,
     notes: row.notes,
+    templateId: row.templateId,
     sealed: sealedOf(row),
     version: row.version,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
+}
+
+function utilityTemplateView(row: repo.UtilityTemplateRow): UtilityTemplate {
+  return {
+    id: row.id,
+    familyId: row.familyId,
+    country: row.country,
+    kind: row.kind,
+    providerName: row.providerName,
+    fieldHints: row.fieldHints,
+    recognitionPatterns: row.recognitionPatterns,
+    active: row.active,
+    version: row.version,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function extractedOf(value: Record<string, unknown>): UtilityBillExtracted {
+  const parsed = utilityBillExtractedSchema.safeParse(value);
+  return parsed.success ? parsed.data : {};
+}
+
+function utilityBillView(row: repo.UtilityBillRow): UtilityBill {
+  return {
+    id: row.id,
+    familyId: row.familyId,
+    houseId: row.houseId,
+    utilityId: row.utilityId,
+    periodStart: row.periodStart,
+    periodEnd: row.periodEnd,
+    issueDate: row.issueDate,
+    dueDate: row.dueDate,
+    amount: money(row.amountMinor, row.currency),
+    consumption: row.consumption,
+    consumptionUnit: row.consumptionUnit,
+    paidOn: row.paidOn,
+    fileId: row.fileId,
+    extracted: extractedOf(row.extracted),
+    version: row.version,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function billAmountColumns(
+  amount: { readonly amountMinor: number; readonly currency: string } | null | undefined,
+): { amountMinor?: number | null; currency?: string | null } {
+  if (amount === undefined) {
+    return {};
+  }
+  if (amount === null) {
+    return { amountMinor: null, currency: null };
+  }
+  return { amountMinor: amount.amountMinor, currency: amount.currency };
 }
 
 function maintenanceView(row: repo.MaintenanceRow): MaintenanceTask {
@@ -1438,6 +1503,7 @@ export function createHouseService(
             currency: input.estimatedCost?.currency ?? null,
             autopay: input.autopay,
             notes: input.notes ?? null,
+            templateId: input.templateId ?? null,
             createdBy: tenant.accountId,
             envelope,
           });
@@ -1518,6 +1584,7 @@ export function createHouseService(
               ...costColumns(patch.estimatedCost),
               ...(patch.autopay === undefined ? {} : { autopay: patch.autopay }),
               ...(patch.notes === undefined ? {} : { notes: patch.notes }),
+              ...(patch.templateId === undefined ? {} : { templateId: patch.templateId }),
               ...(envelope === undefined ? {} : { envelope }),
               updatedBy: tenant.accountId,
             },
@@ -1783,6 +1850,384 @@ export function createHouseService(
             op: 'delete',
             houseId,
             data: { category: deleted.category, title: deleted.title },
+          });
+        }),
+      );
+    },
+
+    /**
+     * Lists system and family payment templates for bill recognition.
+     *
+     * @param tenant - Resolved tenant.
+     * @param query - Optional kind and country filters.
+     * @returns Active templates visible to the family.
+     */
+    async listUtilityTemplates(
+      tenant: TenantContext,
+      query: { readonly kind?: Utility['kind']; readonly country?: string },
+    ): Promise<UtilityTemplateList> {
+      return inFamily(tenant, async (tx) => {
+        const rows = await repo.listUtilityTemplates(tx, {
+          familyId: tenant.familyId,
+          ...(query.kind === undefined ? {} : { kind: query.kind }),
+          ...(query.country === undefined ? {} : { country: query.country }),
+        });
+        return { items: rows.map(utilityTemplateView) };
+      });
+    },
+
+    /**
+     * Creates a family-owned payment template. System templates stay read-only.
+     *
+     * @param tenant - Resolved tenant.
+     * @param input - Validated body.
+     * @returns The template.
+     */
+    async createUtilityTemplate(
+      tenant: TenantContext,
+      input: CreateUtilityTemplateRequest,
+    ): Promise<UtilityTemplate> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const row = await repo.insertUtilityTemplate(tx, {
+            familyId: tenant.familyId,
+            country: input.country,
+            kind: input.kind,
+            providerName: input.providerName,
+            fieldHints: input.fieldHints,
+            recognitionPatterns: input.recognitionPatterns,
+            active: input.active,
+            createdBy: tenant.accountId,
+          });
+          await trace(tx, tenant, {
+            action: 'house.utility_template.created',
+            resourceType: 'utility_templates',
+            resourceId: row.id,
+            version: row.version,
+            op: 'create',
+            data: { kind: row.kind, providerName: row.providerName, country: row.country },
+          });
+          return utilityTemplateView(row);
+        }),
+      );
+    },
+
+    /**
+     * Updates a family-owned payment template.
+     *
+     * @param tenant - Resolved tenant.
+     * @param templateId - Template id.
+     * @param expectedVersion - Version from `If-Match`.
+     * @param patch - Validated body.
+     * @returns The template.
+     */
+    async updateUtilityTemplate(
+      tenant: TenantContext,
+      templateId: string,
+      expectedVersion: number,
+      patch: UpdateUtilityTemplateRequest,
+    ): Promise<UtilityTemplate> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const current = await repo.findUtilityTemplate(tx, {
+            familyId: tenant.familyId,
+            templateId,
+          });
+          if (current === null) {
+            throw new ProblemError('not_found');
+          }
+          if (current.familyId === null) {
+            throw new ProblemError('not_found');
+          }
+          const updated = await repo.updateUtilityTemplate(
+            tx,
+            { familyId: tenant.familyId, templateId, expectedVersion },
+            {
+              ...(patch.country === undefined ? {} : { country: patch.country }),
+              ...(patch.kind === undefined ? {} : { kind: patch.kind }),
+              ...(patch.providerName === undefined ? {} : { providerName: patch.providerName }),
+              ...(patch.fieldHints === undefined ? {} : { fieldHints: patch.fieldHints }),
+              ...(patch.recognitionPatterns === undefined
+                ? {}
+                : { recognitionPatterns: patch.recognitionPatterns }),
+              ...(patch.active === undefined ? {} : { active: patch.active }),
+              updatedBy: tenant.accountId,
+            },
+          );
+          if (updated === null) {
+            conflict(current.version);
+          }
+          await trace(tx, tenant, {
+            action: 'house.utility_template.updated',
+            resourceType: 'utility_templates',
+            resourceId: templateId,
+            version: updated.version,
+            op: 'update',
+            data: { kind: updated.kind, providerName: updated.providerName },
+          });
+          return utilityTemplateView(updated);
+        }),
+      );
+    },
+
+    /**
+     * Deletes a family-owned payment template.
+     *
+     * @param tenant - Resolved tenant.
+     * @param templateId - Template id.
+     * @param expectedVersion - Version from `If-Match`.
+     */
+    async deleteUtilityTemplate(
+      tenant: TenantContext,
+      templateId: string,
+      expectedVersion: number,
+    ): Promise<void> {
+      await guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const current = await repo.findUtilityTemplate(tx, {
+            familyId: tenant.familyId,
+            templateId,
+          });
+          if (current === null) {
+            throw new ProblemError('not_found');
+          }
+          if (current.familyId === null) {
+            throw new ProblemError('not_found');
+          }
+          const removed = await repo.deleteUtilityTemplate(tx, {
+            familyId: tenant.familyId,
+            templateId,
+            expectedVersion,
+          });
+          if (!removed) {
+            conflict(current.version);
+          }
+          await trace(tx, tenant, {
+            action: 'house.utility_template.deleted',
+            resourceType: 'utility_templates',
+            resourceId: templateId,
+            version: current.version + 1,
+            op: 'delete',
+            data: { kind: current.kind, providerName: current.providerName },
+          });
+        }),
+      );
+    },
+
+    /**
+     * Lists bills of one utility contract.
+     *
+     * @param tenant - Resolved tenant.
+     * @param houseId - House id.
+     * @param utilityId - Utility id.
+     * @param page - Limit and cursor.
+     * @returns One page.
+     */
+    async listUtilityBills(
+      tenant: TenantContext,
+      houseId: string,
+      utilityId: string,
+      page: { readonly limit: number; readonly after: readonly [string, string] | null },
+    ): Promise<Page<UtilityBill>> {
+      return inFamily(tenant, async (tx) => {
+        const utility = await repo.findUtility(tx, {
+          familyId: tenant.familyId,
+          houseId,
+          utilityId,
+        });
+        if (utility === null) {
+          throw new ProblemError('not_found');
+        }
+        const rows = await repo.listUtilityBills(tx, {
+          familyId: tenant.familyId,
+          houseId,
+          utilityId,
+          ...page,
+        });
+        return pageOf(rows.map(utilityBillView), page.limit, (row) => [row.createdAt, row.id]);
+      });
+    },
+
+    /**
+     * Stores a bill period with optional browser-extracted values.
+     *
+     * @param tenant - Resolved tenant.
+     * @param houseId - House id.
+     * @param utilityId - Utility id.
+     * @param input - Validated body.
+     * @returns The bill.
+     */
+    async createUtilityBill(
+      tenant: TenantContext,
+      houseId: string,
+      utilityId: string,
+      input: CreateUtilityBillRequest,
+    ): Promise<UtilityBill> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const utility = await repo.findUtility(tx, {
+            familyId: tenant.familyId,
+            houseId,
+            utilityId,
+          });
+          if (utility === null) {
+            throw new ProblemError('not_found');
+          }
+          const periodStart = input.periodStart ?? null;
+          const periodEnd = input.periodEnd ?? null;
+          if (periodStart !== null && periodEnd !== null && periodStart > periodEnd) {
+            throw new ProblemError('validation_failed', {
+              detail: 'The billing period end must be on or after its start',
+            });
+          }
+          const row = await repo.insertUtilityBill(tx, {
+            id: input.id,
+            familyId: tenant.familyId,
+            houseId,
+            utilityId,
+            periodStart,
+            periodEnd,
+            issueDate: input.issueDate ?? null,
+            dueDate: input.dueDate ?? null,
+            amountMinor: input.amount?.amountMinor ?? null,
+            currency: input.amount?.currency ?? null,
+            consumption: input.consumption ?? null,
+            consumptionUnit: input.consumptionUnit ?? null,
+            paidOn: input.paidOn ?? null,
+            fileId: input.fileId ?? null,
+            extracted: input.extracted,
+            createdBy: tenant.accountId,
+          });
+          await trace(tx, tenant, {
+            action: 'house.utility_bill.created',
+            resourceType: 'utility_bills',
+            resourceId: row.id,
+            version: row.version,
+            op: 'create',
+            houseId,
+            data: { utilityId, dueDate: row.dueDate, amountMinor: row.amountMinor },
+          });
+          return utilityBillView(row);
+        }),
+      );
+    },
+
+    /**
+     * Updates a stored bill.
+     *
+     * @param tenant - Resolved tenant.
+     * @param houseId - House id.
+     * @param utilityId - Utility id.
+     * @param billId - Bill id.
+     * @param expectedVersion - Version from `If-Match`.
+     * @param patch - Validated body.
+     * @returns The bill.
+     */
+    async updateUtilityBill(
+      tenant: TenantContext,
+      houseId: string,
+      utilityId: string,
+      billId: string,
+      expectedVersion: number,
+      patch: UpdateUtilityBillRequest,
+    ): Promise<UtilityBill> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const current = await repo.findUtilityBill(tx, {
+            familyId: tenant.familyId,
+            houseId,
+            utilityId,
+            billId,
+          });
+          if (current === null) {
+            throw new ProblemError('not_found');
+          }
+          const periodStart = patch.periodStart === undefined ? current.periodStart : patch.periodStart;
+          const periodEnd = patch.periodEnd === undefined ? current.periodEnd : patch.periodEnd;
+          if (periodStart !== null && periodEnd !== null && periodStart > periodEnd) {
+            throw new ProblemError('validation_failed', {
+              detail: 'The billing period end must be on or after its start',
+            });
+          }
+          const updated = await repo.updateUtilityBill(
+            tx,
+            { familyId: tenant.familyId, houseId, utilityId, billId, expectedVersion },
+            {
+              ...(patch.periodStart === undefined ? {} : { periodStart: patch.periodStart }),
+              ...(patch.periodEnd === undefined ? {} : { periodEnd: patch.periodEnd }),
+              ...(patch.issueDate === undefined ? {} : { issueDate: patch.issueDate }),
+              ...(patch.dueDate === undefined ? {} : { dueDate: patch.dueDate }),
+              ...billAmountColumns(patch.amount),
+              ...(patch.consumption === undefined ? {} : { consumption: patch.consumption }),
+              ...(patch.consumptionUnit === undefined ? {} : { consumptionUnit: patch.consumptionUnit }),
+              ...(patch.paidOn === undefined ? {} : { paidOn: patch.paidOn }),
+              ...(patch.fileId === undefined ? {} : { fileId: patch.fileId }),
+              ...(patch.extracted === undefined ? {} : { extracted: patch.extracted }),
+              updatedBy: tenant.accountId,
+            },
+          );
+          if (updated === null) {
+            conflict(current.version);
+          }
+          await trace(tx, tenant, {
+            action: 'house.utility_bill.updated',
+            resourceType: 'utility_bills',
+            resourceId: billId,
+            version: updated.version,
+            op: 'update',
+            houseId,
+            data: { utilityId, dueDate: updated.dueDate },
+          });
+          return utilityBillView(updated);
+        }),
+      );
+    },
+
+    /**
+     * Deletes a stored bill.
+     *
+     * @param tenant - Resolved tenant.
+     * @param houseId - House id.
+     * @param utilityId - Utility id.
+     * @param billId - Bill id.
+     * @param expectedVersion - Version from `If-Match`.
+     */
+    async deleteUtilityBill(
+      tenant: TenantContext,
+      houseId: string,
+      utilityId: string,
+      billId: string,
+      expectedVersion: number,
+    ): Promise<void> {
+      await guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const current = await repo.findUtilityBill(tx, {
+            familyId: tenant.familyId,
+            houseId,
+            utilityId,
+            billId,
+          });
+          if (current === null) {
+            throw new ProblemError('not_found');
+          }
+          const removed = await repo.deleteUtilityBill(tx, {
+            familyId: tenant.familyId,
+            houseId,
+            utilityId,
+            billId,
+            expectedVersion,
+          });
+          if (!removed) {
+            conflict(current.version);
+          }
+          await trace(tx, tenant, {
+            action: 'house.utility_bill.deleted',
+            resourceType: 'utility_bills',
+            resourceId: billId,
+            version: current.version + 1,
+            op: 'delete',
+            houseId,
+            data: { utilityId },
           });
         }),
       );

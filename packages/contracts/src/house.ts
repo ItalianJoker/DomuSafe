@@ -63,6 +63,8 @@ export const UTILITY_KINDS = [
 ] as const;
 /** How often a bill is issued. */
 export const BILLING_FREQUENCIES = ['monthly', 'bimonthly', 'quarterly', 'semiannual', 'annual'] as const;
+/** Unit of consumption printed on a utility bill. */
+export const CONSUMPTION_UNITS = ['kwh', 'smc', 'm3', 'gb'] as const;
 /** Category of a maintenance task. */
 export const MAINTENANCE_CATEGORIES = [
   'heating',
@@ -87,6 +89,7 @@ const wasteFractionSchema = z.enum(WASTE_FRACTIONS);
 const contactKindSchema = z.enum(CONTACT_KINDS);
 const utilityKindSchema = z.enum(UTILITY_KINDS);
 const billingFrequencySchema = z.enum(BILLING_FREQUENCIES);
+const consumptionUnitSchema = z.enum(CONSUMPTION_UNITS);
 const maintenanceCategorySchema = z.enum(MAINTENANCE_CATEGORIES);
 const maintenancePrioritySchema = z.enum(MAINTENANCE_PRIORITIES);
 
@@ -374,6 +377,58 @@ export const contactListQuerySchema = z
 /** Response of `GET …/contacts`. */
 export const contactPageSchema = pageSchema(contactSchema).meta({ id: 'ContactPage' });
 
+/** Labels that help fill a payment form from a bill. */
+export const utilityFieldHintsSchema = z
+  .record(z.string().min(1).max(40), z.string().trim().min(1).max(120))
+  .refine((value) => Object.keys(value).length <= 32, 'At most 32 field hints')
+  .meta({ id: 'UtilityFieldHints' });
+/** Labels that help fill a payment form from a bill. */
+export type UtilityFieldHints = z.infer<typeof utilityFieldHintsSchema>;
+
+/** Regular expressions keyed by field name for browser-side bill recognition. */
+export const utilityRecognitionPatternsSchema = z
+  .record(z.string().min(1).max(40), z.array(z.string().min(1).max(400)).min(1).max(8))
+  .refine((value) => Object.keys(value).length <= 32, 'At most 32 recognition fields')
+  .meta({ id: 'UtilityRecognitionPatterns' });
+/** Regular expressions keyed by field name for browser-side bill recognition. */
+export type UtilityRecognitionPatterns = z.infer<typeof utilityRecognitionPatternsSchema>;
+
+/**
+ * Structured values recognised from a bill in the browser.
+ * Amounts stay in minor units; payment coordinates are Class C hints the person confirms.
+ */
+export const utilityBillExtractedSchema = z
+  .object({
+    providerName: z.string().trim().min(1).max(160).optional(),
+    customerCode: codeSchema.optional(),
+    contractCode: codeSchema.optional(),
+    supplyPointCode: codeSchema.optional(),
+    tariffName: z.string().trim().min(1).max(120).optional(),
+    amountMinor: z.int().min(0).max(1_000_000_000_000).optional(),
+    currency: currencySchema.optional(),
+    dueDate: localDateSchema.optional(),
+    issueDate: localDateSchema.optional(),
+    periodStart: localDateSchema.optional(),
+    periodEnd: localDateSchema.optional(),
+    consumption: z
+      .string()
+      .regex(/^-?\d+(\.\d{1,3})?$/, 'Expected a decimal string')
+      .optional(),
+    consumptionUnit: consumptionUnitSchema.optional(),
+    iban: z
+      .string()
+      .trim()
+      .regex(/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/, 'Expected an international bank account number')
+      .optional(),
+    payeeName: z.string().trim().min(1).max(160).optional(),
+    rawText: z.string().max(20_000).optional(),
+    templateId: uuidSchema.optional(),
+  })
+  .strict()
+  .meta({ id: 'UtilityBillExtracted' });
+/** Structured values recognised from a bill in the browser. */
+export type UtilityBillExtracted = z.infer<typeof utilityBillExtractedSchema>;
+
 /** A utility contract. Payment details, when present, are only in `sealed`. */
 export const utilitySchema = z
   .object({
@@ -392,6 +447,7 @@ export const utilitySchema = z
     estimatedCost: costSchema.nullable(),
     autopay: z.boolean(),
     notes: notesSchema.nullable(),
+    templateId: uuidSchema.nullable(),
     sealed: sealedSchema.nullable(),
     version: z.int().min(1),
     createdAt: instantSchema,
@@ -418,6 +474,7 @@ export const createUtilityRequestSchema = z
     estimatedCost: costSchema.nullable().optional(),
     autopay: z.boolean().default(false),
     notes: notesSchema.nullable().optional(),
+    templateId: uuidSchema.nullable().optional(),
     sealed: sealedSchema.nullable().optional(),
   })
   .strict()
@@ -440,6 +497,7 @@ export const updateUtilityRequestSchema = z
     estimatedCost: costSchema.nullable().optional(),
     autopay: z.boolean().optional(),
     notes: notesSchema.nullable().optional(),
+    templateId: uuidSchema.nullable().optional(),
     sealed: sealedSchema.nullable().optional(),
   })
   .strict()
@@ -450,6 +508,194 @@ export type UpdateUtilityRequest = z.infer<typeof updateUtilityRequestSchema>;
 
 /** Response of `GET …/utilities`. */
 export const utilityPageSchema = pageSchema(utilitySchema).meta({ id: 'UtilityPage' });
+
+/** A payment recognition template (system or family-owned). */
+export const utilityTemplateSchema = z
+  .object({
+    id: uuidSchema,
+    familyId: uuidSchema.nullable(),
+    country: z
+      .string()
+      .length(2)
+      .regex(/^[A-Z]{2}$/, 'Expected an uppercase country code'),
+    kind: utilityKindSchema,
+    providerName: z.string().min(1).max(160),
+    fieldHints: utilityFieldHintsSchema,
+    recognitionPatterns: utilityRecognitionPatternsSchema,
+    active: z.boolean(),
+    version: z.int().min(1),
+    createdAt: instantSchema,
+    updatedAt: instantSchema,
+  })
+  .strict()
+  .meta({ id: 'UtilityTemplate' });
+/** A payment recognition template. */
+export type UtilityTemplate = z.infer<typeof utilityTemplateSchema>;
+
+/** Body of `POST …/utility-templates`. */
+export const createUtilityTemplateRequestSchema = z
+  .object({
+    country: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .length(2)
+      .regex(/^[A-Z]{2}$/, 'Expected an uppercase country code')
+      .default('IT'),
+    kind: utilityKindSchema,
+    providerName: z.string().trim().min(1).max(160),
+    fieldHints: utilityFieldHintsSchema.default({}),
+    recognitionPatterns: utilityRecognitionPatternsSchema.default({}),
+    active: z.boolean().default(true),
+  })
+  .strict()
+  .meta({ id: 'CreateUtilityTemplateRequest' });
+/** Body of `POST …/utility-templates`. */
+export type CreateUtilityTemplateRequest = z.infer<typeof createUtilityTemplateRequestSchema>;
+
+/** Body of `PATCH …/utility-templates/{templateId}`. */
+export const updateUtilityTemplateRequestSchema = z
+  .object({
+    country: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .length(2)
+      .regex(/^[A-Z]{2}$/, 'Expected an uppercase country code')
+      .optional(),
+    kind: utilityKindSchema.optional(),
+    providerName: z.string().trim().min(1).max(160).optional(),
+    fieldHints: utilityFieldHintsSchema.optional(),
+    recognitionPatterns: utilityRecognitionPatternsSchema.optional(),
+    active: z.boolean().optional(),
+  })
+  .strict()
+  .refine(atLeastOneField, 'At least one field is required')
+  .meta({ id: 'UpdateUtilityTemplateRequest' });
+/** Body of `PATCH …/utility-templates/{templateId}`. */
+export type UpdateUtilityTemplateRequest = z.infer<typeof updateUtilityTemplateRequestSchema>;
+
+/** Response of `GET …/utility-templates`. */
+export const utilityTemplateListSchema = z
+  .object({ items: z.array(utilityTemplateSchema).max(200) })
+  .strict()
+  .meta({ id: 'UtilityTemplateList' });
+/** Response of `GET …/utility-templates`. */
+export type UtilityTemplateList = z.infer<typeof utilityTemplateListSchema>;
+
+/** Query of `GET …/utility-templates`. */
+export const utilityTemplateListQuerySchema = z
+  .object({
+    kind: utilityKindSchema.optional(),
+    country: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .length(2)
+      .regex(/^[A-Z]{2}$/)
+      .optional(),
+  })
+  .strict();
+
+/** One utility bill period with browser-extracted values. */
+export const utilityBillSchema = z
+  .object({
+    id: uuidV7Schema,
+    familyId: uuidSchema,
+    houseId: uuidSchema,
+    utilityId: uuidV7Schema,
+    periodStart: localDateSchema.nullable(),
+    periodEnd: localDateSchema.nullable(),
+    issueDate: localDateSchema.nullable(),
+    dueDate: localDateSchema.nullable(),
+    amount: costSchema.nullable(),
+    consumption: z
+      .string()
+      .regex(/^-?\d+(\.\d{1,3})?$/)
+      .nullable(),
+    consumptionUnit: consumptionUnitSchema.nullable(),
+    paidOn: localDateSchema.nullable(),
+    fileId: uuidSchema.nullable(),
+    extracted: utilityBillExtractedSchema,
+    version: z.int().min(1),
+    createdAt: instantSchema,
+    updatedAt: instantSchema,
+  })
+  .strict()
+  .meta({ id: 'UtilityBill' });
+/** One utility bill period. */
+export type UtilityBill = z.infer<typeof utilityBillSchema>;
+
+/** Body of `POST …/utilities/{utilityId}/bills`. */
+export const createUtilityBillRequestSchema = z
+  .object({
+    id: uuidV7Schema,
+    periodStart: localDateSchema.nullable().optional(),
+    periodEnd: localDateSchema.nullable().optional(),
+    issueDate: localDateSchema.nullable().optional(),
+    dueDate: localDateSchema.nullable().optional(),
+    amount: costSchema.nullable().optional(),
+    consumption: z
+      .string()
+      .regex(/^-?\d+(\.\d{1,3})?$/)
+      .nullable()
+      .optional(),
+    consumptionUnit: consumptionUnitSchema.nullable().optional(),
+    paidOn: localDateSchema.nullable().optional(),
+    fileId: uuidSchema.nullable().optional(),
+    extracted: utilityBillExtractedSchema.default({}),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      (value.consumption === null || value.consumption === undefined) ===
+      (value.consumptionUnit === null || value.consumptionUnit === undefined),
+    'Consumption and its unit must be set together',
+  )
+  .meta({ id: 'CreateUtilityBillRequest' });
+/** Body of `POST …/utilities/{utilityId}/bills`. */
+export type CreateUtilityBillRequest = z.infer<typeof createUtilityBillRequestSchema>;
+
+/** Body of `PATCH …/utilities/{utilityId}/bills/{billId}`. */
+export const updateUtilityBillRequestSchema = z
+  .object({
+    periodStart: localDateSchema.nullable().optional(),
+    periodEnd: localDateSchema.nullable().optional(),
+    issueDate: localDateSchema.nullable().optional(),
+    dueDate: localDateSchema.nullable().optional(),
+    amount: costSchema.nullable().optional(),
+    consumption: z
+      .string()
+      .regex(/^-?\d+(\.\d{1,3})?$/)
+      .nullable()
+      .optional(),
+    consumptionUnit: consumptionUnitSchema.nullable().optional(),
+    paidOn: localDateSchema.nullable().optional(),
+    fileId: uuidSchema.nullable().optional(),
+    extracted: utilityBillExtractedSchema.optional(),
+  })
+  .strict()
+  .refine(atLeastOneField, 'At least one field is required')
+  .meta({ id: 'UpdateUtilityBillRequest' });
+/** Body of `PATCH …/utilities/{utilityId}/bills/{billId}`. */
+export type UpdateUtilityBillRequest = z.infer<typeof updateUtilityBillRequestSchema>;
+
+/** Response of `GET …/utilities/{utilityId}/bills`. */
+export const utilityBillPageSchema = pageSchema(utilityBillSchema).meta({ id: 'UtilityBillPage' });
+
+/** Path of one utility template. */
+export const utilityTemplateParamsSchema = z
+  .object({ familyId: uuidSchema, templateId: uuidSchema })
+  .strict();
+/** Path of one utility bill. */
+export const utilityBillParamsSchema = z
+  .object({
+    familyId: uuidSchema,
+    houseId: uuidSchema,
+    utilityId: uuidSchema,
+    billId: uuidV7Schema,
+  })
+  .strict();
 
 /** A maintenance task, including the boiler check deadline. */
 export const maintenanceTaskSchema = z

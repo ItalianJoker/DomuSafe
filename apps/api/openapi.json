@@ -10323,6 +10323,165 @@
         ],
         "additionalProperties": false
       },
+      "UtilityFieldHintsInput": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "additionalProperties": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "UtilityRecognitionPatternsInput": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "additionalProperties": {
+          "minItems": 1,
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 400
+          }
+        }
+      },
+      "UtilityBillExtractedInput": {
+        "type": "object",
+        "properties": {
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "customerCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "contractCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "supplyPointCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "tariffName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "EUR",
+              "USD",
+              "JPY",
+              "CZK",
+              "DKK",
+              "GBP",
+              "HUF",
+              "PLN",
+              "RON",
+              "SEK",
+              "CHF",
+              "ISK",
+              "NOK",
+              "TRY",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CNY",
+              "HKD",
+              "IDR",
+              "ILS",
+              "INR",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NZD",
+              "PHP",
+              "SGD",
+              "THB",
+              "ZAR"
+            ],
+            "description": "ISO 4217 currency code"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "issueDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "consumption": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+          },
+          "consumptionUnit": {
+            "type": "string",
+            "enum": [
+              "kwh",
+              "smc",
+              "m3",
+              "gb"
+            ]
+          },
+          "iban": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}\\d{2}[A-Z0-9]{11,30}$"
+          },
+          "payeeName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "rawText": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          }
+        },
+        "additionalProperties": false
+      },
       "UtilityInput": {
         "type": "object",
         "properties": {
@@ -10523,6 +10682,19 @@
               }
             ]
           },
+          "templateId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "sealed": {
             "anyOf": [
               {
@@ -10567,6 +10739,7 @@
           "estimatedCost",
           "autopay",
           "notes",
+          "templateId",
           "sealed",
           "version",
           "createdAt",
@@ -10758,6 +10931,19 @@
               {
                 "type": "string",
                 "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "templateId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
               },
               {
                 "type": "null"
@@ -10965,6 +11151,19 @@
               }
             ]
           },
+          "templateId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "sealed": {
             "anyOf": [
               {
@@ -10985,6 +11184,801 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/UtilityInput"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "UtilityTemplateInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "country": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "gas",
+              "water",
+              "internet",
+              "waste_tax",
+              "heating",
+              "other"
+            ]
+          },
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "fieldHints": {
+            "$ref": "#/components/schemas/UtilityFieldHintsInput"
+          },
+          "recognitionPatterns": {
+            "$ref": "#/components/schemas/UtilityRecognitionPatternsInput"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "country",
+          "kind",
+          "providerName",
+          "fieldHints",
+          "recognitionPatterns",
+          "active",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "CreateUtilityTemplateRequestInput": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "default": "IT",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "gas",
+              "water",
+              "internet",
+              "waste_tax",
+              "heating",
+              "other"
+            ]
+          },
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "fieldHints": {
+            "default": {},
+            "$ref": "#/components/schemas/UtilityFieldHintsInput"
+          },
+          "recognitionPatterns": {
+            "default": {},
+            "$ref": "#/components/schemas/UtilityRecognitionPatternsInput"
+          },
+          "active": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "providerName"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateUtilityTemplateRequestInput": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "gas",
+              "water",
+              "internet",
+              "waste_tax",
+              "heating",
+              "other"
+            ]
+          },
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "fieldHints": {
+            "$ref": "#/components/schemas/UtilityFieldHintsInput"
+          },
+          "recognitionPatterns": {
+            "$ref": "#/components/schemas/UtilityRecognitionPatternsInput"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UtilityTemplateListInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UtilityTemplateInput"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "UtilityBillInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "houseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "utilityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "EUR",
+                      "USD",
+                      "JPY",
+                      "CZK",
+                      "DKK",
+                      "GBP",
+                      "HUF",
+                      "PLN",
+                      "RON",
+                      "SEK",
+                      "CHF",
+                      "ISK",
+                      "NOK",
+                      "TRY",
+                      "AUD",
+                      "BRL",
+                      "CAD",
+                      "CNY",
+                      "HKD",
+                      "IDR",
+                      "ILS",
+                      "INR",
+                      "KRW",
+                      "MXN",
+                      "MYR",
+                      "NZD",
+                      "PHP",
+                      "SGD",
+                      "THB",
+                      "ZAR"
+                    ],
+                    "description": "ISO 4217 currency code"
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumption": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumptionUnit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kwh",
+                  "smc",
+                  "m3",
+                  "gb"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fileId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extracted": {
+            "$ref": "#/components/schemas/UtilityBillExtractedInput"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "houseId",
+          "utilityId",
+          "periodStart",
+          "periodEnd",
+          "issueDate",
+          "dueDate",
+          "amount",
+          "consumption",
+          "consumptionUnit",
+          "paidOn",
+          "fileId",
+          "extracted",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "CreateUtilityBillRequestInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "EUR",
+                      "USD",
+                      "JPY",
+                      "CZK",
+                      "DKK",
+                      "GBP",
+                      "HUF",
+                      "PLN",
+                      "RON",
+                      "SEK",
+                      "CHF",
+                      "ISK",
+                      "NOK",
+                      "TRY",
+                      "AUD",
+                      "BRL",
+                      "CAD",
+                      "CNY",
+                      "HKD",
+                      "IDR",
+                      "ILS",
+                      "INR",
+                      "KRW",
+                      "MXN",
+                      "MYR",
+                      "NZD",
+                      "PHP",
+                      "SGD",
+                      "THB",
+                      "ZAR"
+                    ],
+                    "description": "ISO 4217 currency code"
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumption": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumptionUnit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kwh",
+                  "smc",
+                  "m3",
+                  "gb"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fileId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extracted": {
+            "default": {},
+            "$ref": "#/components/schemas/UtilityBillExtractedInput"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateUtilityBillRequestInput": {
+        "type": "object",
+        "properties": {
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "EUR",
+                      "USD",
+                      "JPY",
+                      "CZK",
+                      "DKK",
+                      "GBP",
+                      "HUF",
+                      "PLN",
+                      "RON",
+                      "SEK",
+                      "CHF",
+                      "ISK",
+                      "NOK",
+                      "TRY",
+                      "AUD",
+                      "BRL",
+                      "CAD",
+                      "CNY",
+                      "HKD",
+                      "IDR",
+                      "ILS",
+                      "INR",
+                      "KRW",
+                      "MXN",
+                      "MYR",
+                      "NZD",
+                      "PHP",
+                      "SGD",
+                      "THB",
+                      "ZAR"
+                    ],
+                    "description": "ISO 4217 currency code"
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumption": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumptionUnit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kwh",
+                  "smc",
+                  "m3",
+                  "gb"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fileId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extracted": {
+            "$ref": "#/components/schemas/UtilityBillExtractedInput"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UtilityBillPageInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UtilityBillInput"
             }
           },
           "nextCursor": {
@@ -29821,6 +30815,165 @@
         ],
         "additionalProperties": false
       },
+      "UtilityFieldHints": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "additionalProperties": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "UtilityRecognitionPatterns": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "additionalProperties": {
+          "minItems": 1,
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 400
+          }
+        }
+      },
+      "UtilityBillExtracted": {
+        "type": "object",
+        "properties": {
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "customerCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "contractCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "supplyPointCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "tariffName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000000
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "EUR",
+              "USD",
+              "JPY",
+              "CZK",
+              "DKK",
+              "GBP",
+              "HUF",
+              "PLN",
+              "RON",
+              "SEK",
+              "CHF",
+              "ISK",
+              "NOK",
+              "TRY",
+              "AUD",
+              "BRL",
+              "CAD",
+              "CNY",
+              "HKD",
+              "IDR",
+              "ILS",
+              "INR",
+              "KRW",
+              "MXN",
+              "MYR",
+              "NZD",
+              "PHP",
+              "SGD",
+              "THB",
+              "ZAR"
+            ],
+            "description": "ISO 4217 currency code"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "issueDate": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Calendar date in the family time zone"
+          },
+          "consumption": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+          },
+          "consumptionUnit": {
+            "type": "string",
+            "enum": [
+              "kwh",
+              "smc",
+              "m3",
+              "gb"
+            ]
+          },
+          "iban": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}\\d{2}[A-Z0-9]{11,30}$"
+          },
+          "payeeName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "rawText": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          }
+        },
+        "additionalProperties": false
+      },
       "Utility": {
         "type": "object",
         "properties": {
@@ -30021,6 +31174,19 @@
               }
             ]
           },
+          "templateId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "sealed": {
             "anyOf": [
               {
@@ -30065,6 +31231,7 @@
           "estimatedCost",
           "autopay",
           "notes",
+          "templateId",
           "sealed",
           "version",
           "createdAt",
@@ -30256,6 +31423,19 @@
               {
                 "type": "string",
                 "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "templateId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
               },
               {
                 "type": "null"
@@ -30464,6 +31644,19 @@
               }
             ]
           },
+          "templateId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "sealed": {
             "anyOf": [
               {
@@ -30484,6 +31677,806 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Utility"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "UtilityTemplate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "country": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "gas",
+              "water",
+              "internet",
+              "waste_tax",
+              "heating",
+              "other"
+            ]
+          },
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "fieldHints": {
+            "$ref": "#/components/schemas/UtilityFieldHints"
+          },
+          "recognitionPatterns": {
+            "$ref": "#/components/schemas/UtilityRecognitionPatterns"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "country",
+          "kind",
+          "providerName",
+          "fieldHints",
+          "recognitionPatterns",
+          "active",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "CreateUtilityTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "default": "IT",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "gas",
+              "water",
+              "internet",
+              "waste_tax",
+              "heating",
+              "other"
+            ]
+          },
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "fieldHints": {
+            "default": {},
+            "$ref": "#/components/schemas/UtilityFieldHints"
+          },
+          "recognitionPatterns": {
+            "default": {},
+            "$ref": "#/components/schemas/UtilityRecognitionPatterns"
+          },
+          "active": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "country",
+          "kind",
+          "providerName",
+          "fieldHints",
+          "recognitionPatterns",
+          "active"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateUtilityTemplateRequest": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "gas",
+              "water",
+              "internet",
+              "waste_tax",
+              "heating",
+              "other"
+            ]
+          },
+          "providerName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "fieldHints": {
+            "$ref": "#/components/schemas/UtilityFieldHints"
+          },
+          "recognitionPatterns": {
+            "$ref": "#/components/schemas/UtilityRecognitionPatterns"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UtilityTemplateList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UtilityTemplate"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "UtilityBill": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "houseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "utilityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "EUR",
+                      "USD",
+                      "JPY",
+                      "CZK",
+                      "DKK",
+                      "GBP",
+                      "HUF",
+                      "PLN",
+                      "RON",
+                      "SEK",
+                      "CHF",
+                      "ISK",
+                      "NOK",
+                      "TRY",
+                      "AUD",
+                      "BRL",
+                      "CAD",
+                      "CNY",
+                      "HKD",
+                      "IDR",
+                      "ILS",
+                      "INR",
+                      "KRW",
+                      "MXN",
+                      "MYR",
+                      "NZD",
+                      "PHP",
+                      "SGD",
+                      "THB",
+                      "ZAR"
+                    ],
+                    "description": "ISO 4217 currency code"
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumption": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumptionUnit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kwh",
+                  "smc",
+                  "m3",
+                  "gb"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fileId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extracted": {
+            "$ref": "#/components/schemas/UtilityBillExtracted"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "houseId",
+          "utilityId",
+          "periodStart",
+          "periodEnd",
+          "issueDate",
+          "dueDate",
+          "amount",
+          "consumption",
+          "consumptionUnit",
+          "paidOn",
+          "fileId",
+          "extracted",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "CreateUtilityBillRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "description": "UUIDv7 generated by the client"
+          },
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "EUR",
+                      "USD",
+                      "JPY",
+                      "CZK",
+                      "DKK",
+                      "GBP",
+                      "HUF",
+                      "PLN",
+                      "RON",
+                      "SEK",
+                      "CHF",
+                      "ISK",
+                      "NOK",
+                      "TRY",
+                      "AUD",
+                      "BRL",
+                      "CAD",
+                      "CNY",
+                      "HKD",
+                      "IDR",
+                      "ILS",
+                      "INR",
+                      "KRW",
+                      "MXN",
+                      "MYR",
+                      "NZD",
+                      "PHP",
+                      "SGD",
+                      "THB",
+                      "ZAR"
+                    ],
+                    "description": "ISO 4217 currency code"
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumption": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumptionUnit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kwh",
+                  "smc",
+                  "m3",
+                  "gb"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fileId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extracted": {
+            "default": {},
+            "$ref": "#/components/schemas/UtilityBillExtracted"
+          }
+        },
+        "required": [
+          "id",
+          "extracted"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateUtilityBillRequest": {
+        "type": "object",
+        "properties": {
+          "periodStart": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "periodEnd": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amountMinor": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "EUR",
+                      "USD",
+                      "JPY",
+                      "CZK",
+                      "DKK",
+                      "GBP",
+                      "HUF",
+                      "PLN",
+                      "RON",
+                      "SEK",
+                      "CHF",
+                      "ISK",
+                      "NOK",
+                      "TRY",
+                      "AUD",
+                      "BRL",
+                      "CAD",
+                      "CNY",
+                      "HKD",
+                      "IDR",
+                      "ILS",
+                      "INR",
+                      "KRW",
+                      "MXN",
+                      "MYR",
+                      "NZD",
+                      "PHP",
+                      "SGD",
+                      "THB",
+                      "ZAR"
+                    ],
+                    "description": "ISO 4217 currency code"
+                  }
+                },
+                "required": [
+                  "amountMinor",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumption": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d{1,3})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumptionUnit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "kwh",
+                  "smc",
+                  "m3",
+                  "gb"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paidOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fileId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "extracted": {
+            "$ref": "#/components/schemas/UtilityBillExtracted"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UtilityBillPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UtilityBill"
             }
           },
           "nextCursor": {
@@ -44243,6 +46236,970 @@
             "name": "contactId",
             "required": true,
             "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response"
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/utility-templates": {
+      "get": {
+        "operationId": "house.listUtilityTemplates",
+        "summary": "System and family payment templates for bill recognition",
+        "tags": [
+          "house"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "electricity",
+                "gas",
+                "water",
+                "internet",
+                "waste_tax",
+                "heating",
+                "other"
+              ]
+            },
+            "in": "query",
+            "name": "kind",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "pattern": "^[A-Z]{2}$"
+            },
+            "in": "query",
+            "name": "country",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilityTemplateList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "house.createUtilityTemplate",
+        "summary": "Add a family payment template",
+        "tags": [
+          "house"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUtilityTemplateRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilityTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/utility-templates/{templateId}": {
+      "patch": {
+        "operationId": "house.updateUtilityTemplate",
+        "summary": "Update a family payment template",
+        "tags": [
+          "house"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUtilityTemplateRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "templateId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilityTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "house.deleteUtilityTemplate",
+        "summary": "Delete a family payment template",
+        "tags": [
+          "house"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "templateId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response"
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}/bills": {
+      "get": {
+        "operationId": "house.listUtilityBills",
+        "summary": "Bills of one utility contract",
+        "tags": [
+          "house"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "in": "query",
+            "name": "cursor",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "houseId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "utilityId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilityBillPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "house.createUtilityBill",
+        "summary": "Store a bill period with optional extracted values",
+        "tags": [
+          "house"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUtilityBillRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "houseId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "utilityId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilityBill"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}/bills/{billId}": {
+      "patch": {
+        "operationId": "house.updateUtilityBill",
+        "summary": "Update a stored utility bill",
+        "tags": [
+          "house"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUtilityBillRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "houseId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "utilityId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            "in": "path",
+            "name": "billId",
+            "required": true,
+            "description": "UUIDv7 generated by the client"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilityBill"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "house.deleteUtilityBill",
+        "summary": "Delete a stored utility bill",
+        "tags": [
+          "house"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "houseId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "utilityId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            "in": "path",
+            "name": "billId",
+            "required": true,
+            "description": "UUIDv7 generated by the client"
           },
           {
             "schema": {

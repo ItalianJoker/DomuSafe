@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState, type SubmitEvent } from 'react';
-import type { Utility } from '@domusafe/contracts';
+import { lazy, Suspense, useEffect, useState, type SubmitEvent } from 'react';
+import type { Utility, UtilityBillExtracted } from '@domusafe/contracts';
 import { useApi } from '@/components/api-context.js';
 import { Field } from '@/components/shell/page.js';
 import { Button } from '@/components/ui/button.js';
@@ -10,6 +10,11 @@ import { problemText } from '@/lib/copy.js';
 import { utilitiesQuery } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { SHOWN_UTILITIES, uuidv7, type ShownUtility } from './model.js';
+
+const BillAssistPanel = lazy(async () => {
+  const module = await import('./bill-assist-panel.js');
+  return { default: module.BillAssistPanel };
+});
 
 function utilityLabel(kind: ShownUtility): string {
   switch (kind) {
@@ -34,7 +39,7 @@ function blank(value: string): string | null {
  *
  * Preconditions: the caller can read utilities. The Free plan includes them.
  * Postconditions: saves send the loaded version in `If-Match`.
- * Data contract: payment secrets are not collected on this screen.
+ * Data contract: payment secrets are not collected on this screen; bill OCR loads lazily.
  *
  * @param props - House and whether the person may edit.
  * @returns The utilities section.
@@ -69,24 +74,32 @@ export function UtilitiesPanel(props: {
             <UtilityCard
               key={kind}
               kind={kind}
+              familyId={props.familyId}
+              houseId={props.houseId}
               row={query.data.find((item) => item.kind === kind)}
               readOnly={!props.canWrite}
               onSave={async (input) => {
                 const row = query.data.find((item) => item.kind === kind);
-                if (row === undefined) {
-                  await api.createUtility(
-                    props.familyId,
-                    props.houseId,
-                    { id: uuidv7(), kind, providerName: input.providerName, autopay: false, ...input.rest },
-                    crypto.randomUUID(),
-                  );
-                } else {
-                  await api.updateUtility(props.familyId, props.houseId, row.id, row.version, {
-                    providerName: input.providerName,
-                    ...input.rest,
-                  });
-                }
+                const saved =
+                  row === undefined
+                    ? await api.createUtility(
+                        props.familyId,
+                        props.houseId,
+                        {
+                          id: uuidv7(),
+                          kind,
+                          providerName: input.providerName,
+                          autopay: false,
+                          ...input.rest,
+                        },
+                        crypto.randomUUID(),
+                      )
+                    : await api.updateUtility(props.familyId, props.houseId, row.id, row.version, {
+                        providerName: input.providerName,
+                        ...input.rest,
+                      });
                 await refresh();
+                return saved;
               }}
             />
           ))}
@@ -96,6 +109,8 @@ export function UtilitiesPanel(props: {
 
 function UtilityCard(props: {
   readonly kind: ShownUtility;
+  readonly familyId: string;
+  readonly houseId: string;
   readonly row: Utility | undefined;
   readonly readOnly: boolean;
   readonly onSave: (input: {
@@ -103,11 +118,15 @@ function UtilityCard(props: {
     rest: {
       customerCode: string | null;
       supplyPointCode: string | null;
+      contractCode?: string | null;
       renewalDate: string | null;
       notes: string | null;
+      templateId?: string | null;
+      estimatedCost?: { amountMinor: number; currency: 'EUR' } | null;
     };
-  }) => Promise<void>;
+  }) => Promise<Utility>;
 }) {
+  const api = useApi();
   const [provider, setProvider] = useState(props.row?.providerName ?? '');
   const [customer, setCustomer] = useState(props.row?.customerCode ?? '');
   const [supply, setSupply] = useState(props.row?.supplyPointCode ?? '');
@@ -116,6 +135,7 @@ function UtilityCard(props: {
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [assistOpen, setAssistOpen] = useState(false);
   useEffect(() => {
     setProvider(props.row?.providerName ?? '');
     setCustomer(props.row?.customerCode ?? '');
@@ -157,6 +177,60 @@ function UtilityCard(props: {
     } finally {
       setPending(false);
     }
+  }
+
+  async function applyExtracted(extracted: UtilityBillExtracted, templateId: string | null): Promise<void> {
+    if (extracted.providerName !== undefined) {
+      setProvider(extracted.providerName);
+    }
+    if (extracted.customerCode !== undefined) {
+      setCustomer(extracted.customerCode);
+    }
+    if (extracted.supplyPointCode !== undefined) {
+      setSupply(extracted.supplyPointCode);
+    }
+    if (extracted.dueDate !== undefined) {
+      setRenewal(extracted.dueDate);
+    }
+    const extractedProvider = extracted.providerName?.trim();
+    const typedProvider = provider.trim();
+    const providerName =
+      extractedProvider !== undefined && extractedProvider !== ''
+        ? extractedProvider
+        : typedProvider !== ''
+          ? typedProvider
+          : (props.row?.providerName ?? utilityLabel(props.kind));
+    const saved = await props.onSave({
+      providerName,
+      rest: {
+        customerCode: extracted.customerCode ?? blank(customer),
+        supplyPointCode: extracted.supplyPointCode ?? blank(supply),
+        contractCode: extracted.contractCode ?? null,
+        renewalDate: extracted.dueDate ?? (renewal === '' ? null : renewal),
+        notes: blank(notes),
+        templateId,
+        ...(extracted.amountMinor === undefined
+          ? {}
+          : { estimatedCost: { amountMinor: extracted.amountMinor, currency: 'EUR' as const } }),
+      },
+    });
+    await api.createUtilityBill(
+      props.familyId,
+      props.houseId,
+      saved.id,
+      {
+        id: uuidv7(),
+        dueDate: extracted.dueDate ?? null,
+        amount:
+          extracted.amountMinor === undefined || extracted.currency === undefined
+            ? null
+            : { amountMinor: extracted.amountMinor, currency: extracted.currency },
+        extracted,
+      },
+      crypto.randomUUID(),
+    );
+    setSaved(true);
+    setAssistOpen(false);
   }
 
   return (
@@ -209,9 +283,12 @@ function UtilityCard(props: {
               onChange={(event) => setNotes(event.target.value)}
             />
           </Field>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" disabled={pending}>
               {m.save()}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setAssistOpen((open) => !open)}>
+              {assistOpen ? m.casaBillCloseAssist() : m.casaBillOpenAssist()}
             </Button>
             {error !== null ? (
               <p role="alert" className="text-[12px] text-destructive">
@@ -222,6 +299,17 @@ function UtilityCard(props: {
               <p className="text-[12px] text-muted-foreground">{m.saved()}</p>
             ) : null}
           </div>
+          {assistOpen ? (
+            <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+              <BillAssistPanel
+                familyId={props.familyId}
+                kind={props.kind}
+                onApply={async ({ extracted, template }) => {
+                  await applyExtracted(extracted, template?.id ?? extracted.templateId ?? null);
+                }}
+              />
+            </Suspense>
+          ) : null}
         </form>
       )}
     </section>

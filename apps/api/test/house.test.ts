@@ -1,4 +1,12 @@
-import type { GuestView, GuideEntry, ProblemDetails, Shutoff, Utility } from '@domusafe/contracts';
+import type {
+  GuestView,
+  GuideEntry,
+  ProblemDetails,
+  Shutoff,
+  Utility,
+  UtilityBill,
+  UtilityTemplateList,
+} from '@domusafe/contracts';
 import { toBase64Url } from '@domusafe/crypto';
 import type { LightMyRequestResponse } from 'fastify';
 import pg from 'pg';
@@ -10,6 +18,7 @@ const GUIDE_ID = '01900000-0000-7000-8000-00000000e301';
 const SECRET_GUIDE_ID = '01900000-0000-7000-8000-00000000e302';
 const TECHNICAL_ID = '01900000-0000-7000-8000-00000000e303';
 const UTILITY_ID = '01900000-0000-7000-8000-00000000e304';
+const BILL_ID = '01900000-0000-7000-8000-00000000e307';
 const SCOPE_ID = '01900000-0000-7000-8000-00000000e401';
 
 let ctx: TestApp;
@@ -127,6 +136,7 @@ describe('house manual', () => {
     });
     expect(utility.statusCode).toBe(201);
     expect(utility.json<Utility>().sealed).toBeNull();
+    expect(utility.json<Utility>().templateId).toBeNull();
 
     const deadline = await alice.create(houseUrl('/maintenance-tasks'), {
       category: 'heating',
@@ -228,5 +238,49 @@ describe('house manual', () => {
       sealed: { scopeId: SCOPE_ID, keyVersion: 1, dek: secret, payload: secret },
     });
     expect(problem(wrongAudience).code).toBe('envelope_invalid');
+  });
+
+  it('lists system payment templates and stores a bill with extracted fields', async () => {
+    const templates = await alice.request(
+      'GET',
+      `/api/v1/families/${familyId}/utility-templates?kind=electricity`,
+    );
+    expect(templates.statusCode).toBe(200);
+    const list = templates.json<UtilityTemplateList>();
+    expect(list.items.length).toBeGreaterThan(0);
+    expect(list.items.every((item) => item.kind === 'electricity')).toBe(true);
+    expect(list.items.some((item) => item.familyId === null)).toBe(true);
+
+    const bill = await alice.create(houseUrl(`/utilities/${UTILITY_ID}/bills`), {
+      id: BILL_ID,
+      dueDate: '2026-04-28',
+      amount: { amountMinor: 8730, currency: 'EUR' },
+      extracted: {
+        customerCode: 'AB12-998877',
+        supplyPointCode: 'IT001E12345678',
+        amountMinor: 8730,
+        currency: 'EUR',
+        dueDate: '2026-04-28',
+      },
+    });
+    expect(bill.statusCode).toBe(201);
+    expect(bill.json<UtilityBill>()).toMatchObject({
+      id: BILL_ID,
+      utilityId: UTILITY_ID,
+      dueDate: '2026-04-28',
+      amount: { amountMinor: 8730, currency: 'EUR' },
+      extracted: { customerCode: 'AB12-998877', supplyPointCode: 'IT001E12345678' },
+    });
+
+    const page = await alice.request('GET', houseUrl(`/utilities/${UTILITY_ID}/bills`));
+    expect(page.statusCode).toBe(200);
+    expect(page.json<{ items: UtilityBill[] }>().items.some((item) => item.id === BILL_ID)).toBe(true);
+
+    expect(problem(await child.request('GET', `/api/v1/families/${familyId}/utility-templates`)).code).toBe(
+      'forbidden',
+    );
+    expect(problem(await child.request('GET', houseUrl(`/utilities/${UTILITY_ID}/bills`))).code).toBe(
+      'forbidden',
+    );
   });
 });

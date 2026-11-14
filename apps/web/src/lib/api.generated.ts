@@ -590,6 +590,78 @@ export interface paths {
         patch: operations["house.updateContact"];
         trace?: never;
     };
+    "/api/v1/families/{familyId}/utility-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** System and family payment templates for bill recognition */
+        get: operations["house.listUtilityTemplates"];
+        put?: never;
+        /** Add a family payment template */
+        post: operations["house.createUtilityTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/utility-templates/{templateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a family payment template */
+        delete: operations["house.deleteUtilityTemplate"];
+        options?: never;
+        head?: never;
+        /** Update a family payment template */
+        patch: operations["house.updateUtilityTemplate"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}/bills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bills of one utility contract */
+        get: operations["house.listUtilityBills"];
+        put?: never;
+        /** Store a bill period with optional extracted values */
+        post: operations["house.createUtilityBill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}/bills/{billId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a stored utility bill */
+        delete: operations["house.deleteUtilityBill"];
+        options?: never;
+        head?: never;
+        /** Update a stored utility bill */
+        patch: operations["house.updateUtilityBill"];
+        trace?: never;
+    };
     "/api/v1/families/{familyId}/houses/{houseId}/rooms": {
         parameters: {
             query?: never;
@@ -5093,6 +5165,56 @@ export interface components {
             items: components["schemas"]["ContactInput"][];
             nextCursor: string | null;
         };
+        UtilityFieldHintsInput: {
+            [key: string]: string;
+        };
+        UtilityRecognitionPatternsInput: {
+            [key: string]: string[];
+        };
+        UtilityBillExtractedInput: {
+            providerName?: string;
+            customerCode?: string;
+            contractCode?: string;
+            supplyPointCode?: string;
+            tariffName?: string;
+            amountMinor?: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency?: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            dueDate?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            issueDate?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            periodStart?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            periodEnd?: string;
+            consumption?: string;
+            /** @enum {string} */
+            consumptionUnit?: "kwh" | "smc" | "m3" | "gb";
+            iban?: string;
+            payeeName?: string;
+            rawText?: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            templateId?: string;
+        };
         UtilityInput: {
             /**
              * Format: uuid
@@ -5129,6 +5251,7 @@ export interface components {
             } | null;
             autopay: boolean;
             notes: string | null;
+            templateId: string | null;
             sealed: components["schemas"]["SealedInput"] | null;
             version: number;
             /**
@@ -5169,6 +5292,7 @@ export interface components {
             /** @default false */
             autopay: boolean;
             notes?: string | null;
+            templateId?: string | null;
             sealed?: components["schemas"]["SealedInput"] | null;
         };
         UpdateUtilityRequestInput: {
@@ -5192,10 +5316,160 @@ export interface components {
             } | null;
             autopay?: boolean;
             notes?: string | null;
+            templateId?: string | null;
             sealed?: components["schemas"]["SealedInput"] | null;
         };
         UtilityPageInput: {
             items: components["schemas"]["UtilityInput"][];
+            nextCursor: string | null;
+        };
+        UtilityTemplateInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            familyId: string | null;
+            country: string;
+            /** @enum {string} */
+            kind: "electricity" | "gas" | "water" | "internet" | "waste_tax" | "heating" | "other";
+            providerName: string;
+            fieldHints: components["schemas"]["UtilityFieldHintsInput"];
+            recognitionPatterns: components["schemas"]["UtilityRecognitionPatternsInput"];
+            active: boolean;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateUtilityTemplateRequestInput: {
+            /** @default IT */
+            country: string;
+            /** @enum {string} */
+            kind: "electricity" | "gas" | "water" | "internet" | "waste_tax" | "heating" | "other";
+            providerName: string;
+            /** @default {} */
+            fieldHints: components["schemas"]["UtilityFieldHintsInput"];
+            /** @default {} */
+            recognitionPatterns: components["schemas"]["UtilityRecognitionPatternsInput"];
+            /** @default true */
+            active: boolean;
+        };
+        UpdateUtilityTemplateRequestInput: {
+            country?: string;
+            /** @enum {string} */
+            kind?: "electricity" | "gas" | "water" | "internet" | "waste_tax" | "heating" | "other";
+            providerName?: string;
+            fieldHints?: components["schemas"]["UtilityFieldHintsInput"];
+            recognitionPatterns?: components["schemas"]["UtilityRecognitionPatternsInput"];
+            active?: boolean;
+        };
+        UtilityTemplateListInput: {
+            items: components["schemas"]["UtilityTemplateInput"][];
+        };
+        UtilityBillInput: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            utilityId: string;
+            periodStart: string | null;
+            periodEnd: string | null;
+            issueDate: string | null;
+            dueDate: string | null;
+            amount: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            consumption: string | null;
+            consumptionUnit: ("kwh" | "smc" | "m3" | "gb") | null;
+            paidOn: string | null;
+            fileId: string | null;
+            extracted: components["schemas"]["UtilityBillExtractedInput"];
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateUtilityBillRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            periodStart?: string | null;
+            periodEnd?: string | null;
+            issueDate?: string | null;
+            dueDate?: string | null;
+            amount?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            consumption?: string | null;
+            consumptionUnit?: ("kwh" | "smc" | "m3" | "gb") | null;
+            paidOn?: string | null;
+            fileId?: string | null;
+            /** @default {} */
+            extracted: components["schemas"]["UtilityBillExtractedInput"];
+        };
+        UpdateUtilityBillRequestInput: {
+            periodStart?: string | null;
+            periodEnd?: string | null;
+            issueDate?: string | null;
+            dueDate?: string | null;
+            amount?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            consumption?: string | null;
+            consumptionUnit?: ("kwh" | "smc" | "m3" | "gb") | null;
+            paidOn?: string | null;
+            fileId?: string | null;
+            extracted?: components["schemas"]["UtilityBillExtractedInput"];
+        };
+        UtilityBillPageInput: {
+            items: components["schemas"]["UtilityBillInput"][];
             nextCursor: string | null;
         };
         MaintenanceTaskInput: {
@@ -9381,6 +9655,56 @@ export interface components {
             items: components["schemas"]["Contact"][];
             nextCursor: string | null;
         };
+        UtilityFieldHints: {
+            [key: string]: string;
+        };
+        UtilityRecognitionPatterns: {
+            [key: string]: string[];
+        };
+        UtilityBillExtracted: {
+            providerName?: string;
+            customerCode?: string;
+            contractCode?: string;
+            supplyPointCode?: string;
+            tariffName?: string;
+            amountMinor?: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency?: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            dueDate?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            issueDate?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            periodStart?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            periodEnd?: string;
+            consumption?: string;
+            /** @enum {string} */
+            consumptionUnit?: "kwh" | "smc" | "m3" | "gb";
+            iban?: string;
+            payeeName?: string;
+            rawText?: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            templateId?: string;
+        };
         Utility: {
             /**
              * Format: uuid
@@ -9417,6 +9741,7 @@ export interface components {
             } | null;
             autopay: boolean;
             notes: string | null;
+            templateId: string | null;
             sealed: components["schemas"]["Sealed"] | null;
             version: number;
             /**
@@ -9457,6 +9782,7 @@ export interface components {
             /** @default false */
             autopay: boolean;
             notes?: string | null;
+            templateId?: string | null;
             sealed?: components["schemas"]["Sealed"] | null;
         };
         UpdateUtilityRequest: {
@@ -9480,10 +9806,160 @@ export interface components {
             } | null;
             autopay?: boolean;
             notes?: string | null;
+            templateId?: string | null;
             sealed?: components["schemas"]["Sealed"] | null;
         };
         UtilityPage: {
             items: components["schemas"]["Utility"][];
+            nextCursor: string | null;
+        };
+        UtilityTemplate: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            familyId: string | null;
+            country: string;
+            /** @enum {string} */
+            kind: "electricity" | "gas" | "water" | "internet" | "waste_tax" | "heating" | "other";
+            providerName: string;
+            fieldHints: components["schemas"]["UtilityFieldHints"];
+            recognitionPatterns: components["schemas"]["UtilityRecognitionPatterns"];
+            active: boolean;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateUtilityTemplateRequest: {
+            /** @default IT */
+            country: string;
+            /** @enum {string} */
+            kind: "electricity" | "gas" | "water" | "internet" | "waste_tax" | "heating" | "other";
+            providerName: string;
+            /** @default {} */
+            fieldHints: components["schemas"]["UtilityFieldHints"];
+            /** @default {} */
+            recognitionPatterns: components["schemas"]["UtilityRecognitionPatterns"];
+            /** @default true */
+            active: boolean;
+        };
+        UpdateUtilityTemplateRequest: {
+            country?: string;
+            /** @enum {string} */
+            kind?: "electricity" | "gas" | "water" | "internet" | "waste_tax" | "heating" | "other";
+            providerName?: string;
+            fieldHints?: components["schemas"]["UtilityFieldHints"];
+            recognitionPatterns?: components["schemas"]["UtilityRecognitionPatterns"];
+            active?: boolean;
+        };
+        UtilityTemplateList: {
+            items: components["schemas"]["UtilityTemplate"][];
+        };
+        UtilityBill: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            utilityId: string;
+            periodStart: string | null;
+            periodEnd: string | null;
+            issueDate: string | null;
+            dueDate: string | null;
+            amount: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            consumption: string | null;
+            consumptionUnit: ("kwh" | "smc" | "m3" | "gb") | null;
+            paidOn: string | null;
+            fileId: string | null;
+            extracted: components["schemas"]["UtilityBillExtracted"];
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateUtilityBillRequest: {
+            /**
+             * Format: uuid
+             * @description UUIDv7 generated by the client
+             */
+            id: string;
+            periodStart?: string | null;
+            periodEnd?: string | null;
+            issueDate?: string | null;
+            dueDate?: string | null;
+            amount?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            consumption?: string | null;
+            consumptionUnit?: ("kwh" | "smc" | "m3" | "gb") | null;
+            paidOn?: string | null;
+            fileId?: string | null;
+            /** @default {} */
+            extracted: components["schemas"]["UtilityBillExtracted"];
+        };
+        UpdateUtilityBillRequest: {
+            periodStart?: string | null;
+            periodEnd?: string | null;
+            issueDate?: string | null;
+            dueDate?: string | null;
+            amount?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            consumption?: string | null;
+            consumptionUnit?: ("kwh" | "smc" | "m3" | "gb") | null;
+            paidOn?: string | null;
+            fileId?: string | null;
+            extracted?: components["schemas"]["UtilityBillExtracted"];
+        };
+        UtilityBillPage: {
+            items: components["schemas"]["UtilityBill"][];
             nextCursor: string | null;
         };
         MaintenanceTask: {
@@ -15018,6 +15494,646 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Contact"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.listUtilityTemplates": {
+        parameters: {
+            query?: {
+                kind?: "electricity" | "gas" | "water" | "internet" | "waste_tax" | "heating" | "other";
+                country?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UtilityTemplateList"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.createUtilityTemplate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUtilityTemplateRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UtilityTemplate"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.deleteUtilityTemplate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.updateUtilityTemplate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUtilityTemplateRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UtilityTemplate"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.listUtilityBills": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                utilityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UtilityBillPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.createUtilityBill": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                utilityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateUtilityBillRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UtilityBill"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.deleteUtilityBill": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                utilityId: string;
+                /** @description UUIDv7 generated by the client */
+                billId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "house.updateUtilityBill": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                utilityId: string;
+                /** @description UUIDv7 generated by the client */
+                billId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUtilityBillRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UtilityBill"];
                 };
             };
             /** @description Default Response */
