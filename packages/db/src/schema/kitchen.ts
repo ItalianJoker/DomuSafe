@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
-import { integer, jsonb, numeric, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
+import { date, integer, jsonb, numeric, pgTable, smallint, text, unique, uuid } from 'drizzle-orm/pg-core';
 import { instant } from '../columns.js';
-import { recipeImportStatusEnum } from './enums.js';
+import { mealSlotEnum, recipeImportStatusEnum } from './enums.js';
 
 /** One ingredient line stored inside a recipe. */
 export interface RecipeIngredientRow {
@@ -124,3 +124,71 @@ export const shoppingItems = pgTable('shopping_items', {
   checkedBy: uuid('checked_by'),
   deletedAt: instant('deleted_at'),
 });
+
+/**
+ * One meal on the weekly plan. Soft recipe link is optional; a free-text title may stand alone.
+ */
+export const mealPlanEntries = pgTable('meal_plan_entries', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  version: integer('version').notNull().default(1),
+  createdAt: instant('created_at').notNull().defaultNow(),
+  updatedAt: instant('updated_at').notNull().defaultNow(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+  familyId: uuid('family_id').notNull(),
+  houseId: uuid('house_id'),
+  planDate: date('plan_date', { mode: 'string' }).notNull(),
+  slot: mealSlotEnum('slot').notNull(),
+  recipeId: uuid('recipe_id'),
+  title: text('title'),
+  servings: smallint('servings'),
+  notes: text('notes'),
+  deletedAt: instant('deleted_at'),
+});
+
+/**
+ * One stocked pantry item for a house. Soft-deleted with `deleted_at`.
+ */
+export const pantryItems = pgTable('pantry_items', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  version: integer('version').notNull().default(1),
+  createdAt: instant('created_at').notNull().defaultNow(),
+  updatedAt: instant('updated_at').notNull().defaultNow(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+  familyId: uuid('family_id').notNull(),
+  houseId: uuid('house_id').notNull(),
+  name: text('name').notNull(),
+  barcode: text('barcode'),
+  quantity: numeric('quantity').notNull().default('1'),
+  unit: text('unit'),
+  storageUnitId: uuid('storage_unit_id'),
+  expiryDate: date('expiry_date', { mode: 'string' }),
+  minQuantity: numeric('min_quantity'),
+  customFields: jsonb('custom_fields').$type<Record<string, unknown>>().notNull().default({}),
+  deletedAt: instant('deleted_at'),
+});
+
+/**
+ * Family catalogue of products remembered by barcode for pantry entry.
+ */
+export const barcodeProducts = pgTable(
+  'barcode_products',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    familyId: uuid('family_id').notNull(),
+    barcode: text('barcode').notNull(),
+    name: text('name').notNull(),
+    brand: text('brand'),
+    defaultUnit: text('default_unit'),
+    createdAt: instant('created_at').notNull().defaultNow(),
+    updatedAt: instant('updated_at').notNull().defaultNow(),
+  },
+  (table) => [unique().on(table.familyId, table.barcode)],
+);

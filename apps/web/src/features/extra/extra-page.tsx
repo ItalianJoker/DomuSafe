@@ -14,17 +14,31 @@ const ShoppingPanel = lazy(async () => {
   return { default: module.ShoppingPanel };
 });
 
+const PantryPanel = lazy(async () => {
+  const module = await import('./pantry-panel.js');
+  return { default: module.PantryPanel };
+});
+
+const MealPlanPanel = lazy(async () => {
+  const module = await import('./meal-plan-panel.js');
+  return { default: module.MealPlanPanel };
+});
+
 const ReadingsPage = lazy(async () => {
   const module = await import('@/features/readings/readings-page.js');
   return { default: module.ReadingsPage };
 });
 
-type ExtraTab = 'recipes' | 'shopping' | 'readings';
+type ExtraTab = 'recipes' | 'mealPlan' | 'pantry' | 'shopping' | 'readings';
 
 function tabLabel(tab: ExtraTab): string {
   switch (tab) {
     case 'recipes':
       return m.extraRecipes();
+    case 'mealPlan':
+      return m.extraMealPlan();
+    case 'pantry':
+      return m.extraPantry();
     case 'shopping':
       return m.extraShopping();
     case 'readings':
@@ -33,7 +47,7 @@ function tabLabel(tab: ExtraTab): string {
 }
 
 /**
- * Extra section: recipe library, shopping lists by store and aisle, and the public-code reading log.
+ * Extra section: recipes, weekly meal plan, pantry, shopping lists, and the public-code reading log.
  *
  * Preconditions: `houseId` belongs to `familyId`.
  * Postconditions: kitchen and shopping are available on every plan; the reading log stays Premium-gated.
@@ -52,7 +66,7 @@ export function ExtraPage(props: { readonly me: Me; readonly familyId: string; r
 
   const tabs: ExtraTab[] = [];
   if (canReadKitchen) {
-    tabs.push('recipes');
+    tabs.push('recipes', 'mealPlan', 'pantry');
   }
   if (canReadShopping) {
     tabs.push('shopping');
@@ -85,6 +99,12 @@ export function ExtraPage(props: { readonly me: Me; readonly familyId: string; r
       </div>
       <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
         {active === 'recipes' ? <RecipesPanel familyId={props.familyId} canWrite={canWriteKitchen} /> : null}
+        {active === 'mealPlan' ? (
+          <MealPlanPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteKitchen} />
+        ) : null}
+        {active === 'pantry' ? (
+          <PantryPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteKitchen} />
+        ) : null}
         {active === 'shopping' ? (
           <ShoppingPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteShopping} />
         ) : null}

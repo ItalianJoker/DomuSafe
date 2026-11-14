@@ -221,3 +221,6 @@ export const recipeImportStatusEnum = pgEnum('recipe_import_status', [
   'succeeded',
   'failed',
 ]);
+
+/** Slot of a meal on the weekly plan. */
+export const mealSlotEnum = pgEnum('meal_slot', ['breakfast', 'lunch', 'dinner', 'snack']);
