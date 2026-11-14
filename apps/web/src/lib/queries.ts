@@ -1,4 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
+import type { InventoryFilterNode } from '@domusafe/contracts';
 import type { DomusafeApi } from './api.js';
 
 /** Cache key of the current account. */
@@ -665,6 +666,46 @@ export function inventorySearchQuery(api: DomusafeApi, familyId: string, houseId
   return queryOptions({
     queryKey: ['inventory-search', familyId, houseId, query] as const,
     queryFn: () => api.searchInventory(familyId, houseId, query),
+  });
+}
+
+/**
+ * Nested AND/OR filter search over the house inventory.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @param filter - Nested filter tree, or null when inactive.
+ * @returns Options for TanStack Query.
+ */
+export function inventoryFilterSearchQuery(
+  api: DomusafeApi,
+  familyId: string,
+  houseId: string,
+  filter: InventoryFilterNode | null,
+) {
+  return queryOptions({
+    queryKey: ['inventory-filter-search', familyId, houseId, filter] as const,
+    queryFn: () => {
+      if (filter === null) {
+        return Promise.resolve({ items: [] });
+      }
+      return api.searchInventoryFiltered(familyId, houseId, { filter, limit: 20 });
+    },
+  });
+}
+
+/**
+ * Saved inventory filters of the signed-in member.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function savedFiltersQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['saved-filters', familyId] as const,
+    queryFn: () => api.listSavedFilters(familyId),
   });
 }
 

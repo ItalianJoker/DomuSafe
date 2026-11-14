@@ -1,9 +1,12 @@
 import {
   createInventoryItemRequestSchema,
   createRoomRequestSchema,
+  createSavedFilterRequestSchema,
   createStorageUnitRequestSchema,
+  familyParamsSchema,
   formatEtag,
   houseParamsSchema,
+  inventoryFilterSearchRequestSchema,
   inventoryItemListQuerySchema,
   inventoryItemPageSchema,
   inventoryItemParamsSchema,
@@ -14,12 +17,16 @@ import {
   roomPageSchema,
   roomParamsSchema,
   roomSchema,
+  savedFilterListSchema,
+  savedFilterParamsSchema,
+  savedFilterSchema,
   storageUnitListQuerySchema,
   storageUnitPageSchema,
   storageUnitParamsSchema,
   storageUnitSchema,
   updateInventoryItemRequestSchema,
   updateRoomRequestSchema,
+  updateSavedFilterRequestSchema,
   updateStorageUnitRequestSchema,
 } from '@domusafe/contracts';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
@@ -47,11 +54,12 @@ function basePath(familyId: string, houseId: string): string {
 }
 
 /**
- * Routes of the hierarchical house inventory: rooms, storage units, items and full-text search.
+ * Routes of the hierarchical house inventory: rooms, storage units, items, nested AND/OR search
+ * and up to five saved filters in the sidebar.
  *
- * Rooms use `house.read` / `house.write`. Storage units and items use `inventory.read` /
- * `inventory.write`. Everyday inventory is available on every plan, so no route declares a plan
- * feature. Custom field definitions stay out of this module.
+ * Rooms use `house.read` / `house.write`. Storage units, items, search and own saved filters use
+ * `inventory.read` / `inventory.write` (saved filters are further restricted to the owner by RLS).
+ * Everyday inventory is available on every plan, so no route declares a plan feature.
  *
  * @param app - Fastify instance with the Zod type provider.
  * @param options - Inventory service.
@@ -61,6 +69,7 @@ export const inventoryRoutes: FastifyPluginAsyncZod<{ inventory: InventoryServic
   { inventory },
 ) => {
   const base = '/api/v1/families/:familyId/houses/:houseId';
+  const savedFilters = '/api/v1/families/:familyId/saved-filters';
 
   app.get(
     `${base}/rooms`,
@@ -432,6 +441,119 @@ export const inventoryRoutes: FastifyPluginAsyncZod<{ inventory: InventoryServic
         query: request.query.q,
         limit: request.query.limit,
         ...(request.query.tag === undefined ? {} : { tag: request.query.tag }),
+        ...(request.query.tags === undefined ? {} : { tags: request.query.tags }),
+        tagMode: request.query.tagMode,
       }),
+  );
+
+  app.post(
+    `${base}/inventory/search`,
+    {
+      config: { access: 'family', permission: 'inventory.read' },
+      schema: {
+        tags: ['inventory'],
+        operationId: 'inventory.searchFiltered',
+        summary: 'Nested AND/OR filter search over the house inventory',
+        params: houseParamsSchema,
+        body: inventoryFilterSearchRequestSchema,
+        response: { 200: inventorySearchResponseSchema, ...problemResponses(400, 401, 403, 404) },
+      },
+    },
+    async (request) =>
+      inventory.searchFiltered(tenantOf(request), request.params.houseId, {
+        filter: request.body.filter,
+        limit: request.body.limit,
+      }),
+  );
+
+  app.get(
+    savedFilters,
+    {
+      config: { access: 'family', permission: 'inventory.read' },
+      schema: {
+        tags: ['inventory'],
+        operationId: 'inventory.listSavedFilters',
+        summary: 'Saved inventory filters of the caller (at most five)',
+        params: familyParamsSchema,
+        response: { 200: savedFilterListSchema, ...problemResponses(401, 403, 404) },
+      },
+    },
+    async (request) => inventory.listSavedFilters(tenantOf(request)),
+  );
+
+  app.post(
+    savedFilters,
+    {
+      config: { access: 'family', permission: 'inventory.read', idempotent: true },
+      schema: {
+        tags: ['inventory'],
+        operationId: 'inventory.createSavedFilter',
+        summary: 'Save an inventory filter in the sidebar (max five)',
+        params: familyParamsSchema,
+        headers: idempotencyHeaders,
+        body: createSavedFilterRequestSchema,
+        response: {
+          201: savedFilterSchema,
+          ...problemResponses(400, 401, 403, 404, 409, 422),
+        },
+      },
+    },
+    async (request, reply) => {
+      const tenant = tenantOf(request);
+      const row = await inventory.createSavedFilter(tenant, request.body);
+      void reply
+        .status(201)
+        .header('location', `/api/v1/families/${tenant.familyId}/saved-filters/${row.id}`)
+        .header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.patch(
+    `${savedFilters}/:filterId`,
+    {
+      config: { access: 'family', permission: 'inventory.read' },
+      schema: {
+        tags: ['inventory'],
+        operationId: 'inventory.updateSavedFilter',
+        summary: "Update one of the caller's saved inventory filters",
+        params: savedFilterParamsSchema,
+        headers: ifMatchHeaders,
+        body: updateSavedFilterRequestSchema,
+        response: {
+          200: savedFilterSchema,
+          ...problemResponses(400, 401, 403, 404, 409, 422, 428),
+        },
+      },
+    },
+    async (request, reply) => {
+      const row = await inventory.updateSavedFilter(
+        tenantOf(request),
+        request.params.filterId,
+        requireIfMatch(request),
+        request.body,
+      );
+      void reply.header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.delete(
+    `${savedFilters}/:filterId`,
+    {
+      config: { access: 'family', permission: 'inventory.read' },
+      schema: {
+        tags: ['inventory'],
+        operationId: 'inventory.deleteSavedFilter',
+        summary: "Remove one of the caller's saved inventory filters",
+        params: savedFilterParamsSchema,
+        headers: ifMatchHeaders,
+        response: { 204: z.null(), ...problemResponses(401, 403, 404, 409, 428) },
+      },
+    },
+    async (request, reply) => {
+      await inventory.deleteSavedFilter(tenantOf(request), request.params.filterId, requireIfMatch(request));
+      return reply.status(204).send(null);
+    },
   );
 };
