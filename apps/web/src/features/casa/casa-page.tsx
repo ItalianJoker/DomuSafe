@@ -3,7 +3,7 @@ import type { House, Me } from '@domusafe/contracts';
 import { PageHeader } from '@/components/shell/page.js';
 import { m } from '@/paraglide/messages.js';
 import { HousePage } from '@/features/house/house-page.js';
-import { casaTabs, type CasaTab } from './model.js';
+import { casaTabs, isCasaTab, type CasaTab } from './model.js';
 import { DeadlinePanel } from './deadline-panel.js';
 import { GuestPanel } from './guest-panel.js';
 import { TechnicalPanel } from './technical-panel.js';
@@ -53,12 +53,15 @@ export function CasaPage(props: {
   readonly familyId: string;
   readonly houseId: string;
   readonly houses: readonly House[];
+  readonly initialTab?: string;
 }) {
   const membership = props.me.families.find((family) => family.id === props.familyId);
   const role = membership?.role;
   const plan = membership?.plan ?? 'free';
   const tabs = casaTabs(role);
-  const [tab, setTab] = useState<CasaTab>('guest');
+  const requested =
+    props.initialTab !== undefined && isCasaTab(props.initialTab) ? props.initialTab : 'guest';
+  const [tab, setTab] = useState<CasaTab>(tabs.includes(requested) ? requested : 'guest');
   const active = tabs.includes(tab) ? tab : 'guest';
   const canWriteGuest = role === 'admin' || role === 'parent';
   const canManageAutomation = role === 'admin';

@@ -308,12 +308,25 @@ const successionRoute = createRoute({
 const casaRoute = createRoute({
   getParentRoute: () => houseRoute,
   path: '/casa',
+  validateSearch: (search: Record<string, unknown>): { readonly tab?: string } => {
+    if (typeof search.tab === 'string' && search.tab.length > 0) {
+      return { tab: search.tab };
+    }
+    return {};
+  },
   component: function CasaFrame() {
     const { me, houses } = houseRoute.useRouteContext();
     const { familyId, houseId } = houseRoute.useParams();
+    const search = casaRoute.useSearch();
     return (
       <Suspended>
-        <CasaPage me={me} familyId={familyId} houseId={houseId} houses={houses} />
+        <CasaPage
+          me={me}
+          familyId={familyId}
+          houseId={houseId}
+          houses={houses}
+          {...(search.tab === undefined ? {} : { initialTab: search.tab })}
+        />
       </Suspended>
     );
   },
