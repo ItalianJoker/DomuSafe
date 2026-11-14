@@ -179,6 +179,16 @@ function unusedApi(partial: Partial<DomusafeApi>): DomusafeApi {
     listRevisions: fail,
     restoreRevision: fail,
     listDeadlines: fail,
+    listAutomationConnections: fail,
+    createAutomationConnection: fail,
+    testAutomationConnection: fail,
+    refreshAutomationDevices: fail,
+    listAutomationDevices: fail,
+    listAutomationZones: fail,
+    createAutomationZone: fail,
+    updateAutomationZone: fail,
+    listAutomationLockCodes: fail,
+    issueAutomationLockCode: fail,
     ...partial,
   };
 }

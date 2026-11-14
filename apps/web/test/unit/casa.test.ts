@@ -10,9 +10,24 @@ import {
 
 describe('casa tabs', () => {
   it('keeps utilities on the free administrator and hides them from a guest', () => {
-    expect(casaTabs('admin')).toEqual(['guest', 'technical', 'utilities', 'deadline', 'inventory', 'houses']);
+    expect(casaTabs('admin')).toEqual([
+      'guest',
+      'technical',
+      'utilities',
+      'deadline',
+      'inventory',
+      'automation',
+      'houses',
+    ]);
     expect(casaTabs('guest')).toEqual(['guest', 'houses']);
-    expect(casaTabs('child')).toEqual(['guest', 'technical', 'deadline', 'inventory', 'houses']);
+    expect(casaTabs('child')).toEqual([
+      'guest',
+      'technical',
+      'deadline',
+      'inventory',
+      'automation',
+      'houses',
+    ]);
   });
 });
 

@@ -258,3 +258,56 @@ export const finTransactionStatusEnum = pgEnum('fin_transaction_status', [
 
 /** Cadence of a budget limit. */
 export const finBudgetPeriodEnum = pgEnum('fin_budget_period', ['monthly', 'yearly']);
+
+/** How a home-automation connection reaches the house. */
+export const haConnectionKindEnum = pgEnum('ha_connection_kind', [
+  'home_assistant_webhook',
+  'home_assistant_api',
+  'mqtt',
+]);
+
+/** Health of a home-automation connection. */
+export const haConnectionStatusEnum = pgEnum('ha_connection_status', ['active', 'error', 'disabled']);
+
+/** Kind of a home-automation device or entity. */
+export const haDeviceKindEnum = pgEnum('ha_device_kind', [
+  'temperature',
+  'humidity',
+  'power',
+  'energy',
+  'solar_production',
+  'battery',
+  'ev_charger',
+  'water_leak',
+  'smoke',
+  'door_window',
+  'motion',
+  'alarm_panel',
+  'lock',
+  'other',
+]);
+
+/** Kind of a home-automation event. */
+export const haEventKindEnum = pgEnum('ha_event_kind', [
+  'alarm_triggered',
+  'alarm_cleared',
+  'leak_detected',
+  'smoke_detected',
+  'lock_locked',
+  'lock_unlocked',
+  'door_opened',
+  'battery_low',
+  'device_offline',
+  'state_changed',
+]);
+
+/** Armed state of a house zone alarm. */
+export const haZoneAlarmStateEnum = pgEnum('ha_zone_alarm_state', [
+  'disarmed',
+  'armed_home',
+  'armed_away',
+  'triggered',
+]);
+
+/** Lifecycle of a temporary smart-lock code. */
+export const haLockCodeStatusEnum = pgEnum('ha_lock_code_status', ['active', 'revoked', 'expired']);

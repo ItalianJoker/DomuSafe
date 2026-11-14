@@ -223,6 +223,27 @@ import {
   type AuditEvent,
   type RestoreRevisionRequest,
   type Revision,
+  createHaConnectionResponseSchema,
+  haConnectionPageSchema,
+  haConnectionTestResultSchema,
+  haDevicePageSchema,
+  haLockCodePageSchema,
+  haRefreshResultSchema,
+  haZonePageSchema,
+  haZoneSchema,
+  issueHaLockCodeResponseSchema,
+  type CreateHaConnectionRequest,
+  type CreateHaConnectionResponse,
+  type CreateHaZoneRequest,
+  type HaConnection,
+  type HaConnectionTestResult,
+  type HaDevice,
+  type HaLockCode,
+  type HaRefreshResult,
+  type HaZone,
+  type IssueHaLockCodeRequest,
+  type IssueHaLockCodeResponse,
+  type UpdateHaZoneRequest,
 } from '@domusafe/contracts';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { z } from 'zod';
@@ -1213,6 +1234,132 @@ export interface DomusafeApi {
     body: RestoreRevisionRequest,
     idempotencyKey: string,
   ): Promise<Revision>;
+  /**
+   * Home-automation connections of a house (Premium).
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Connections without secrets.
+   */
+  listAutomationConnections(familyId: string, houseId: string): Promise<readonly HaConnection[]>;
+  /**
+   * Creates a Home Assistant or MQTT connection.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Connection settings.
+   * @returns Connection and optional inbound secret.
+   */
+  createAutomationConnection(
+    familyId: string,
+    houseId: string,
+    idempotencyKey: string,
+    body: CreateHaConnectionRequest,
+  ): Promise<CreateHaConnectionResponse>;
+  /**
+   * Probes a connection through the bridge adapter.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param connectionId - Connection id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns Probe result.
+   */
+  testAutomationConnection(
+    familyId: string,
+    houseId: string,
+    connectionId: string,
+    idempotencyKey: string,
+  ): Promise<HaConnectionTestResult>;
+  /**
+   * Refreshes entity status through the bridge adapter.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param connectionId - Connection id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns Upserted devices.
+   */
+  refreshAutomationDevices(
+    familyId: string,
+    houseId: string,
+    connectionId: string,
+    idempotencyKey: string,
+  ): Promise<HaRefreshResult>;
+  /**
+   * Home-automation devices of a house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Devices with latest status.
+   */
+  listAutomationDevices(familyId: string, houseId: string): Promise<readonly HaDevice[]>;
+  /**
+   * Zone alarms of a house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Zones.
+   */
+  listAutomationZones(familyId: string, houseId: string): Promise<readonly HaZone[]>;
+  /**
+   * Creates a zone alarm.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Zone fields.
+   * @returns The created zone.
+   */
+  createAutomationZone(
+    familyId: string,
+    houseId: string,
+    idempotencyKey: string,
+    body: CreateHaZoneRequest,
+  ): Promise<HaZone>;
+  /**
+   * Updates a zone or changes its armed state.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param zoneId - Zone id.
+   * @param version - Stored version.
+   * @param body - Patch.
+   * @returns The updated zone.
+   */
+  updateAutomationZone(
+    familyId: string,
+    houseId: string,
+    zoneId: string,
+    version: number,
+    body: UpdateHaZoneRequest,
+  ): Promise<HaZone>;
+  /**
+   * Temporary smart-lock codes of a house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Lock code metadata.
+   */
+  listAutomationLockCodes(familyId: string, houseId: string): Promise<readonly HaLockCode[]>;
+  /**
+   * Issues a temporary smart-lock code.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param deviceId - Lock device id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Label and validity window.
+   * @returns Metadata and plaintext code.
+   */
+  issueAutomationLockCode(
+    familyId: string,
+    houseId: string,
+    deviceId: string,
+    idempotencyKey: string,
+    body: IssueHaLockCodeRequest,
+  ): Promise<IssueHaLockCodeResponse>;
   /**
    * Stored host mark of a family.
    *
@@ -2697,6 +2844,115 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       );
       return unwrap(publicationSchema, result);
+    },
+    listAutomationConnections(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/automation/connections', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(haConnectionPageSchema, result)),
+      );
+    },
+    async createAutomationConnection(familyId, houseId, idempotencyKey, body) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/houses/{houseId}/automation/connections',
+        {
+          params: { path: { familyId, houseId } },
+          body: body as components['schemas']['CreateHaConnectionRequestInput'],
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        },
+      );
+      return unwrap(createHaConnectionResponseSchema, result);
+    },
+    async testAutomationConnection(familyId, houseId, connectionId, idempotencyKey) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/houses/{houseId}/automation/connections/{connectionId}/test',
+        {
+          params: { path: { familyId, houseId, connectionId } },
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        },
+      );
+      return unwrap(haConnectionTestResultSchema, result);
+    },
+    async refreshAutomationDevices(familyId, houseId, connectionId, idempotencyKey) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/houses/{houseId}/automation/connections/{connectionId}/refresh',
+        {
+          params: { path: { familyId, houseId, connectionId } },
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        },
+      );
+      return unwrap(haRefreshResultSchema, result);
+    },
+    listAutomationDevices(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/automation/devices', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(haDevicePageSchema, result)),
+      );
+    },
+    listAutomationZones(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/automation/zones', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(haZonePageSchema, result)),
+      );
+    },
+    async createAutomationZone(familyId, houseId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/automation/zones', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateHaZoneRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(haZoneSchema, result);
+    },
+    async updateAutomationZone(familyId, houseId, zoneId, version, body) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/automation/zones/{zoneId}',
+        {
+          params: { path: { familyId, houseId, zoneId } },
+          body: body as components['schemas']['UpdateHaZoneRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(haZoneSchema, result);
+    },
+    listAutomationLockCodes(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/automation/lock-codes', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(haLockCodePageSchema, result)),
+      );
+    },
+    async issueAutomationLockCode(familyId, houseId, deviceId, idempotencyKey, body) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/houses/{houseId}/automation/devices/{deviceId}/lock-codes',
+        {
+          params: { path: { familyId, houseId, deviceId } },
+          body,
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        },
+      );
+      return unwrap(issueHaLockCodeResponseSchema, result);
     },
     async getBranding(familyId) {
       const result = await client.GET('/api/v1/families/{familyId}/branding', {
