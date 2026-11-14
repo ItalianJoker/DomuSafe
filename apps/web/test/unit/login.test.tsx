@@ -183,6 +183,8 @@ function unusedApi(partial: Partial<DomusafeApi>): DomusafeApi {
     listRevisions: fail,
     restoreRevision: fail,
     listDeadlines: fail,
+    getExportCatalog: fail,
+    listExportRecords: fail,
     getCalendarBoard: fail,
     exportCalendar: fail,
     createCalendarEvent: fail,

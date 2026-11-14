@@ -166,6 +166,48 @@ describe('phase 2 vectors', () => {
     expect(toHex(key)).toBe(VECTORS.backup.key);
   });
 
+  it('seals and opens a DS-BACKUP file with sealed vault payloads left encrypted', async () => {
+    const { sealBackup, openBackup, generateBackupPassphrase, isValidBackupPassphrase } =
+      await import('../src/backup.js');
+    const passphrase = generateBackupPassphrase();
+    expect(isValidBackupPassphrase(passphrase)).toBe(true);
+    const sealedPayload = 'AQIDBAUGBwgJCgsMDQ4PEBESExQVFhc=';
+    const file = await sealBackup({
+      passphrase,
+      accountId: '01900000-0000-7000-8000-0000000000a1',
+      familyIds: ['01900000-0000-7000-8000-0000000000f1'],
+      appVersion: '0.1.0',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      records: [
+        {
+          module: 'vault',
+          table: 'vault_items',
+          id: '01900000-0000-7000-8000-0000000000v1',
+          version: 1,
+          data: {
+            section: 'documents',
+            sealed: {
+              scopeId: '01900000-0000-7000-8000-0000000000s1',
+              keyVersion: 1,
+              dek: 'AA',
+              payload: sealedPayload,
+            },
+          },
+        },
+      ],
+    });
+    expect(file[0]).toBe('D'.charCodeAt(0));
+    const opened = await openBackup(file, passphrase);
+    expect(opened.header.familyIds).toEqual(['01900000-0000-7000-8000-0000000000f1']);
+    expect(opened.records).toHaveLength(1);
+    expect(opened.records[0]?.data.sealed).toEqual({
+      scopeId: '01900000-0000-7000-8000-0000000000s1',
+      keyVersion: 1,
+      dek: 'AA',
+      payload: sealedPayload,
+    });
+  });
+
   it('encodes and decodes the recovery phrase and derives its material', async () => {
     const entropy = fromHex(VECTORS.recovery.entropy);
     expect(recoveryPhraseFromEntropy(entropy)).toBe(VECTORS.recovery.phrase);

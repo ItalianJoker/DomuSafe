@@ -35,6 +35,11 @@ export const openApiPlugin = fp(
           { name: 'system', description: 'Probes' },
           { name: 'identity', description: 'Account and profile' },
           { name: 'tenancy', description: 'Families, houses and members' },
+          {
+            name: 'backup',
+            description:
+              'Family data export for encrypted backup files and CSV tables assembled in the browser',
+          },
           { name: 'inventory', description: 'Rooms, storage units, inventory items and search' },
           {
             name: 'care',

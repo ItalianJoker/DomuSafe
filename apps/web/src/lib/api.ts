@@ -45,6 +45,8 @@ import {
   calendarBoardSchema,
   calendarEventSchema,
   calendarExportSchema,
+  exportCatalogSchema,
+  exportRecordsPageSchema,
   deadlineBoardSchema,
   maintenanceTaskPageSchema,
   maintenanceTaskSchema,
@@ -66,6 +68,9 @@ import {
   type CreateCalendarEventRequest,
   type CreateTimetableSlotRequest,
   type DeadlineBoard,
+  type ExportCatalog,
+  type ExportModule,
+  type ExportRecordsPage,
   type TimetableSlot,
   type Contact,
   type CreateContactRequest,
@@ -1679,6 +1684,24 @@ export interface DomusafeApi {
    */
   listDeadlines(familyId: string, houseId: string): Promise<DeadlineBoard>;
   /**
+   * Modules the caller may include in a family backup or CSV export.
+   *
+   * @param familyId - Family id.
+   * @returns Catalog with readable flags.
+   */
+  getExportCatalog(familyId: string): Promise<ExportCatalog>;
+  /**
+   * One page of family rows for browser-assembled backup and CSV.
+   *
+   * @param familyId - Family id.
+   * @param query - Optional module filter, cursor and limit.
+   * @returns Records and next cursor.
+   */
+  listExportRecords(
+    familyId: string,
+    query?: { readonly module?: ExportModule; readonly cursor?: string; readonly limit?: number },
+  ): Promise<ExportRecordsPage>;
+  /**
    * Family calendar board: appointments, weekly schedules, chores and deadlines.
    *
    * @param familyId - Family id.
@@ -2135,6 +2158,25 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         params: { path: { familyId }, query: { houseId } },
       });
       return unwrap(deadlineBoardSchema, result);
+    },
+    async getExportCatalog(familyId) {
+      const result = await client.GET('/api/v1/families/{familyId}/export/catalog', {
+        params: { path: { familyId } },
+      });
+      return unwrap(exportCatalogSchema, result);
+    },
+    async listExportRecords(familyId, query = {}) {
+      const result = await client.GET('/api/v1/families/{familyId}/export/records', {
+        params: {
+          path: { familyId },
+          query: {
+            ...(query.module === undefined ? {} : { module: query.module }),
+            ...(query.cursor === undefined ? {} : { cursor: query.cursor }),
+            ...(query.limit === undefined ? {} : { limit: query.limit }),
+          },
+        },
+      });
+      return unwrap(exportRecordsPageSchema, result);
     },
     async getCalendarBoard(familyId, houseId, from, to) {
       const result = await client.GET('/api/v1/families/{familyId}/calendar', {

@@ -41,6 +41,7 @@ pnpm verify
 | Policy RLS e funzioni `app.*`                              | `packages/db/migrations/0006_access_functions.sql`, `0007_policies.sql` |
 | Contesto transazionale                                     | `packages/db/src/context.ts`                                            |
 | Formati cifrati e vettori                                  | `packages/crypto/src/formats.ts`, `packages/crypto/test/vectors.ts`     |
+| Copia di sicurezza famiglia (backup e CSV)                 | `packages/crypto/src/backup.ts`, `apps/api/src/modules/backup/`         |
 | Hook di autenticazione e autorizzazione                    | `apps/api/src/plugins/access.ts`                                        |
 | Interfaccia, token, shell                                  | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`             |
 | Registro letture dei codici pubblici                       | `packages/db/migrations/0013_publication_readings.sql`                  |

@@ -14,6 +14,8 @@ import type { ApiConfig } from './config.js';
 import { ProblemError, classifyDatabaseError, sendProblem } from './http/problem.js';
 import { redactRequestUrl } from './http/redact.js';
 import { MemoryStore, ValkeyStore, type KeyValueStore } from './infra/kv.js';
+import { backupRoutes } from './modules/backup/routes.js';
+import { createBackupService } from './modules/backup/service.js';
 import { brandingRoutes } from './modules/branding/routes.js';
 import { createBrandingService } from './modules/branding/service.js';
 import { calendarRoutes } from './modules/calendar/routes.js';
@@ -107,6 +109,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   };
   const tenancy = createTenancyService(db);
   const branding = createBrandingService(db, tenancy);
+  const backup = createBackupService(db);
   const house = createHouseService(db, () => new Date(), emit);
   const inventory = createInventoryService(db);
   const kitchen = createKitchenService(db);
@@ -249,6 +252,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(personaleRoutes, { personale });
   await app.register(printRoutes, { print });
   await app.register(brandingRoutes, { branding });
+  await app.register(backupRoutes, { backup });
   await app.register(vaultRoutes, { vault });
   await app.register(successionRoutes, { succession });
   await app.register(syncRoutes, { sync });

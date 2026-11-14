@@ -2278,6 +2278,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/families/{familyId}/export/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Modules the caller may include in a family export */
+        get: operations["backup.catalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/export/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paginated family rows for browser backup and CSV assembly */
+        get: operations["backup.listRecords"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/keys": {
         parameters: {
             query?: never;
@@ -2616,6 +2650,35 @@ export interface components {
             dek: string;
             /** @description Bytes encoded as base64url without padding */
             payload: string;
+        };
+        ExportRecordInput: {
+            /** @enum {string} */
+            module: "residents" | "pets" | "contacts" | "utilities" | "inventory" | "house" | "deadlines" | "vault" | "personale" | "calendar";
+            table: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number;
+            data: {
+                [key: string]: (string | number | boolean | null) | (string | number | boolean | null)[] | {
+                    [key: string]: string | number | boolean | null;
+                };
+            };
+        };
+        ExportRecordsPageInput: {
+            items: components["schemas"]["ExportRecordInput"][];
+            nextCursor: string | null;
+        };
+        ExportCatalogModuleInput: {
+            /** @enum {string} */
+            module: "residents" | "pets" | "contacts" | "utilities" | "inventory" | "house" | "deadlines" | "vault" | "personale" | "calendar";
+            readable: boolean;
+            tables: string[];
+        };
+        ExportCatalogInput: {
+            modules: components["schemas"]["ExportCatalogModuleInput"][];
         };
         PutFamilyBrandingRequestInput: {
             displayName: string | null;
@@ -6661,6 +6724,35 @@ export interface components {
             dek: string;
             /** @description Bytes encoded as base64url without padding */
             payload: string;
+        };
+        ExportRecord: {
+            /** @enum {string} */
+            module: "residents" | "pets" | "contacts" | "utilities" | "inventory" | "house" | "deadlines" | "vault" | "personale" | "calendar";
+            table: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number;
+            data: {
+                [key: string]: (string | number | boolean | null) | (string | number | boolean | null)[] | {
+                    [key: string]: string | number | boolean | null;
+                };
+            };
+        };
+        ExportRecordsPage: {
+            items: components["schemas"]["ExportRecord"][];
+            nextCursor: string | null;
+        };
+        ExportCatalogModule: {
+            /** @enum {string} */
+            module: "residents" | "pets" | "contacts" | "utilities" | "inventory" | "house" | "deadlines" | "vault" | "personale" | "calendar";
+            readable: boolean;
+            tables: string[];
+        };
+        ExportCatalog: {
+            modules: components["schemas"]["ExportCatalogModule"][];
         };
         PutFamilyBrandingRequest: {
             displayName: string | null;
@@ -27470,6 +27562,119 @@ export interface operations {
             };
             /** @description Default Response */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "backup.catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportCatalog"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "backup.listRecords": {
+        parameters: {
+            query?: {
+                module?: "residents" | "pets" | "contacts" | "utilities" | "inventory" | "house" | "deadlines" | "vault" | "personale" | "calendar";
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportRecordsPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
