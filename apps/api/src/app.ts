@@ -36,6 +36,11 @@ import { rewardsRoutes } from './modules/rewards/routes.js';
 import { createRewardsService } from './modules/rewards/service.js';
 import { successionRoutes } from './modules/succession/routes.js';
 import { createSuccessionService } from './modules/succession/service.js';
+import { emitChange } from './modules/sync/emit.js';
+import { RealtimeHub } from './modules/sync/hub.js';
+import { syncRoutes } from './modules/sync/routes.js';
+import { createSyncService } from './modules/sync/service.js';
+import { registerRealtimeWs } from './modules/sync/ws.js';
 import { vaultRoutes } from './modules/vault/routes.js';
 import { createVaultService } from './modules/vault/service.js';
 import { identityRoutes } from './modules/identity/routes.js';
@@ -56,6 +61,8 @@ export interface AppDependencies {
   readonly pool?: pg.Pool;
   readonly store?: KeyValueStore;
   readonly globalRateLimitPerMinute?: number;
+  /** When false, skip `/ws` (OpenAPI generation cannot document WebSocket upgrades). Defaults to true. */
+  readonly realtime?: boolean;
 }
 
 const REQUEST_ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -85,9 +92,13 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
     deps.store ?? (config.valkeyUrl === null ? new MemoryStore() : new ValkeyStore(config.valkeyUrl));
   const secrets = await ServerSecretBox.create(parseMasterKeys(config.masterKeys), config.masterKeyActive);
 
+  const hub = new RealtimeHub(store instanceof ValkeyStore ? store.client : null);
+  const emit = (notice: Parameters<typeof emitChange>[1]): void => {
+    void emitChange(hub, notice);
+  };
   const tenancy = createTenancyService(db);
   const branding = createBrandingService(db, tenancy);
-  const house = createHouseService(db);
+  const house = createHouseService(db, () => new Date(), emit);
   const inventory = createInventoryService(db);
   const kitchen = createKitchenService(db);
   const finance = createFinanceService(db);
@@ -98,6 +109,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const print = createPrintService(db, branding);
   const vault = createVaultService(db, store, secrets);
   const succession = createSuccessionService(db);
+  const sync = createSyncService(db, house);
   const identity = createIdentityService(db, tenancy);
   const auth = createAuth({
     db,
@@ -220,8 +232,18 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(brandingRoutes, { branding });
   await app.register(vaultRoutes, { vault });
   await app.register(successionRoutes, { succession });
+  await app.register(syncRoutes, { sync });
+  if (deps.realtime !== false) {
+    await registerRealtimeWs(app, {
+      auth,
+      tenancy,
+      hub,
+      trustedOrigins: config.trustedOrigins,
+    });
+  }
 
   app.addHook('onClose', async () => {
+    await hub.close();
     if (deps.pool === undefined) {
       await pool.end();
     }

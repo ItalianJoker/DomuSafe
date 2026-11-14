@@ -217,6 +217,12 @@ import {
   type FinSavingsGoal,
   type FinTransaction,
   type PutFinSplitsRequest,
+  auditEventListSchema,
+  revisionListSchema,
+  revisionSchema,
+  type AuditEvent,
+  type RestoreRevisionRequest,
+  type Revision,
 } from '@domusafe/contracts';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { z } from 'zod';
@@ -1176,6 +1182,37 @@ export interface DomusafeApi {
    * @returns The readings.
    */
   listPublicationReadings(familyId: string, houseId: string): Promise<readonly PublicationReading[]>;
+  /**
+   * Family audit history for administrators on Premium or the trial.
+   *
+   * @param familyId - Family id.
+   * @returns Newest events first.
+   */
+  listAuditEvents(familyId: string): Promise<readonly AuditEvent[]>;
+  /**
+   * Revision history of one resource.
+   *
+   * @param familyId - Family id.
+   * @param resourceType - Resource table name.
+   * @param resourceId - Resource id.
+   * @returns Newest revisions first.
+   */
+  listRevisions(familyId: string, resourceType: string, resourceId: string): Promise<readonly Revision[]>;
+  /**
+   * Restores a resource from a previous revision.
+   *
+   * @param familyId - Family id.
+   * @param revisionId - Revision id.
+   * @param body - Optional sealed envelope.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The newly appended restore revision.
+   */
+  restoreRevision(
+    familyId: string,
+    revisionId: string,
+    body: RestoreRevisionRequest,
+    idempotencyKey: string,
+  ): Promise<Revision>;
   /**
    * Stored host mark of a family.
    *
@@ -2855,6 +2892,37 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         headers: { [HEADERS.ifMatch]: formatEtag(version) },
       });
       ensureOk(result);
+    },
+    async listAuditEvents(familyId) {
+      return collect(async (cursor) => {
+        const result = await client.GET('/api/v1/families/{familyId}/audit-events', {
+          params: { path: { familyId }, query: cursor === undefined ? {} : { cursor } },
+        });
+        return unwrap(auditEventListSchema, result);
+      });
+    },
+    async listRevisions(familyId, resourceType, resourceId) {
+      return collect(async (cursor) => {
+        const result = await client.GET('/api/v1/families/{familyId}/revisions', {
+          params: {
+            path: { familyId },
+            query: {
+              resourceType,
+              resourceId,
+              ...(cursor === undefined ? {} : { cursor }),
+            },
+          },
+        });
+        return unwrap(revisionListSchema, result);
+      });
+    },
+    async restoreRevision(familyId, revisionId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/revisions/{revisionId}/restore', {
+        params: { path: { familyId, revisionId } },
+        body: body as components['schemas']['RestoreRevisionRequest'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(revisionSchema, result);
     },
   };
 }

@@ -28,6 +28,7 @@ import { fromBase64Url, toBase64Url } from '@domusafe/crypto';
 import { recordAudit, recordRevision, withContext, type Database, type Transaction } from '@domusafe/db';
 import { ProblemError, classifyDatabaseError } from '../../http/problem.js';
 import type { TenantContext } from '../../types.js';
+import type { ChangeEmitter } from '../sync/emit.js';
 import * as repo from './repository.js';
 
 /** One page of a list. */
@@ -348,11 +349,38 @@ function costColumns(cost: { readonly amountMinor: number; readonly currency: st
  *
  * @param db - Database bound to the `domusafe_app` pool.
  * @param now - Clock, injectable for tests.
+ * @param emit - Optional realtime emitter after a successful commit.
  * @returns The service.
  */
-export function createHouseService(db: Database, now: () => Date = () => new Date()) {
+export function createHouseService(
+  db: Database,
+  now: () => Date = () => new Date(),
+  emit: ChangeEmitter | null = null,
+) {
   async function inFamily<T>(tenant: TenantContext, work: (tx: Transaction) => Promise<T>): Promise<T> {
     return withContext(db, { principal: account(tenant.accountId), familyId: tenant.familyId }, work);
+  }
+
+  function notify(
+    tenant: TenantContext,
+    input: {
+      readonly kind: 'resource.changed' | 'resource.deleted';
+      readonly resource: string;
+      readonly id: string;
+      readonly version: number | null;
+      readonly houseId: string | null;
+      readonly guestVisible?: boolean;
+    },
+  ): void {
+    emit?.({
+      familyId: tenant.familyId,
+      kind: input.kind,
+      resource: input.resource,
+      id: input.id,
+      version: input.version,
+      houseId: input.houseId,
+      ...(input.guestVisible === undefined ? {} : { guestVisible: input.guestVisible }),
+    });
   }
 
   async function trace(
@@ -363,11 +391,12 @@ export function createHouseService(db: Database, now: () => Date = () => new Dat
       readonly resourceType: string;
       readonly resourceId: string;
       readonly version: number;
-      readonly op: 'create' | 'update' | 'delete';
+      readonly op: 'create' | 'update' | 'delete' | 'restore';
       readonly data: Record<string, unknown>;
       readonly houseId?: string | null;
       readonly ownerAccountId?: string | null;
       readonly envelope?: Envelope;
+      readonly metadata?: Record<string, string | number | boolean | null>;
     },
   ): Promise<void> {
     await recordRevision(tx, {
@@ -389,7 +418,7 @@ export function createHouseService(db: Database, now: () => Date = () => new Dat
       resourceType: input.resourceType,
       resourceId: input.resourceId,
       outcome: 'success',
-      metadata: { version: input.version },
+      metadata: { version: input.version, ...(input.metadata ?? {}) },
     });
   }
 
@@ -499,7 +528,17 @@ export function createHouseService(db: Database, now: () => Date = () => new Dat
           });
           return guideView(row);
         }),
-      );
+      ).then((view) => {
+        notify(tenant, {
+          kind: 'resource.changed',
+          resource: 'house_guide_entries',
+          id: view.id,
+          version: view.version,
+          houseId,
+          guestVisible: view.audience === 'guest',
+        });
+        return view;
+      });
     },
 
     /**
@@ -599,7 +638,17 @@ export function createHouseService(db: Database, now: () => Date = () => new Dat
           });
           return guideView(updated);
         }),
-      );
+      ).then((view) => {
+        notify(tenant, {
+          kind: 'resource.changed',
+          resource: 'house_guide_entries',
+          id: view.id,
+          version: view.version,
+          houseId,
+          guestVisible: view.audience === 'guest',
+        });
+        return view;
+      });
     },
 
     /**
@@ -644,8 +693,126 @@ export function createHouseService(db: Database, now: () => Date = () => new Dat
               deletedAt: deleted.deletedAt?.toISOString() ?? null,
             },
           });
+          return { version: deleted.version, audience: deleted.audience };
         }),
-      );
+      ).then((deleted) => {
+        notify(tenant, {
+          kind: 'resource.deleted',
+          resource: 'house_guide_entries',
+          id: entryId,
+          version: deleted.version,
+          houseId,
+          guestVisible: deleted.audience === 'guest',
+        });
+      });
+    },
+
+    /**
+     * Restores a guide entry from a revision snapshot (including undelete).
+     *
+     * Preconditions: the caller may write the audience; the live row exists (possibly deleted).
+     * Postconditions: a new revision with `op: restore` is appended; `deletedAt` is cleared.
+     * Data contract: class C fields come from the snapshot; sealed replaces the envelope when provided.
+     *
+     * @param tenant - Resolved tenant.
+     * @param input - Snapshot fields and optional sealed envelope.
+     * @returns The restored entry.
+     */
+    async restoreGuideEntry(
+      tenant: TenantContext,
+      input: {
+        readonly houseId: string;
+        readonly entryId: string;
+        readonly audience: GuideEntry['audience'];
+        readonly topic: GuideEntry['topic'];
+        readonly title: string;
+        readonly body: string;
+        readonly sortOrder: number;
+        readonly sealed?: Sealed;
+        readonly sourceRevisionId: string;
+        readonly sourceVersion: number;
+      },
+    ): Promise<GuideEntry> {
+      assertAllowed(tenant, guideWritePermission(input.audience));
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const current = await repo.findGuideIncludingDeleted(tx, {
+            familyId: tenant.familyId,
+            houseId: input.houseId,
+            entryId: input.entryId,
+          });
+          if (current === null) {
+            throw new ProblemError('not_found');
+          }
+          let envelope: Envelope | null | undefined;
+          if (input.sealed === undefined) {
+            envelope = undefined;
+          } else {
+            envelope = await bindEnvelope(
+              tx,
+              tenant.familyId,
+              {
+                kind: input.audience === 'guest' ? 'house_guest' : 'house_technical',
+                houseId: input.houseId,
+              },
+              input.sealed,
+            );
+          }
+          const restored = await repo.restoreGuide(
+            tx,
+            {
+              familyId: tenant.familyId,
+              houseId: input.houseId,
+              entryId: input.entryId,
+              expectedVersion: current.version,
+            },
+            {
+              audience: input.audience,
+              topic: input.topic,
+              title: input.title,
+              body: input.body,
+              sortOrder: input.sortOrder,
+              updatedBy: tenant.accountId,
+              ...(envelope === undefined ? {} : { envelope }),
+            },
+          );
+          if (restored === null) {
+            conflict(current.version);
+          }
+          const stored = envelopeOf(restored);
+          await trace(tx, tenant, {
+            action: 'house.guide_entry.restored',
+            resourceType: 'house_guide_entries',
+            resourceId: input.entryId,
+            version: restored.version,
+            op: 'restore',
+            houseId: input.houseId,
+            data: {
+              audience: restored.audience,
+              topic: restored.topic,
+              title: restored.title,
+              body: restored.body,
+              sortOrder: restored.sortOrder,
+            },
+            metadata: {
+              sourceRevisionId: input.sourceRevisionId,
+              sourceVersion: input.sourceVersion,
+            },
+            ...(stored === undefined ? {} : { envelope: stored }),
+          });
+          return guideView(restored);
+        }),
+      ).then((view) => {
+        notify(tenant, {
+          kind: 'resource.changed',
+          resource: 'house_guide_entries',
+          id: view.id,
+          version: view.version,
+          houseId: input.houseId,
+          guestVisible: view.audience === 'guest',
+        });
+        return view;
+      });
     },
 
     /**

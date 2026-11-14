@@ -1,11 +1,16 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import type { House, Me } from '@domusafe/contracts';
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.js';
 import { NAV_LINKS, sectionFromPath } from '@/lib/navigation.js';
 import { m } from '@/paraglide/messages.js';
 import { Brand } from './page.js';
 import { useOpenPlace } from './place.js';
+
+const SyncStatus = lazy(async () => {
+  const module = await import('@/features/sync/sync-status.js');
+  return { default: module.SyncStatus };
+});
 
 const LABELS = {
   home: () => m.navHome(),
@@ -118,9 +123,14 @@ export function AppShell(props: {
               </SelectContent>
             </Select>
           </div>
-          <p className="ml-auto hidden truncate text-[13px] text-muted-foreground sm:block">
-            {props.me.displayName}
-          </p>
+          <div className="ml-auto flex min-w-0 items-center gap-3">
+            <Suspense fallback={null}>
+              <SyncStatus familyId={props.familyId} houseId={props.houseId} plan={family?.plan ?? 'free'} />
+            </Suspense>
+            <p className="hidden truncate text-[13px] text-muted-foreground sm:block">
+              {props.me.displayName}
+            </p>
+          </div>
         </header>
         <main id="contenuto" className="px-4 py-6 pb-24 print:p-0 md:px-8 md:pb-10">
           {props.children}

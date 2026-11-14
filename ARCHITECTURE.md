@@ -6,9 +6,9 @@ Documento di riferimento per persone e agenti AI. Le specifiche complete sono in
 
 ```text
 apps/
-  api/                 Fastify 5: /api/v1 (REST, OpenAPI 3.1), /api/auth (Better Auth)
+  api/                 Fastify 5: /api/v1 (REST, OpenAPI 3.1), /api/auth (Better Auth), /ws (realtime)
   web/                 PWA React: shell, token, componenti condivisi, sezioni
-    src/app.ts         composizione: plugin di sicurezza, accesso, idempotenza, OpenAPI, moduli
+    src/app.ts         composizione: plugin di sicurezza, accesso, idempotenza, OpenAPI, moduli, WebSocket
     src/auth/          Better Auth (email e password Argon2id, TOTP, sessioni su database)
     src/http/          Problem Details (RFC 9457), convenzioni ETag/If-Match, cursori
     src/plugins/       security (helmet, rate limit, CSRF), access, idempotency, openapi, auth-routes
@@ -79,6 +79,7 @@ docs/adr/              decisioni architetturali
 | `print`      | codici stampati e pagine pubbliche             | Foglio da parete e foglio di soccorso. Il codice di soccorso si apre senza accesso e si può revocare. Filigrana su Gratuito e Base. Il marchio della famiglia, se il piano lo consente, compare sui fogli e sulle pagine pubbliche. Ogni apertura registra orario, tipo di codice ed etichetta del dispositivo. Il registro si legge da Extra con `house.write` e `audit_log` (Premium o prova) |
 | `kitchen`    | ricette, piano pasti, dispensa, negozi e spesa | In Extra: raccolta ricette (inserimento a mano e import da pagina pubblica con protezione contro indirizzi privati), piano pasti settimanale con stampa o salvataggio documento nel browser, dispensa con codice a barre facoltativo e lettura fotocamera solo se nativa, negozi con ordine delle corsie e liste della spesa. Disponibile in tutti i piani                                      |
 | `finance`    | conti, movimenti, budget, salvadanai, report   | In Extra: contabilità di famiglia a partita doppia (conti, movimenti, budget, salvadanai, ricorrenti, divisione spese e saldi). Compilazione a mano. Piano Base o superiore; permessi `finance.read` / `finance.write`                                                                                                                                                                          |
+| `sync`       | WebSocket `/ws`, revisioni, registro attività  | Notifiche senza contenuti ai dispositivi collegati (`family:` / `house:`), fan-out Valkey, riconnessione lato browser. Storia revisioni e ripristino delle voci del manuale; registro attività in Extra. Allineamento completo con `realtime_sync` (Premium o prova); il registro richiede `audit_log` e `audit.read`                                                                           |
 | `branding`   | marchio della famiglia                         | Nome, un colore, frase di benvenuto e logo piccolo. Solo Premium o la prova di trenta giorni. Il logo è un'immagine molto piccola salvata con la famiglia, in attesa di un archivio file                                                                                                                                                                                                        |
 
 I moduli successivi seguono l'ordine della fase 3 §12.

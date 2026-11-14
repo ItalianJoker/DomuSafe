@@ -34,7 +34,12 @@ const ReadingsPage = lazy(async () => {
   return { default: module.ReadingsPage };
 });
 
-type ExtraTab = 'recipes' | 'mealPlan' | 'pantry' | 'shopping' | 'finance' | 'readings';
+const AuditPanel = lazy(async () => {
+  const module = await import('@/features/sync/audit-panel.js');
+  return { default: module.AuditPanel };
+});
+
+type ExtraTab = 'recipes' | 'mealPlan' | 'pantry' | 'shopping' | 'finance' | 'readings' | 'audit';
 
 function tabLabel(tab: ExtraTab): string {
   switch (tab) {
@@ -50,6 +55,8 @@ function tabLabel(tab: ExtraTab): string {
       return m.extraFinance();
     case 'readings':
       return m.extraReadings();
+    case 'audit':
+      return m.extraAudit();
   }
 }
 
@@ -84,14 +91,16 @@ export function ExtraPage(props: { readonly me: Me; readonly familyId: string; r
   if (canReadFinance) {
     tabs.push('finance');
   }
-  tabs.push('readings');
+  tabs.push('readings', 'audit');
 
   const [tab, setTab] = useState<ExtraTab>('recipes');
   const active = tabs.includes(tab) ? tab : (tabs[0] ?? 'readings');
 
   return (
     <div className="grid gap-6">
-      {active === 'readings' ? null : <PageHeader title={m.extraTitle()} lead={m.extraLead()} />}
+      {active === 'readings' || active === 'audit' ? null : (
+        <PageHeader title={m.extraTitle()} lead={m.extraLead()} />
+      )}
       <div className="flex flex-wrap gap-1 border-b border-border" role="tablist">
         {tabs.map((item) => (
           <button
@@ -127,6 +136,7 @@ export function ExtraPage(props: { readonly me: Me; readonly familyId: string; r
         {active === 'readings' ? (
           <ReadingsPage me={props.me} familyId={props.familyId} houseId={props.houseId} />
         ) : null}
+        {active === 'audit' ? <AuditPanel me={props.me} familyId={props.familyId} /> : null}
       </Suspense>
     </div>
   );
