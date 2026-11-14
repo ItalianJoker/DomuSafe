@@ -14,6 +14,7 @@ import { roleAllows } from '@/lib/permissions.js';
 import { familyQuery, meKey, membersQuery } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, setLocale } from '@/paraglide/runtime.js';
+import { kioskPath } from '@/features/kiosk/path.js';
 import { ChoresPanel } from './chores-panel.js';
 import { FamilyForm } from './family-form.js';
 import { HandoverPanel } from './handover-panel.js';
@@ -242,6 +243,12 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string; 
                 : ` · ${m.houseLimit({ count: String(limit) })}`}
           </p>
         )}
+        <div className="mt-4">
+          <Button size="emergency" asChild>
+            <Link to={kioskPath(props.familyId, props.houseId)}>{m.kioskOpen()}</Link>
+          </Button>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{m.kioskOpenLead()}</p>
+        </div>
       </div>
 
       <div>

@@ -214,6 +214,23 @@
 }
 
 /*
+ * Tablet gallery. Soft gradient and translucent widgets keep large touch targets calm on a
+ * wall-mounted tablet; text stays light for contrast on the dark wash.
+ */
+.kiosk-screen {
+  color-scheme: dark;
+  background:
+    radial-gradient(120% 80% at 10% 0%, rgba(56, 120, 160, 0.45), transparent 55%),
+    radial-gradient(90% 70% at 90% 10%, rgba(120, 90, 60, 0.35), transparent 50%),
+    linear-gradient(160deg, #0c1218 0%, #151b22 45%, #0a0e12 100%);
+  color: #ffffff;
+}
+
+.kiosk-widget {
+  min-height: 12rem;
+}
+
+/*
  * Rescue screen. Both themes stay at black and white, with the call control on a dark red,
  * so the facts stay readable when the rest of the app is light or dark.
  */
