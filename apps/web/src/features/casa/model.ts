@@ -20,10 +20,37 @@ export type ShownUtility = (typeof SHOWN_UTILITIES)[number];
 export const WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const;
 
 /** Tabs of the Casa section, in screen order. */
-export type CasaTab = 'guest' | 'technical' | 'utilities' | 'deadline' | 'houses';
+export type CasaTab = 'guest' | 'technical' | 'utilities' | 'deadline' | 'inventory' | 'houses';
+
+/** Room kinds offered when editing the inventory by hand. */
+export const ROOM_KINDS = [
+  'kitchen',
+  'living',
+  'bedroom',
+  'bathroom',
+  'office',
+  'laundry',
+  'garage',
+  'cellar',
+  'attic',
+  'garden',
+  'balcony',
+  'other',
+] as const;
+
+/** Storage unit kinds offered when editing closets and containers by hand. */
+export const STORAGE_KINDS = [
+  'furniture',
+  'wardrobe',
+  'shelf',
+  'drawer',
+  'box',
+  'container',
+  'other',
+] as const;
 
 /**
- * Tabs a role may open. Utilities stay available on the Free plan; the role, not the plan, hides them.
+ * Tabs a role may open. Utilities and inventory stay available on the Free plan; the role, not the plan, hides them.
  *
  * Preconditions: `role` is the membership role.
  * Postconditions: the guest tab and the house details tab are always present.
@@ -42,6 +69,9 @@ export function casaTabs(role: MemberRole | undefined): readonly CasaTab[] {
   }
   if (role !== undefined && roleAllows(role, 'maintenance.read')) {
     tabs.push('deadline');
+  }
+  if (role !== undefined && roleAllows(role, 'inventory.read')) {
+    tabs.push('inventory');
   }
   tabs.push('houses');
   return tabs;

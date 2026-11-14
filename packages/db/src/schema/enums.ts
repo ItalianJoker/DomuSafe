@@ -106,6 +106,31 @@ export const maintenanceCategoryEnum = pgEnum('maintenance_category', [
 ]);
 /** Priority of a maintenance task. */
 export const maintenancePriorityEnum = pgEnum('maintenance_priority', ['low', 'medium', 'high', 'urgent']);
+/** Kind of a room inside a house. */
+export const roomKindEnum = pgEnum('room_kind', [
+  'kitchen',
+  'living',
+  'bedroom',
+  'bathroom',
+  'office',
+  'laundry',
+  'garage',
+  'cellar',
+  'attic',
+  'garden',
+  'balcony',
+  'other',
+]);
+/** Kind of a closet, shelf or other storage unit. */
+export const storageUnitKindEnum = pgEnum('storage_unit_kind', [
+  'furniture',
+  'wardrobe',
+  'shelf',
+  'drawer',
+  'box',
+  'container',
+  'other',
+]);
 /** ABO blood group stored on the readable rescue card. */
 export const bloodGroupEnum = pgEnum('blood_group', [
   'a_positive',

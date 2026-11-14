@@ -163,9 +163,11 @@ describe('schema', () => {
             type:
               row.data_type === 'USER-DEFINED'
                 ? row.udt_name
-                : row.data_type === 'character'
-                  ? `char(${String(row.character_maximum_length)})`
-                  : row.data_type,
+                : row.data_type === 'ARRAY'
+                  ? `${row.udt_name.replace(/^_/, '')}[]`
+                  : row.data_type === 'character'
+                    ? `char(${String(row.character_maximum_length)})`
+                    : row.data_type,
           },
         ]),
       );

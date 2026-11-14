@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import type { House, Me } from '@domusafe/contracts';
 import { PageHeader } from '@/components/shell/page.js';
 import { m } from '@/paraglide/messages.js';
@@ -8,6 +8,11 @@ import { DeadlinePanel } from './deadline-panel.js';
 import { GuestPanel } from './guest-panel.js';
 import { TechnicalPanel } from './technical-panel.js';
 import { UtilitiesPanel } from './utilities-panel.js';
+
+const InventoryPanel = lazy(async () => {
+  const module = await import('./inventory-panel.js');
+  return { default: module.InventoryPanel };
+});
 
 function tabLabel(tab: CasaTab): string {
   switch (tab) {
@@ -19,17 +24,19 @@ function tabLabel(tab: CasaTab): string {
       return m.casaUtilities();
     case 'deadline':
       return m.casaDeadline();
+    case 'inventory':
+      return m.casaInventory();
     case 'houses':
       return m.casaHouses();
   }
 }
 
 /**
- * Casa section of the open house: guest manual, technical cutoffs, utilities and the boiler deadline.
+ * Casa section of the open house: guest manual, technical cutoffs, utilities, inventory and the boiler deadline.
  *
  * Preconditions: `houseId` belongs to `familyId`.
  * Postconditions: a role only sees the tabs its permissions allow. Casa is not plan-gated.
- * Data contract: edits are manual and persisted by the house API.
+ * Data contract: edits are manual and persisted by the house and inventory APIs.
  *
  * @param props - Account, family and the visible houses.
  * @returns The section.
@@ -83,6 +90,11 @@ export function CasaPage(props: {
       ) : null}
       {active === 'deadline' ? (
         <DeadlinePanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteGuest} />
+      ) : null}
+      {active === 'inventory' ? (
+        <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+          <InventoryPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteGuest} />
+        </Suspense>
       ) : null}
       {active === 'houses' ? (
         <HousePage me={props.me} familyId={props.familyId} houseId={props.houseId} houses={props.houses} />
