@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useId, useState, type ChangeEvent, type SubmitEvent } from 'react';
+import { lazy, Suspense, useEffect, useId, useState, type ChangeEvent, type SubmitEvent } from 'react';
 import type {
   InventoryFilterNode,
   InventoryItem,
@@ -10,6 +10,7 @@ import type {
   SavedFilter,
   StorageUnit,
   StorageUnitKind,
+  UpdateRoomRequest,
 } from '@domusafe/contracts';
 import { SAVED_FILTER_PIN_LIMIT } from '@domusafe/contracts';
 import { useApi } from '@/components/api-context.js';
@@ -28,6 +29,11 @@ import {
 } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { ROOM_KINDS, STORAGE_KINDS } from './model.js';
+
+const RoomPhotosGallery = lazy(async () => {
+  const module = await import('./room-photos-gallery.js');
+  return { default: module.RoomPhotosGallery };
+});
 
 const touchControl =
   'min-h-12 w-full rounded-md border border-input bg-transparent px-3 text-[15px] text-foreground';
@@ -516,6 +522,17 @@ export function InventoryPanel(props: {
 
         {showingResults ? null : (
           <>
+            <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+              <RoomPhotosGallery
+                rooms={roomList}
+                canWrite={props.canWrite}
+                onUpdateRoom={async (room, patch) => {
+                  await api.updateRoom(props.familyId, props.houseId, room.id, room.version, patch);
+                  await refresh();
+                }}
+              />
+            </Suspense>
+
             {props.canWrite ? (
               <RoomForm
                 onSave={async (input) => {
@@ -697,7 +714,7 @@ function RoomDetail(props: {
   readonly items: readonly InventoryItem[];
   readonly canWrite: boolean;
   readonly onRefresh: () => Promise<void>;
-  readonly onUpdateRoom: (patch: { name?: string; kind?: RoomKind; notes?: string | null }) => Promise<void>;
+  readonly onUpdateRoom: (patch: UpdateRoomRequest) => Promise<void>;
   readonly onDeleteRoom: () => Promise<void>;
   readonly onCreateUnit: (input: {
     name: string;

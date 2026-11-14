@@ -51,6 +51,8 @@ const dataUrlSchema = z
   .min(32)
   .max(24_576)
   .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/);
+/** Object-store key or other durable reference for a room photo once files land. */
+const storageRefSchema = z.string().trim().min(1).max(512);
 const costSchema = z
   .object({ amountMinor: z.int().min(0).max(1_000_000_000_000), currency: currencySchema })
   .strict();
@@ -60,6 +62,11 @@ const cursorField = z.string().max(512).optional();
 function atLeastOneField(value: object): boolean {
   return Object.keys(value).length > 0;
 }
+
+/** Lighting slot of a room photo set (day / evening / lights off). */
+export const ROOM_PHOTO_SLOTS = ['day', 'evening', 'lights_off'] as const;
+/** Lighting slot of a room photo set. */
+export type RoomPhotoSlot = (typeof ROOM_PHOTO_SLOTS)[number];
 
 /** One room as returned by the API. */
 export const roomSchema = z
@@ -72,6 +79,12 @@ export const roomSchema = z
     floor: z.int().min(-5).max(200).nullable(),
     sortOrder: z.int().min(0).max(32_767),
     notes: notesSchema.nullable(),
+    photoDayDataUrl: dataUrlSchema.nullable(),
+    photoEveningDataUrl: dataUrlSchema.nullable(),
+    photoLightsOffDataUrl: dataUrlSchema.nullable(),
+    photoDayStorageRef: storageRefSchema.nullable(),
+    photoEveningStorageRef: storageRefSchema.nullable(),
+    photoLightsOffStorageRef: storageRefSchema.nullable(),
     version: z.int().min(1),
     createdAt: instantSchema,
     updatedAt: instantSchema,
@@ -89,6 +102,12 @@ export const createRoomRequestSchema = z
     floor: z.int().min(-5).max(200).nullable().optional(),
     sortOrder: z.int().min(0).max(32_767).default(0),
     notes: notesSchema.nullable().optional(),
+    photoDayDataUrl: dataUrlSchema.nullable().optional(),
+    photoEveningDataUrl: dataUrlSchema.nullable().optional(),
+    photoLightsOffDataUrl: dataUrlSchema.nullable().optional(),
+    photoDayStorageRef: storageRefSchema.nullable().optional(),
+    photoEveningStorageRef: storageRefSchema.nullable().optional(),
+    photoLightsOffStorageRef: storageRefSchema.nullable().optional(),
   })
   .strict()
   .meta({ id: 'CreateRoomRequest' });
@@ -103,6 +122,12 @@ export const updateRoomRequestSchema = z
     floor: z.int().min(-5).max(200).nullable().optional(),
     sortOrder: z.int().min(0).max(32_767).optional(),
     notes: notesSchema.nullable().optional(),
+    photoDayDataUrl: dataUrlSchema.nullable().optional(),
+    photoEveningDataUrl: dataUrlSchema.nullable().optional(),
+    photoLightsOffDataUrl: dataUrlSchema.nullable().optional(),
+    photoDayStorageRef: storageRefSchema.nullable().optional(),
+    photoEveningStorageRef: storageRefSchema.nullable().optional(),
+    photoLightsOffStorageRef: storageRefSchema.nullable().optional(),
   })
   .strict()
   .refine(atLeastOneField, 'At least one field is required')

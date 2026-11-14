@@ -5591,6 +5591,12 @@ export interface components {
             floor: number | null;
             sortOrder: number;
             notes: string | null;
+            photoDayDataUrl: string | null;
+            photoEveningDataUrl: string | null;
+            photoLightsOffDataUrl: string | null;
+            photoDayStorageRef: string | null;
+            photoEveningStorageRef: string | null;
+            photoLightsOffStorageRef: string | null;
             version: number;
             /**
              * Format: date-time
@@ -5614,6 +5620,12 @@ export interface components {
             /** @default 0 */
             sortOrder: number;
             notes?: string | null;
+            photoDayDataUrl?: string | null;
+            photoEveningDataUrl?: string | null;
+            photoLightsOffDataUrl?: string | null;
+            photoDayStorageRef?: string | null;
+            photoEveningStorageRef?: string | null;
+            photoLightsOffStorageRef?: string | null;
         };
         UpdateRoomRequestInput: {
             name?: string;
@@ -5622,6 +5634,12 @@ export interface components {
             floor?: number | null;
             sortOrder?: number;
             notes?: string | null;
+            photoDayDataUrl?: string | null;
+            photoEveningDataUrl?: string | null;
+            photoLightsOffDataUrl?: string | null;
+            photoDayStorageRef?: string | null;
+            photoEveningStorageRef?: string | null;
+            photoLightsOffStorageRef?: string | null;
         };
         RoomPageInput: {
             items: components["schemas"]["RoomInput"][];
@@ -10081,6 +10099,12 @@ export interface components {
             floor: number | null;
             sortOrder: number;
             notes: string | null;
+            photoDayDataUrl: string | null;
+            photoEveningDataUrl: string | null;
+            photoLightsOffDataUrl: string | null;
+            photoDayStorageRef: string | null;
+            photoEveningStorageRef: string | null;
+            photoLightsOffStorageRef: string | null;
             version: number;
             /**
              * Format: date-time
@@ -10104,6 +10128,12 @@ export interface components {
             /** @default 0 */
             sortOrder: number;
             notes?: string | null;
+            photoDayDataUrl?: string | null;
+            photoEveningDataUrl?: string | null;
+            photoLightsOffDataUrl?: string | null;
+            photoDayStorageRef?: string | null;
+            photoEveningStorageRef?: string | null;
+            photoLightsOffStorageRef?: string | null;
         };
         UpdateRoomRequest: {
             name?: string;
@@ -10112,6 +10142,12 @@ export interface components {
             floor?: number | null;
             sortOrder?: number;
             notes?: string | null;
+            photoDayDataUrl?: string | null;
+            photoEveningDataUrl?: string | null;
+            photoLightsOffDataUrl?: string | null;
+            photoDayStorageRef?: string | null;
+            photoEveningStorageRef?: string | null;
+            photoLightsOffStorageRef?: string | null;
         };
         RoomPage: {
             items: components["schemas"]["Room"][];

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { hasFeature, type PlanTier } from '@domusafe/plans';
-import { useState, type SubmitEvent } from 'react';
-import type { HaConnection, HaDevice, HaLockCode, HaZone } from '@domusafe/contracts';
+import { lazy, Suspense, useState, type SubmitEvent } from 'react';
+import type { HaConnection, HaDevice, HaLockCode, HaZone, Room } from '@domusafe/contracts';
 import { useApi } from '@/components/api-context.js';
 import { Field } from '@/components/shell/page.js';
 import { Button } from '@/components/ui/button.js';
@@ -13,8 +13,14 @@ import {
   automationDevicesQuery,
   automationLockCodesQuery,
   automationZonesQuery,
+  roomsQuery,
 } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
+
+const RoomPhotosStrip = lazy(async () => {
+  const module = await import('./room-photos-gallery.js');
+  return { default: module.RoomPhotosStrip };
+});
 
 /**
  * Domotica of the open house: bridge settings, entity status, zone alarms and temporary lock codes.
@@ -48,10 +54,78 @@ export function AutomationPanel(props: {
       {!props.canManage ? (
         <p className="text-[13px] text-muted-foreground">{m.casaAutomationReadOnly()}</p>
       ) : null}
+      <RoomsThenDevicesBlock familyId={props.familyId} houseId={props.houseId} />
       <ConnectionsBlock familyId={props.familyId} houseId={props.houseId} canManage={props.canManage} />
-      <DevicesBlock familyId={props.familyId} houseId={props.houseId} canManage={props.canManage} />
       <ZonesBlock familyId={props.familyId} houseId={props.houseId} canManage={props.canManage} />
       <LockCodesBlock familyId={props.familyId} houseId={props.houseId} canManage={props.canManage} />
+    </div>
+  );
+}
+
+function RoomsThenDevicesBlock(props: { readonly familyId: string; readonly houseId: string }) {
+  const api = useApi();
+  const rooms = useQuery(roomsQuery(api, props.familyId, props.houseId));
+  const devices = useQuery(automationDevicesQuery(api, props.familyId, props.houseId));
+  const roomList = rooms.data ?? [];
+  const deviceList = devices.data ?? [];
+  const unassigned = deviceList.filter((device) => device.roomId === null);
+
+  return (
+    <section className="grid gap-6">
+      <div className="grid gap-1">
+        <h2 className="text-[13px] font-medium">{m.casaAutomationRoomsFirst()}</h2>
+        <p className="text-[13px] leading-relaxed text-muted-foreground">
+          {m.casaAutomationRoomsFirstLead()}
+        </p>
+      </div>
+      {rooms.isPending || devices.isPending ? (
+        <p className="text-[13px] text-muted-foreground">{m.loading()}</p>
+      ) : null}
+      {rooms.isError ? (
+        <p role="alert" className="text-[13px] text-destructive">
+          {problemText(rooms.error)}
+        </p>
+      ) : null}
+      {devices.isError ? (
+        <p role="alert" className="text-[13px] text-destructive">
+          {problemText(devices.error)}
+        </p>
+      ) : null}
+      <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+        <RoomPhotosStrip rooms={roomList} />
+      </Suspense>
+      {roomList.map((room) => (
+        <RoomDevicesGroup
+          key={room.id}
+          room={room}
+          devices={deviceList.filter((device) => device.roomId === room.id)}
+        />
+      ))}
+      <div className="grid gap-3">
+        <h3 className="text-[13px] font-medium">{m.casaAutomationDevicesUnassigned()}</h3>
+        {deviceList.length === 0 ? (
+          <p className="text-[13px] text-muted-foreground">{m.casaAutomationDevicesEmpty()}</p>
+        ) : null}
+        {unassigned.map((device) => (
+          <DeviceRow key={device.id} device={device} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RoomDevicesGroup(props: { readonly room: Room; readonly devices: readonly HaDevice[] }) {
+  if (props.devices.length === 0) {
+    return null;
+  }
+  return (
+    <div className="grid gap-2">
+      <h3 className="text-[13px] font-medium">
+        {m.casaAutomationDevices()} · {props.room.name}
+      </h3>
+      {props.devices.map((device) => (
+        <DeviceRow key={device.id} device={device} />
+      ))}
     </div>
   );
 }
@@ -287,32 +361,6 @@ function ConnectionRow(props: {
         </div>
       ) : null}
     </article>
-  );
-}
-
-function DevicesBlock(props: {
-  readonly familyId: string;
-  readonly houseId: string;
-  readonly canManage: boolean;
-}) {
-  const api = useApi();
-  const query = useQuery(automationDevicesQuery(api, props.familyId, props.houseId));
-  return (
-    <section className="grid gap-3">
-      <h2 className="text-[13px] font-medium">{m.casaAutomationDevices()}</h2>
-      {query.isPending ? <p className="text-[13px] text-muted-foreground">{m.loading()}</p> : null}
-      {query.isError ? (
-        <p role="alert" className="text-[13px] text-destructive">
-          {problemText(query.error)}
-        </p>
-      ) : null}
-      {query.data?.length === 0 ? (
-        <p className="text-[13px] text-muted-foreground">{m.casaAutomationDevicesEmpty()}</p>
-      ) : null}
-      {query.data?.map((device) => (
-        <DeviceRow key={device.id} device={device} />
-      ))}
-    </section>
   );
 }
 

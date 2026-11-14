@@ -12626,6 +12626,81 @@
               }
             ]
           },
+          "photoDayDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "version": {
             "type": "integer",
             "minimum": 1,
@@ -12653,6 +12728,12 @@
           "floor",
           "sortOrder",
           "notes",
+          "photoDayDataUrl",
+          "photoEveningDataUrl",
+          "photoLightsOffDataUrl",
+          "photoDayStorageRef",
+          "photoEveningStorageRef",
+          "photoLightsOffStorageRef",
           "version",
           "createdAt",
           "updatedAt"
@@ -12713,6 +12794,81 @@
                 "type": "null"
               }
             ]
+          },
+          "photoDayDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -12767,6 +12923,81 @@
               {
                 "type": "string",
                 "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
               },
               {
                 "type": "null"
@@ -33126,6 +33357,81 @@
               }
             ]
           },
+          "photoDayDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "version": {
             "type": "integer",
             "minimum": 1,
@@ -33153,6 +33459,12 @@
           "floor",
           "sortOrder",
           "notes",
+          "photoDayDataUrl",
+          "photoEveningDataUrl",
+          "photoLightsOffDataUrl",
+          "photoDayStorageRef",
+          "photoEveningStorageRef",
+          "photoLightsOffStorageRef",
           "version",
           "createdAt",
           "updatedAt"
@@ -33208,6 +33520,81 @@
               {
                 "type": "string",
                 "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
               },
               {
                 "type": "null"
@@ -33269,6 +33656,81 @@
               {
                 "type": "string",
                 "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffDataUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 32,
+                "maxLength": 24576,
+                "pattern": "^data:image\\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoDayStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoEveningStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoLightsOffStorageRef": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
               },
               {
                 "type": "null"

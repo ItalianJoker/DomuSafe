@@ -71,6 +71,12 @@ export async function insertRoom(
     readonly floor: number | null;
     readonly sortOrder: number;
     readonly notes: string | null;
+    readonly photoDayDataUrl: string | null;
+    readonly photoEveningDataUrl: string | null;
+    readonly photoLightsOffDataUrl: string | null;
+    readonly photoDayStorageRef: string | null;
+    readonly photoEveningStorageRef: string | null;
+    readonly photoLightsOffStorageRef: string | null;
     readonly createdBy: string;
   },
 ): Promise<RoomRow> {
@@ -165,6 +171,12 @@ export async function updateRoom(
     readonly floor?: number | null;
     readonly sortOrder?: number;
     readonly notes?: string | null;
+    readonly photoDayDataUrl?: string | null;
+    readonly photoEveningDataUrl?: string | null;
+    readonly photoLightsOffDataUrl?: string | null;
+    readonly photoDayStorageRef?: string | null;
+    readonly photoEveningStorageRef?: string | null;
+    readonly photoLightsOffStorageRef?: string | null;
     readonly deletedAt?: Date;
     readonly updatedBy: string;
   },
@@ -177,6 +189,18 @@ export async function updateRoom(
       ...(patch.floor === undefined ? {} : { floor: patch.floor }),
       ...(patch.sortOrder === undefined ? {} : { sortOrder: patch.sortOrder }),
       ...(patch.notes === undefined ? {} : { notes: patch.notes }),
+      ...(patch.photoDayDataUrl === undefined ? {} : { photoDayDataUrl: patch.photoDayDataUrl }),
+      ...(patch.photoEveningDataUrl === undefined ? {} : { photoEveningDataUrl: patch.photoEveningDataUrl }),
+      ...(patch.photoLightsOffDataUrl === undefined
+        ? {}
+        : { photoLightsOffDataUrl: patch.photoLightsOffDataUrl }),
+      ...(patch.photoDayStorageRef === undefined ? {} : { photoDayStorageRef: patch.photoDayStorageRef }),
+      ...(patch.photoEveningStorageRef === undefined
+        ? {}
+        : { photoEveningStorageRef: patch.photoEveningStorageRef }),
+      ...(patch.photoLightsOffStorageRef === undefined
+        ? {}
+        : { photoLightsOffStorageRef: patch.photoLightsOffStorageRef }),
       ...(patch.deletedAt === undefined ? {} : { deletedAt: patch.deletedAt }),
       updatedBy: patch.updatedBy,
       version: sql`${rooms.version} + 1`,

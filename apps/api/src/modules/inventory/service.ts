@@ -114,6 +114,12 @@ function roomView(row: repo.RoomRow): Room {
     floor: row.floor,
     sortOrder: row.sortOrder,
     notes: row.notes,
+    photoDayDataUrl: row.photoDayDataUrl,
+    photoEveningDataUrl: row.photoEveningDataUrl,
+    photoLightsOffDataUrl: row.photoLightsOffDataUrl,
+    photoDayStorageRef: row.photoDayStorageRef,
+    photoEveningStorageRef: row.photoEveningStorageRef,
+    photoLightsOffStorageRef: row.photoLightsOffStorageRef,
     version: row.version,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -298,6 +304,12 @@ export function createInventoryService(db: Database, now: () => Date = () => new
             floor: input.floor ?? null,
             sortOrder: input.sortOrder,
             notes: input.notes ?? null,
+            photoDayDataUrl: input.photoDayDataUrl ?? null,
+            photoEveningDataUrl: input.photoEveningDataUrl ?? null,
+            photoLightsOffDataUrl: input.photoLightsOffDataUrl ?? null,
+            photoDayStorageRef: input.photoDayStorageRef ?? null,
+            photoEveningStorageRef: input.photoEveningStorageRef ?? null,
+            photoLightsOffStorageRef: input.photoLightsOffStorageRef ?? null,
             createdBy: tenant.accountId,
           });
           await repo.upsertSearchIndex(tx, {
@@ -316,7 +328,13 @@ export function createInventoryService(db: Database, now: () => Date = () => new
             version: row.version,
             op: 'create',
             houseId,
-            data: { name: row.name, kind: row.kind },
+            data: {
+              name: row.name,
+              kind: row.kind,
+              hasPhotoDay: row.photoDayDataUrl !== null || row.photoDayStorageRef !== null,
+              hasPhotoEvening: row.photoEveningDataUrl !== null || row.photoEveningStorageRef !== null,
+              hasPhotoLightsOff: row.photoLightsOffDataUrl !== null || row.photoLightsOffStorageRef !== null,
+            },
           });
           return roomView(row);
         }),
@@ -373,6 +391,22 @@ export function createInventoryService(db: Database, now: () => Date = () => new
               ...(patch.floor === undefined ? {} : { floor: patch.floor }),
               ...(patch.sortOrder === undefined ? {} : { sortOrder: patch.sortOrder }),
               ...(patch.notes === undefined ? {} : { notes: patch.notes }),
+              ...(patch.photoDayDataUrl === undefined ? {} : { photoDayDataUrl: patch.photoDayDataUrl }),
+              ...(patch.photoEveningDataUrl === undefined
+                ? {}
+                : { photoEveningDataUrl: patch.photoEveningDataUrl }),
+              ...(patch.photoLightsOffDataUrl === undefined
+                ? {}
+                : { photoLightsOffDataUrl: patch.photoLightsOffDataUrl }),
+              ...(patch.photoDayStorageRef === undefined
+                ? {}
+                : { photoDayStorageRef: patch.photoDayStorageRef }),
+              ...(patch.photoEveningStorageRef === undefined
+                ? {}
+                : { photoEveningStorageRef: patch.photoEveningStorageRef }),
+              ...(patch.photoLightsOffStorageRef === undefined
+                ? {}
+                : { photoLightsOffStorageRef: patch.photoLightsOffStorageRef }),
               updatedBy: tenant.accountId,
             },
           );
@@ -395,7 +429,15 @@ export function createInventoryService(db: Database, now: () => Date = () => new
             version: updated.version,
             op: 'update',
             houseId,
-            data: { name: updated.name, kind: updated.kind },
+            data: {
+              name: updated.name,
+              kind: updated.kind,
+              hasPhotoDay: updated.photoDayDataUrl !== null || updated.photoDayStorageRef !== null,
+              hasPhotoEvening:
+                updated.photoEveningDataUrl !== null || updated.photoEveningStorageRef !== null,
+              hasPhotoLightsOff:
+                updated.photoLightsOffDataUrl !== null || updated.photoLightsOffStorageRef !== null,
+            },
           });
           return roomView(updated);
         }),
