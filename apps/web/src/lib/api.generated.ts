@@ -175,6 +175,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Family-visible product news for the current account */
+        get: operations["news.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/news/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark the news feed as read for the current account */
+        post: operations["news.markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/families": {
         parameters: {
             query?: never;
@@ -5982,6 +6016,34 @@ export interface components {
             brand?: string | null;
             defaultUnit?: string | null;
         };
+        NewsItemInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            publishedAt: string;
+            /**
+             * @description Interface language
+             * @enum {string}
+             */
+            locale: "it" | "en";
+            title: string;
+            body: string;
+            link: string | null;
+            unread: boolean;
+        };
+        NewsFeedInput: {
+            items: components["schemas"]["NewsItemInput"][];
+            nextCursor: string | null;
+            unreadCount: number;
+            lastReadAt: string | null;
+        };
+        MarkNewsReadRequestInput: Record<string, never>;
         /** @enum {string} */
         NotificationCategoryInput: "deadline" | "vault_reminder" | "emergency_scan" | "sos" | "chore" | "approval" | "security" | "system";
         NotificationInput: {
@@ -10233,6 +10295,34 @@ export interface components {
             brand?: string | null;
             defaultUnit?: string | null;
         };
+        NewsItem: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            publishedAt: string;
+            /**
+             * @description Interface language
+             * @enum {string}
+             */
+            locale: "it" | "en";
+            title: string;
+            body: string;
+            link: string | null;
+            unread: boolean;
+        };
+        NewsFeed: {
+            items: components["schemas"]["NewsItem"][];
+            nextCursor: string | null;
+            unreadCount: number;
+            lastReadAt: string | null;
+        };
+        MarkNewsReadRequest: Record<string, never>;
         /** @enum {string} */
         NotificationCategory: "deadline" | "vault_reminder" | "emergency_scan" | "sos" | "chore" | "approval" | "security" | "system";
         Notification: {
@@ -11687,6 +11777,89 @@ export interface operations {
             };
             /** @description Default Response */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "news.list": {
+        parameters: {
+            query?: {
+                /** @description Interface language */
+                locale?: "it" | "en";
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsFeed"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "news.markRead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkNewsReadRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

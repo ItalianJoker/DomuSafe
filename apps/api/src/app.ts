@@ -54,6 +54,8 @@ import { vaultRoutes } from './modules/vault/routes.js';
 import { createVaultService } from './modules/vault/service.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import { createIdentityService } from './modules/identity/service.js';
+import { newsRoutes } from './modules/news/routes.js';
+import { createNewsService } from './modules/news/service.js';
 import { notificationRoutes } from './modules/notifications/routes.js';
 import { createWebPushSender, type PushSender } from './modules/notifications/push.js';
 import { createNotificationsService } from './modules/notifications/service.js';
@@ -146,6 +148,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
     vapidPublicKey: config.vapidPublicKey,
     pushSender,
   });
+  const news = createNewsService(db);
   const identity = createIdentityService(db, tenancy, config.vapidPublicKey);
   const auth = createAuth({
     db,
@@ -259,6 +262,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(systemRoutes, { db, store });
   await app.register(identityRoutes, { identity });
   await app.register(notificationRoutes, { notifications });
+  await app.register(newsRoutes, { news });
   await app.register(tenancyRoutes, { tenancy });
   await app.register(houseRoutes, { house });
   await app.register(inventoryRoutes, { inventory });

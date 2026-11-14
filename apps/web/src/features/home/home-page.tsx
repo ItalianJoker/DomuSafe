@@ -6,13 +6,14 @@ import { roleAllows } from '@/lib/permissions.js';
 import { m } from '@/paraglide/messages.js';
 import { rescuePath } from '@/features/rescue/path.js';
 import { DeadlinesPanel } from './deadlines-panel.js';
+import { NewsFeedPanel } from './news-feed-panel.js';
 import { NextStepsPanel } from './next-steps-panel.js';
 
 /**
  * Landing page inside a house.
  *
  * Preconditions: `house` belongs to `familyId`.
- * Postconditions: the rescue control opens the full-screen view. Adoption cues and deadlines stay here.
+ * Postconditions: the rescue control opens the full-screen view. Adoption cues, news and deadlines stay here.
  * Data contract: this page does not show account numbers; rescue details stay on the rescue screen.
  *
  * @param props - Account, family and the open house.
@@ -55,6 +56,7 @@ export function HomePage(props: {
         ) : null}
       </div>
       <NextStepsPanel me={props.me} familyId={props.familyId} house={props.house} />
+      <NewsFeedPanel familyId={props.familyId} houseId={props.house.id} locale={props.me.locale} />
       {canRead ? (
         <DeadlinesPanel familyId={props.familyId} houseId={props.house.id} canWrite={canWrite} />
       ) : null}

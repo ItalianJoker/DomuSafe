@@ -33,27 +33,28 @@ pnpm verify
 
 ## Dove si trova cosa
 
-| Cerco                                                      | File                                                                                                             |
-| :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
-| Matrice dei permessi                                       | `packages/contracts/src/access.ts`                                                                               |
-| Codici di errore                                           | `packages/contracts/src/problems.ts`                                                                             |
-| Limiti e funzioni dei piani                                | `packages/plans/src/index.ts`                                                                                    |
-| Policy RLS e funzioni `app.*`                              | `packages/db/migrations/0006_access_functions.sql`, `0007_policies.sql`                                          |
-| Contesto transazionale                                     | `packages/db/src/context.ts`                                                                                     |
-| Formati cifrati e vettori                                  | `packages/crypto/src/formats.ts`, `packages/crypto/test/vectors.ts`                                              |
-| Copia di sicurezza famiglia (backup e CSV)                 | `packages/crypto/src/backup.ts`, `apps/api/src/modules/backup/`                                                  |
-| Hook di autenticazione e autorizzazione                    | `apps/api/src/plugins/access.ts`                                                                                 |
-| Interfaccia, token, shell                                  | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`                                                      |
-| Registro letture dei codici pubblici                       | `packages/db/migrations/0013_publication_readings.sql`                                                           |
-| Marchio della famiglia                                     | `packages/db/migrations/0014_family_branding.sql`                                                                |
-| Inventario (stanze, contenitori, oggetti, ricerca)         | `packages/db/migrations/0015_inventory.sql`                                                                      |
-| Filtri inventario salvabili (AND/OR, max 5 in sidebar)     | `packages/db/migrations/0024_saved_filters.sql`                                                                  |
-| Notifiche e avvisi scadenze nel browser (Web Push)         | `packages/db/migrations/0025_notifications.sql`, `apps/api/src/modules/notifications/`, `apps/api/src/worker.ts` |
-| Coordinamento assistenza (diario, Chi sono, consegne)      | `packages/db/migrations/0016_care.sql`                                                                           |
-| Faccende, punti, serie e ricompense                        | `packages/db/migrations/0017_chores_rewards.sql`                                                                 |
-| Cucina (ricette, import URL, negozi, liste spesa)          | `packages/db/migrations/0018_kitchen.sql`                                                                        |
-| Dispensa e piano pasti                                     | `packages/db/migrations/0019_pantry_meal_plan.sql`                                                               |
-| Contabilità di famiglia (partita doppia)                   | `packages/db/migrations/0020_finance.sql`                                                                        |
-| Domotica (assistente di casa, broker messaggi)             | `packages/db/migrations/0021_home_automation.sql`                                                                |
-| Rubrica relazioni etica (quaderno contatti personali)      | `packages/db/migrations/0022_relationship_entries.sql`                                                           |
-| Calendario famiglia (appuntamenti, orari, file calendario) | `packages/db/migrations/0023_calendar.sql`                                                                       |
+| Cerco                                                      | File                                                                                                                   |
+| :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Matrice dei permessi                                       | `packages/contracts/src/access.ts`                                                                                     |
+| Codici di errore                                           | `packages/contracts/src/problems.ts`                                                                                   |
+| Limiti e funzioni dei piani                                | `packages/plans/src/index.ts`                                                                                          |
+| Policy RLS e funzioni `app.*`                              | `packages/db/migrations/0006_access_functions.sql`, `0007_policies.sql`                                                |
+| Contesto transazionale                                     | `packages/db/src/context.ts`                                                                                           |
+| Formati cifrati e vettori                                  | `packages/crypto/src/formats.ts`, `packages/crypto/test/vectors.ts`                                                    |
+| Copia di sicurezza famiglia (backup e CSV)                 | `packages/crypto/src/backup.ts`, `apps/api/src/modules/backup/`                                                        |
+| Hook di autenticazione e autorizzazione                    | `apps/api/src/plugins/access.ts`                                                                                       |
+| Interfaccia, token, shell                                  | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`                                                            |
+| Registro letture dei codici pubblici                       | `packages/db/migrations/0013_publication_readings.sql`                                                                 |
+| Marchio della famiglia                                     | `packages/db/migrations/0014_family_branding.sql`                                                                      |
+| Inventario (stanze, contenitori, oggetti, ricerca)         | `packages/db/migrations/0015_inventory.sql`                                                                            |
+| Filtri inventario salvabili (AND/OR, max 5 in sidebar)     | `packages/db/migrations/0024_saved_filters.sql`                                                                        |
+| Notifiche e avvisi scadenze nel browser (Web Push)         | `packages/db/migrations/0025_notifications.sql`, `apps/api/src/modules/notifications/`, `apps/api/src/worker.ts`       |
+| Feed novità sul cruscotto (consigli di prodotto)           | `packages/db/migrations/0026_news.sql`, `apps/api/src/modules/news/`, `apps/web/src/features/home/news-feed-panel.tsx` |
+| Coordinamento assistenza (diario, Chi sono, consegne)      | `packages/db/migrations/0016_care.sql`                                                                                 |
+| Faccende, punti, serie e ricompense                        | `packages/db/migrations/0017_chores_rewards.sql`                                                                       |
+| Cucina (ricette, import URL, negozi, liste spesa)          | `packages/db/migrations/0018_kitchen.sql`                                                                              |
+| Dispensa e piano pasti                                     | `packages/db/migrations/0019_pantry_meal_plan.sql`                                                                     |
+| Contabilità di famiglia (partita doppia)                   | `packages/db/migrations/0020_finance.sql`                                                                              |
+| Domotica (assistente di casa, broker messaggi)             | `packages/db/migrations/0021_home_automation.sql`                                                                      |
+| Rubrica relazioni etica (quaderno contatti personali)      | `packages/db/migrations/0022_relationship_entries.sql`                                                                 |
+| Calendario famiglia (appuntamenti, orari, file calendario) | `packages/db/migrations/0023_calendar.sql`                                                                             |
