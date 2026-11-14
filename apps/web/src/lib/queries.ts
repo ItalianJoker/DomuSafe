@@ -365,3 +365,64 @@ export function boilerQuery(api: DomusafeApi, familyId: string, houseId: string)
     queryFn: () => api.listMaintenance(familyId, houseId, 'heating'),
   });
 }
+
+/**
+ * Query of the rooms of one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function roomsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['rooms', familyId, houseId] as const,
+    queryFn: () => api.listRooms(familyId, houseId),
+  });
+}
+
+/**
+ * Query of closets and containers of one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function storageUnitsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['storage-units', familyId, houseId] as const,
+    queryFn: () => api.listStorageUnits(familyId, houseId),
+  });
+}
+
+/**
+ * Query of inventory items of one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function inventoryItemsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['inventory-items', familyId, houseId] as const,
+    queryFn: () => api.listInventoryItems(familyId, houseId),
+  });
+}
+
+/**
+ * Full-text search over the house inventory.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @param query - Search text.
+ * @returns Options for TanStack Query.
+ */
+export function inventorySearchQuery(api: DomusafeApi, familyId: string, houseId: string, query: string) {
+  return queryOptions({
+    queryKey: ['inventory-search', familyId, houseId, query] as const,
+    queryFn: () => api.searchInventory(familyId, houseId, query),
+  });
+}

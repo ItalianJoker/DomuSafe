@@ -436,6 +436,134 @@ export interface paths {
         patch: operations["house.updateContact"];
         trace?: never;
     };
+    "/api/v1/families/{familyId}/houses/{houseId}/rooms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rooms of one house */
+        get: operations["inventory.listRooms"];
+        put?: never;
+        /** Add a room */
+        post: operations["inventory.createRoom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/rooms/{roomId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One room */
+        get: operations["inventory.getRoom"];
+        put?: never;
+        post?: never;
+        /** Move a room to the trash */
+        delete: operations["inventory.deleteRoom"];
+        options?: never;
+        head?: never;
+        /** Update a room */
+        patch: operations["inventory.updateRoom"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/storage-units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Closets and containers of one house */
+        get: operations["inventory.listStorageUnits"];
+        put?: never;
+        /** Add a closet or container */
+        post: operations["inventory.createStorageUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/storage-units/{unitId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One closet or container */
+        get: operations["inventory.getStorageUnit"];
+        put?: never;
+        post?: never;
+        /** Move a closet or container to the trash */
+        delete: operations["inventory.deleteStorageUnit"];
+        options?: never;
+        head?: never;
+        /** Update a closet or container */
+        patch: operations["inventory.updateStorageUnit"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/inventory-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inventory items of one house */
+        get: operations["inventory.listItems"];
+        put?: never;
+        /** Add an inventory item */
+        post: operations["inventory.createItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/inventory-items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One inventory item */
+        get: operations["inventory.getItem"];
+        put?: never;
+        post?: never;
+        /** Move an inventory item to the trash */
+        delete: operations["inventory.deleteItem"];
+        options?: never;
+        head?: never;
+        /** Update an inventory item */
+        patch: operations["inventory.updateItem"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/houses/{houseId}/inventory/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Full-text search over the house inventory */
+        get: operations["inventory.search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/families/{familyId}/deadlines": {
         parameters: {
             query?: never;
@@ -2245,6 +2373,284 @@ export interface components {
             items: components["schemas"]["MaintenanceTaskInput"][];
             nextCursor: string | null;
         };
+        RoomInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            name: string;
+            /** @enum {string} */
+            kind: "kitchen" | "living" | "bedroom" | "bathroom" | "office" | "laundry" | "garage" | "cellar" | "attic" | "garden" | "balcony" | "other";
+            floor: number | null;
+            sortOrder: number;
+            notes: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateRoomRequestInput: {
+            name: string;
+            /**
+             * @default other
+             * @enum {string}
+             */
+            kind: "kitchen" | "living" | "bedroom" | "bathroom" | "office" | "laundry" | "garage" | "cellar" | "attic" | "garden" | "balcony" | "other";
+            floor?: number | null;
+            /** @default 0 */
+            sortOrder: number;
+            notes?: string | null;
+        };
+        UpdateRoomRequestInput: {
+            name?: string;
+            /** @enum {string} */
+            kind?: "kitchen" | "living" | "bedroom" | "bathroom" | "office" | "laundry" | "garage" | "cellar" | "attic" | "garden" | "balcony" | "other";
+            floor?: number | null;
+            sortOrder?: number;
+            notes?: string | null;
+        };
+        RoomPageInput: {
+            items: components["schemas"]["RoomInput"][];
+            nextCursor: string | null;
+        };
+        StorageUnitInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            parentId: string | null;
+            /** @enum {string} */
+            kind: "furniture" | "wardrobe" | "shelf" | "drawer" | "box" | "container" | "other";
+            name: string;
+            notes: string | null;
+            sortOrder: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateStorageUnitRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            parentId?: string | null;
+            /**
+             * @default container
+             * @enum {string}
+             */
+            kind: "furniture" | "wardrobe" | "shelf" | "drawer" | "box" | "container" | "other";
+            name: string;
+            notes?: string | null;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        UpdateStorageUnitRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId?: string;
+            parentId?: string | null;
+            /** @enum {string} */
+            kind?: "furniture" | "wardrobe" | "shelf" | "drawer" | "box" | "container" | "other";
+            name?: string;
+            notes?: string | null;
+            sortOrder?: number;
+        };
+        StorageUnitPageInput: {
+            items: components["schemas"]["StorageUnitInput"][];
+            nextCursor: string | null;
+        };
+        InventoryItemInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            storageUnitId: string | null;
+            name: string;
+            category: string | null;
+            quantity: number;
+            unit: string | null;
+            brand: string | null;
+            model: string | null;
+            serialNumber: string | null;
+            barcode: string | null;
+            purchaseDate: string | null;
+            purchasePrice: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            warrantyUntil: string | null;
+            warrantyNotes: string | null;
+            tags: string[];
+            notes: string | null;
+            photoCaption: string | null;
+            photoDataUrl: string | null;
+            receiptCaption: string | null;
+            receiptDataUrl: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateInventoryItemRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            storageUnitId?: string | null;
+            name: string;
+            category?: string | null;
+            /** @default 1 */
+            quantity: number;
+            unit?: string | null;
+            brand?: string | null;
+            model?: string | null;
+            serialNumber?: string | null;
+            barcode?: string | null;
+            purchaseDate?: string | null;
+            purchasePrice?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            warrantyUntil?: string | null;
+            warrantyNotes?: string | null;
+            /** @default [] */
+            tags: string[];
+            notes?: string | null;
+            photoCaption?: string | null;
+            photoDataUrl?: string | null;
+            receiptCaption?: string | null;
+            receiptDataUrl?: string | null;
+        };
+        UpdateInventoryItemRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId?: string;
+            storageUnitId?: string | null;
+            name?: string;
+            category?: string | null;
+            quantity?: number;
+            unit?: string | null;
+            brand?: string | null;
+            model?: string | null;
+            serialNumber?: string | null;
+            barcode?: string | null;
+            purchaseDate?: string | null;
+            purchasePrice?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            warrantyUntil?: string | null;
+            warrantyNotes?: string | null;
+            tags?: string[];
+            notes?: string | null;
+            photoCaption?: string | null;
+            photoDataUrl?: string | null;
+            receiptCaption?: string | null;
+            receiptDataUrl?: string | null;
+        };
+        InventoryItemPageInput: {
+            items: components["schemas"]["InventoryItemInput"][];
+            nextCursor: string | null;
+        };
+        InventorySearchHitInput: {
+            /** @enum {string} */
+            resourceType: "rooms" | "storage_units" | "inventory_items";
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            resourceId: string;
+            title: string;
+            body: string;
+            tags: string[];
+            rank: number;
+        };
+        InventorySearchResponseInput: {
+            items: components["schemas"]["InventorySearchHitInput"][];
+        };
         PublicationInput: {
             /**
              * Format: uuid
@@ -3931,6 +4337,284 @@ export interface components {
         MaintenanceTaskPage: {
             items: components["schemas"]["MaintenanceTask"][];
             nextCursor: string | null;
+        };
+        Room: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            name: string;
+            /** @enum {string} */
+            kind: "kitchen" | "living" | "bedroom" | "bathroom" | "office" | "laundry" | "garage" | "cellar" | "attic" | "garden" | "balcony" | "other";
+            floor: number | null;
+            sortOrder: number;
+            notes: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateRoomRequest: {
+            name: string;
+            /**
+             * @default other
+             * @enum {string}
+             */
+            kind: "kitchen" | "living" | "bedroom" | "bathroom" | "office" | "laundry" | "garage" | "cellar" | "attic" | "garden" | "balcony" | "other";
+            floor?: number | null;
+            /** @default 0 */
+            sortOrder: number;
+            notes?: string | null;
+        };
+        UpdateRoomRequest: {
+            name?: string;
+            /** @enum {string} */
+            kind?: "kitchen" | "living" | "bedroom" | "bathroom" | "office" | "laundry" | "garage" | "cellar" | "attic" | "garden" | "balcony" | "other";
+            floor?: number | null;
+            sortOrder?: number;
+            notes?: string | null;
+        };
+        RoomPage: {
+            items: components["schemas"]["Room"][];
+            nextCursor: string | null;
+        };
+        StorageUnit: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            parentId: string | null;
+            /** @enum {string} */
+            kind: "furniture" | "wardrobe" | "shelf" | "drawer" | "box" | "container" | "other";
+            name: string;
+            notes: string | null;
+            sortOrder: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateStorageUnitRequest: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            parentId?: string | null;
+            /**
+             * @default container
+             * @enum {string}
+             */
+            kind: "furniture" | "wardrobe" | "shelf" | "drawer" | "box" | "container" | "other";
+            name: string;
+            notes?: string | null;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        UpdateStorageUnitRequest: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId?: string;
+            parentId?: string | null;
+            /** @enum {string} */
+            kind?: "furniture" | "wardrobe" | "shelf" | "drawer" | "box" | "container" | "other";
+            name?: string;
+            notes?: string | null;
+            sortOrder?: number;
+        };
+        StorageUnitPage: {
+            items: components["schemas"]["StorageUnit"][];
+            nextCursor: string | null;
+        };
+        InventoryItem: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            storageUnitId: string | null;
+            name: string;
+            category: string | null;
+            quantity: number;
+            unit: string | null;
+            brand: string | null;
+            model: string | null;
+            serialNumber: string | null;
+            barcode: string | null;
+            purchaseDate: string | null;
+            purchasePrice: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            warrantyUntil: string | null;
+            warrantyNotes: string | null;
+            tags: string[];
+            notes: string | null;
+            photoCaption: string | null;
+            photoDataUrl: string | null;
+            receiptCaption: string | null;
+            receiptDataUrl: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CreateInventoryItemRequest: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId: string;
+            storageUnitId?: string | null;
+            name: string;
+            category?: string | null;
+            /** @default 1 */
+            quantity: number;
+            unit?: string | null;
+            brand?: string | null;
+            model?: string | null;
+            serialNumber?: string | null;
+            barcode?: string | null;
+            purchaseDate?: string | null;
+            purchasePrice?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            warrantyUntil?: string | null;
+            warrantyNotes?: string | null;
+            /** @default [] */
+            tags: string[];
+            notes?: string | null;
+            photoCaption?: string | null;
+            photoDataUrl?: string | null;
+            receiptCaption?: string | null;
+            receiptDataUrl?: string | null;
+        };
+        UpdateInventoryItemRequest: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            roomId?: string;
+            storageUnitId?: string | null;
+            name?: string;
+            category?: string | null;
+            quantity?: number;
+            unit?: string | null;
+            brand?: string | null;
+            model?: string | null;
+            serialNumber?: string | null;
+            barcode?: string | null;
+            purchaseDate?: string | null;
+            purchasePrice?: {
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            } | null;
+            warrantyUntil?: string | null;
+            warrantyNotes?: string | null;
+            tags?: string[];
+            notes?: string | null;
+            photoCaption?: string | null;
+            photoDataUrl?: string | null;
+            receiptCaption?: string | null;
+            receiptDataUrl?: string | null;
+        };
+        InventoryItemPage: {
+            items: components["schemas"]["InventoryItem"][];
+            nextCursor: string | null;
+        };
+        InventorySearchHit: {
+            /** @enum {string} */
+            resourceType: "rooms" | "storage_units" | "inventory_items";
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            resourceId: string;
+            title: string;
+            body: string;
+            tags: string[];
+            rank: number;
+        };
+        InventorySearchResponse: {
+            items: components["schemas"]["InventorySearchHit"][];
         };
         Publication: {
             /**
@@ -7790,6 +8474,1172 @@ export interface operations {
             };
             /** @description Default Response */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.listRooms": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.createRoom": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRoomRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Room"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.getRoom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                roomId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Room"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.deleteRoom": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                roomId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.updateRoom": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                roomId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRoomRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Room"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.listStorageUnits": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                /** @description UUID in canonical lowercase form */
+                roomId?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnitPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.createStorageUnit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStorageUnitRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnit"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.getStorageUnit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnit"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.deleteStorageUnit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.updateStorageUnit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStorageUnitRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageUnit"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.listItems": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                /** @description UUID in canonical lowercase form */
+                roomId?: string;
+                /** @description UUID in canonical lowercase form */
+                storageUnitId?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryItemPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.createItem": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateInventoryItemRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryItem"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.getItem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryItem"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.deleteItem": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.updateItem": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+                /** @description UUID in canonical lowercase form */
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateInventoryItemRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryItem"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "inventory.search": {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+                tag?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorySearchResponse"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

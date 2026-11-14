@@ -12,6 +12,13 @@ import {
   guestViewSchema,
   housePageSchema,
   houseSchema,
+  inventoryItemPageSchema,
+  inventoryItemSchema,
+  inventorySearchResponseSchema,
+  roomPageSchema,
+  roomSchema,
+  storageUnitPageSchema,
+  storageUnitSchema,
   bankAccountPageSchema,
   personalBankAccountSchema,
   petPageSchema,
@@ -54,7 +61,10 @@ import {
   type CreateFamilyRequest,
   type CreateGuideEntryRequest,
   type CreateHouseRequest,
+  type CreateInventoryItemRequest,
   type CreateMaintenanceTaskRequest,
+  type CreateRoomRequest,
+  type CreateStorageUnitRequest,
   type CreateShutoffRequest,
   type CreateUtilityRequest,
   type CreateWasteCollectionRequest,
@@ -63,7 +73,11 @@ import {
   type GuideEntry,
   type GuestView,
   type House,
+  type InventoryItem,
+  type InventorySearchResponse,
   type MaintenanceTask,
+  type Room,
+  type StorageUnit,
   type Me,
   type PersonalBankAccount,
   type PersonalSubscription,
@@ -100,7 +114,10 @@ import {
   type Shutoff,
   type UpdateContactRequest,
   type UpdateGuideEntryRequest,
+  type UpdateInventoryItemRequest,
   type UpdateMaintenanceTaskRequest,
+  type UpdateRoomRequest,
+  type UpdateStorageUnitRequest,
   type UpdateShutoffRequest,
   type UpdateUtilityRequest,
   type UpdateWasteCollectionRequest,
@@ -487,6 +504,174 @@ export interface DomusafeApi {
     version: number,
     patch: UpdateMaintenanceTaskRequest,
   ): Promise<MaintenanceTask>;
+  /**
+   * Rooms of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Every page.
+   */
+  listRooms(familyId: string, houseId: string): Promise<readonly Room[]>;
+  /**
+   * Adds a room.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The room.
+   */
+  createRoom(
+    familyId: string,
+    houseId: string,
+    body: CreateRoomRequest,
+    idempotencyKey: string,
+  ): Promise<Room>;
+  /**
+   * Updates a room.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param roomId - Room id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The room.
+   */
+  updateRoom(
+    familyId: string,
+    houseId: string,
+    roomId: string,
+    version: number,
+    patch: UpdateRoomRequest,
+  ): Promise<Room>;
+  /**
+   * Moves a room to the trash.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param roomId - Room id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteRoom(familyId: string, houseId: string, roomId: string, version: number): Promise<void>;
+  /**
+   * Closets and containers of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param roomId - Optional room filter.
+   * @returns Every page.
+   */
+  listStorageUnits(familyId: string, houseId: string, roomId?: string): Promise<readonly StorageUnit[]>;
+  /**
+   * Adds a closet or container.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The unit.
+   */
+  createStorageUnit(
+    familyId: string,
+    houseId: string,
+    body: CreateStorageUnitRequest,
+    idempotencyKey: string,
+  ): Promise<StorageUnit>;
+  /**
+   * Updates a closet or container.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param unitId - Unit id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The unit.
+   */
+  updateStorageUnit(
+    familyId: string,
+    houseId: string,
+    unitId: string,
+    version: number,
+    patch: UpdateStorageUnitRequest,
+  ): Promise<StorageUnit>;
+  /**
+   * Moves a closet or container to the trash.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param unitId - Unit id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteStorageUnit(familyId: string, houseId: string, unitId: string, version: number): Promise<void>;
+  /**
+   * Inventory items of one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param filter - Optional room or storage filter.
+   * @returns Every page.
+   */
+  listInventoryItems(
+    familyId: string,
+    houseId: string,
+    filter?: { readonly roomId?: string; readonly storageUnitId?: string },
+  ): Promise<readonly InventoryItem[]>;
+  /**
+   * Adds an inventory item.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Manual fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The item.
+   */
+  createInventoryItem(
+    familyId: string,
+    houseId: string,
+    body: CreateInventoryItemRequest,
+    idempotencyKey: string,
+  ): Promise<InventoryItem>;
+  /**
+   * Updates an inventory item.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param itemId - Item id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Manual fields.
+   * @returns The item.
+   */
+  updateInventoryItem(
+    familyId: string,
+    houseId: string,
+    itemId: string,
+    version: number,
+    patch: UpdateInventoryItemRequest,
+  ): Promise<InventoryItem>;
+  /**
+   * Moves an inventory item to the trash.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param itemId - Item id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteInventoryItem(familyId: string, houseId: string, itemId: string, version: number): Promise<void>;
+  /**
+   * Full-text search over the house inventory.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param query - Search text.
+   * @param tag - Optional tag filter.
+   * @returns Ranked hits.
+   */
+  searchInventory(
+    familyId: string,
+    houseId: string,
+    query: string,
+    tag?: string,
+  ): Promise<InventorySearchResponse>;
   /**
    * People linked to one house.
    *
@@ -1273,6 +1458,141 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       );
       return unwrap(maintenanceTaskSchema, result);
+    },
+    listRooms(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/rooms', {
+            params: {
+              path: { familyId, houseId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(roomPageSchema, result)),
+      );
+    },
+    async createRoom(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/rooms', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateRoomRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(roomSchema, result);
+    },
+    async updateRoom(familyId, houseId, roomId, version, patch) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/houses/{houseId}/rooms/{roomId}', {
+        params: { path: { familyId, houseId, roomId } },
+        body: patch as components['schemas']['UpdateRoomRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(roomSchema, result);
+    },
+    async deleteRoom(familyId, houseId, roomId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/houses/{houseId}/rooms/{roomId}', {
+        params: { path: { familyId, houseId, roomId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
+    },
+    listStorageUnits(familyId, houseId, roomId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/storage-units', {
+            params: {
+              path: { familyId, houseId },
+              query: {
+                limit: 200,
+                ...(cursor === undefined ? {} : { cursor }),
+                ...(roomId === undefined ? {} : { roomId }),
+              },
+            },
+          })
+          .then((result) => unwrap(storageUnitPageSchema, result)),
+      );
+    },
+    async createStorageUnit(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/storage-units', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateStorageUnitRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(storageUnitSchema, result);
+    },
+    async updateStorageUnit(familyId, houseId, unitId, version, patch) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/storage-units/{unitId}',
+        {
+          params: { path: { familyId, houseId, unitId } },
+          body: patch as components['schemas']['UpdateStorageUnitRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(storageUnitSchema, result);
+    },
+    async deleteStorageUnit(familyId, houseId, unitId, version) {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/houses/{houseId}/storage-units/{unitId}',
+        {
+          params: { path: { familyId, houseId, unitId } },
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      ensureOk(result);
+    },
+    listInventoryItems(familyId, houseId, filter) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/inventory-items', {
+            params: {
+              path: { familyId, houseId },
+              query: {
+                limit: 200,
+                ...(cursor === undefined ? {} : { cursor }),
+                ...(filter?.roomId === undefined ? {} : { roomId: filter.roomId }),
+                ...(filter?.storageUnitId === undefined ? {} : { storageUnitId: filter.storageUnitId }),
+              },
+            },
+          })
+          .then((result) => unwrap(inventoryItemPageSchema, result)),
+      );
+    },
+    async createInventoryItem(familyId, houseId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/inventory-items', {
+        params: { path: { familyId, houseId } },
+        body: body as components['schemas']['CreateInventoryItemRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(inventoryItemSchema, result);
+    },
+    async updateInventoryItem(familyId, houseId, itemId, version, patch) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/inventory-items/{itemId}',
+        {
+          params: { path: { familyId, houseId, itemId } },
+          body: patch as components['schemas']['UpdateInventoryItemRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(inventoryItemSchema, result);
+    },
+    async deleteInventoryItem(familyId, houseId, itemId, version) {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/houses/{houseId}/inventory-items/{itemId}',
+        {
+          params: { path: { familyId, houseId, itemId } },
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      ensureOk(result);
+    },
+    async searchInventory(familyId, houseId, query, tag) {
+      const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/inventory/search', {
+        params: {
+          path: { familyId, houseId },
+          query: { q: query, ...(tag === undefined ? {} : { tag }) },
+        },
+      });
+      return unwrap(inventorySearchResponseSchema, result);
     },
     listResidents(familyId, houseId) {
       return collect((cursor) =>
