@@ -6,6 +6,7 @@ export * from './house.js';
 export * from './inventory.js';
 export * from './personale.js';
 export * from './publications.js';
+export * from './rewards.js';
 export * from './succession.js';
 export * from './identity.js';
 export * from './keys.js';

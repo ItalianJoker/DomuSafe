@@ -28,6 +28,8 @@ import { createPrintService } from './modules/print/service.js';
 import { createHouseService } from './modules/house/service.js';
 import { personaleRoutes } from './modules/personale/routes.js';
 import { createPersonaleService } from './modules/personale/service.js';
+import { rewardsRoutes } from './modules/rewards/routes.js';
+import { createRewardsService } from './modules/rewards/service.js';
 import { successionRoutes } from './modules/succession/routes.js';
 import { createSuccessionService } from './modules/succession/service.js';
 import { vaultRoutes } from './modules/vault/routes.js';
@@ -84,6 +86,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const house = createHouseService(db);
   const inventory = createInventoryService(db);
   const care = createCareService(db);
+  const rewards = createRewardsService(db);
   const deadlines = createDeadlinesService(db);
   const personale = createPersonaleService(db);
   const print = createPrintService(db, branding);
@@ -202,6 +205,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(houseRoutes, { house });
   await app.register(inventoryRoutes, { inventory });
   await app.register(careRoutes, { care });
+  await app.register(rewardsRoutes, { rewards });
   await app.register(deadlineRoutes, { deadlines });
   await app.register(personaleRoutes, { personale });
   await app.register(printRoutes, { print });

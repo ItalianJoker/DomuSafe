@@ -7,6 +7,7 @@ export * from './house.js';
 export * from './inventory.js';
 export * from './personale.js';
 export * from './print.js';
+export * from './rewards.js';
 export * from './succession.js';
 export * from './currencies.js';
 export * from './problems.js';

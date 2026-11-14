@@ -210,6 +210,69 @@ export function handoversQuery(api: DomusafeApi, familyId: string, houseId: stri
 }
 
 /**
+ * Query of active chores for one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function choresQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['chores', familyId, houseId] as const,
+    queryFn: () => api.listChores(familyId, houseId),
+  });
+}
+
+/**
+ * Query of chore completions, optionally filtered by status.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param status - Optional status filter.
+ * @returns Options for TanStack Query.
+ */
+export function choreCompletionsQuery(
+  api: DomusafeApi,
+  familyId: string,
+  status?: 'pending_approval' | 'approved' | 'rejected',
+) {
+  return queryOptions({
+    queryKey: ['chore-completions', familyId, status ?? 'all'] as const,
+    queryFn: () => api.listChoreCompletions(familyId, status),
+  });
+}
+
+/**
+ * Query of point balance and streak for one resident.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param residentId - Resident id.
+ * @returns Options for TanStack Query.
+ */
+export function pointsQuery(api: DomusafeApi, familyId: string, residentId: string) {
+  return queryOptions({
+    queryKey: ['points', familyId, residentId] as const,
+    queryFn: () => api.getPoints(familyId, residentId),
+  });
+}
+
+/**
+ * Query of the family rewards store.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function rewardsQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['rewards-store', familyId] as const,
+    queryFn: () => api.listRewards(familyId),
+  });
+}
+
+/**
  * Query of the printed codes of one house.
  *
  * @param api - Shell API.

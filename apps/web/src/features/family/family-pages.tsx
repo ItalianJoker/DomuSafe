@@ -14,6 +14,7 @@ import { roleAllows } from '@/lib/permissions.js';
 import { familyQuery, meKey, membersQuery } from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, setLocale } from '@/paraglide/runtime.js';
+import { ChoresPanel } from './chores-panel.js';
 import { FamilyForm } from './family-form.js';
 import { HandoverPanel } from './handover-panel.js';
 
@@ -129,6 +130,11 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string; 
   const canReadMembers = role !== undefined && roleAllows(role, 'members.read');
   const canReadCare = role !== undefined && roleAllows(role, 'care.read');
   const canWriteCare = role !== undefined && roleAllows(role, 'care.write');
+  const canManageChores = role !== undefined && roleAllows(role, 'chores.manage');
+  const canCompleteChores = role !== undefined && roleAllows(role, 'chores.complete');
+  const canReadRewards = role !== undefined && roleAllows(role, 'rewards.read');
+  const canApproveRewards = role !== undefined && roleAllows(role, 'rewards.approve');
+  const canRequestRewards = role !== undefined && roleAllows(role, 'rewards.request');
   const members = useQuery({ ...membersQuery(api, props.familyId), enabled: canReadMembers });
   const [values, setValues] = useState<FamilyFormValues | null>(null);
   const [issues, setIssues] = useState<FieldIssues | null>(null);
@@ -315,6 +321,18 @@ export function FamilyPage(props: { readonly me: Me; readonly familyId: string; 
           houseId={props.houseId}
           canWrite={canWriteCare}
           guestMode={role === 'guest'}
+        />
+      ) : null}
+
+      {canCompleteChores || canReadRewards || canManageChores || canRequestRewards ? (
+        <ChoresPanel
+          familyId={props.familyId}
+          houseId={props.houseId}
+          canManage={canManageChores}
+          canApprove={canApproveRewards}
+          canComplete={canCompleteChores}
+          canRead={canReadRewards}
+          canRequest={canRequestRewards}
         />
       ) : null}
 
