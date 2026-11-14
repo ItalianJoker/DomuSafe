@@ -32,7 +32,9 @@ describe('plan catalogue', () => {
     expect(hasFeature('basic', 'finance')).toBe(true);
     expect(hasFeature('free', 'finance')).toBe(false);
     expect(minimumPlanFor('sos')).toBe('premium');
-    expect(minimumPlanFor('home_automation')).toBe('advanced');
+    expect(minimumPlanFor('home_automation')).toBe('premium');
+    expect(hasFeature('advanced', 'home_automation')).toBe(false);
+    expect(hasFeature('premium', 'home_automation')).toBe(true);
     expect(minimumPlanFor('finance')).toBe('basic');
   });
 

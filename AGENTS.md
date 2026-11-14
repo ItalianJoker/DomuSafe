@@ -51,3 +51,4 @@ pnpm verify
 | Cucina (ricette, import URL, negozi, liste spesa)     | `packages/db/migrations/0018_kitchen.sql`                               |
 | Dispensa e piano pasti                                | `packages/db/migrations/0019_pantry_meal_plan.sql`                      |
 | Contabilità di famiglia (partita doppia)              | `packages/db/migrations/0020_finance.sql`                               |
+| Domotica (assistente di casa, broker messaggi)        | `packages/db/migrations/0021_home_automation.sql`                       |

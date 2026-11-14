@@ -3,6 +3,7 @@ export * from './branding.js';
 export * from './care.js';
 export * from './enums.js';
 export * from './finance.js';
+export * from './home-automation.js';
 export * from './house.js';
 export * from './inventory.js';
 export * from './kitchen.js';

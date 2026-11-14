@@ -32,6 +32,10 @@ function checkCsrf(request: FastifyRequest, trustedOrigins: readonly string[]): 
   if (!request.url.startsWith('/api/v1/')) {
     return;
   }
+  // Signed inbound bridges authenticate themselves; cookie CSRF does not apply.
+  if (request.url.startsWith('/api/v1/public/webhooks/')) {
+    return;
+  }
   if (request.headers[HEADERS.csrf] !== '1') {
     throw new ProblemError('csrf_rejected', { detail: 'Missing X-DomuSafe-Request header' });
   }

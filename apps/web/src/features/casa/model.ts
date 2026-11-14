@@ -20,7 +20,8 @@ export type ShownUtility = (typeof SHOWN_UTILITIES)[number];
 export const WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const;
 
 /** Tabs of the Casa section, in screen order. */
-export type CasaTab = 'guest' | 'technical' | 'utilities' | 'deadline' | 'inventory' | 'houses';
+export type CasaTab =
+  'guest' | 'technical' | 'utilities' | 'deadline' | 'inventory' | 'automation' | 'houses';
 
 /** Room kinds offered when editing the inventory by hand. */
 export const ROOM_KINDS = [
@@ -72,6 +73,9 @@ export function casaTabs(role: MemberRole | undefined): readonly CasaTab[] {
   }
   if (role !== undefined && roleAllows(role, 'inventory.read')) {
     tabs.push('inventory');
+  }
+  if (role !== undefined && roleAllows(role, 'automation.read')) {
+    tabs.push('automation');
   }
   tabs.push('houses');
   return tabs;

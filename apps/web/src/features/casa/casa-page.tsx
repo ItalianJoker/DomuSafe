@@ -14,6 +14,11 @@ const InventoryPanel = lazy(async () => {
   return { default: module.InventoryPanel };
 });
 
+const AutomationPanel = lazy(async () => {
+  const module = await import('./automation-panel.js');
+  return { default: module.AutomationPanel };
+});
+
 function tabLabel(tab: CasaTab): string {
   switch (tab) {
     case 'guest':
@@ -26,6 +31,8 @@ function tabLabel(tab: CasaTab): string {
       return m.casaDeadline();
     case 'inventory':
       return m.casaInventory();
+    case 'automation':
+      return m.casaAutomation();
     case 'houses':
       return m.casaHouses();
   }
@@ -47,11 +54,14 @@ export function CasaPage(props: {
   readonly houseId: string;
   readonly houses: readonly House[];
 }) {
-  const role = props.me.families.find((family) => family.id === props.familyId)?.role;
+  const membership = props.me.families.find((family) => family.id === props.familyId);
+  const role = membership?.role;
+  const plan = membership?.plan ?? 'free';
   const tabs = casaTabs(role);
   const [tab, setTab] = useState<CasaTab>('guest');
   const active = tabs.includes(tab) ? tab : 'guest';
   const canWriteGuest = role === 'admin' || role === 'parent';
+  const canManageAutomation = role === 'admin';
 
   return (
     <div className="grid gap-6">
@@ -94,6 +104,16 @@ export function CasaPage(props: {
       {active === 'inventory' ? (
         <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
           <InventoryPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteGuest} />
+        </Suspense>
+      ) : null}
+      {active === 'automation' ? (
+        <Suspense fallback={<p className="text-[13px] text-muted-foreground">{m.loading()}</p>}>
+          <AutomationPanel
+            familyId={props.familyId}
+            houseId={props.houseId}
+            canManage={canManageAutomation}
+            plan={plan}
+          />
         </Suspense>
       ) : null}
       {active === 'houses' ? (

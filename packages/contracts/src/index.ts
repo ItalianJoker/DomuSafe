@@ -4,6 +4,7 @@ export * from './care.js';
 export * from './common.js';
 export * from './deadlines.js';
 export * from './finance.js';
+export * from './home-automation.js';
 export * from './house.js';
 export * from './inventory.js';
 export * from './kitchen.js';

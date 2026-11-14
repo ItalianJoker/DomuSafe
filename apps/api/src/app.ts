@@ -21,6 +21,11 @@ import { createCareService } from './modules/care/service.js';
 import { deadlineRoutes } from './modules/deadlines/routes.js';
 import { createDeadlinesService } from './modules/deadlines/service.js';
 import { houseRoutes } from './modules/house/routes.js';
+import type { HomeAutomationAdapter } from './modules/home-automation/adapter.js';
+import { LiveHomeAutomationAdapter } from './modules/home-automation/live-adapter.js';
+import { MockHomeAutomationAdapter } from './modules/home-automation/mock-adapter.js';
+import { homeAutomationRoutes } from './modules/home-automation/routes.js';
+import { createHomeAutomationService } from './modules/home-automation/service.js';
 import { inventoryRoutes } from './modules/inventory/routes.js';
 import { createInventoryService } from './modules/inventory/service.js';
 import { kitchenRoutes } from './modules/kitchen/routes.js';
@@ -63,6 +68,8 @@ export interface AppDependencies {
   readonly globalRateLimitPerMinute?: number;
   /** When false, skip `/ws` (OpenAPI generation cannot document WebSocket upgrades). Defaults to true. */
   readonly realtime?: boolean;
+  /** Outbound home-automation bridge; tests inject {@link MockHomeAutomationAdapter}. */
+  readonly homeAutomationAdapter?: HomeAutomationAdapter;
 }
 
 const REQUEST_ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -110,6 +117,10 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const vault = createVaultService(db, store, secrets);
   const succession = createSuccessionService(db);
   const sync = createSyncService(db, house);
+  const homeAutomationAdapter =
+    deps.homeAutomationAdapter ??
+    (config.nodeEnv === 'test' ? new MockHomeAutomationAdapter() : new LiveHomeAutomationAdapter());
+  const homeAutomation = createHomeAutomationService(db, secrets, store, homeAutomationAdapter);
   const identity = createIdentityService(db, tenancy);
   const auth = createAuth({
     db,
@@ -136,6 +147,9 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
           '*.serverShare',
           '*.token',
           '*.secret',
+          '*.inboundSecret',
+          '*.mqttPassword',
+          '*.code',
           '*.logoDataUrl',
           '*.photoDataUrl',
           '*.receiptDataUrl',
@@ -223,6 +237,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(houseRoutes, { house });
   await app.register(inventoryRoutes, { inventory });
   await app.register(kitchenRoutes, { kitchen });
+  await app.register(homeAutomationRoutes, { homeAutomation });
   await app.register(financeRoutes, { finance });
   await app.register(careRoutes, { care });
   await app.register(rewardsRoutes, { rewards });

@@ -730,3 +730,63 @@ export function revisionsQuery(api: DomusafeApi, familyId: string, resourceType:
     queryFn: () => api.listRevisions(familyId, resourceType, resourceId),
   });
 }
+
+/**
+ * Query of home-automation connections for a house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function automationConnectionsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['automation-connections', familyId, houseId] as const,
+    queryFn: () => api.listAutomationConnections(familyId, houseId),
+  });
+}
+
+/**
+ * Query of home-automation devices for a house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function automationDevicesQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['automation-devices', familyId, houseId] as const,
+    queryFn: () => api.listAutomationDevices(familyId, houseId),
+  });
+}
+
+/**
+ * Query of zone alarms for a house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function automationZonesQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['automation-zones', familyId, houseId] as const,
+    queryFn: () => api.listAutomationZones(familyId, houseId),
+  });
+}
+
+/**
+ * Query of temporary smart-lock codes for a house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function automationLockCodesQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['automation-lock-codes', familyId, houseId] as const,
+    queryFn: () => api.listAutomationLockCodes(familyId, houseId),
+  });
+}
