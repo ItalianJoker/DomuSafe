@@ -1125,12 +1125,7 @@ export interface DomusafeApi {
     body: CreateFinRecurringRequest,
   ): Promise<FinRecurring>;
   /** Loads a finance report for a date range. */
-  getFinanceReport(
-    familyId: string,
-    kind: FinReportKind,
-    from: string,
-    to: string,
-  ): Promise<FinReport>;
+  getFinanceReport(familyId: string, kind: FinReportKind, from: string, to: string): Promise<FinReport>;
   /**
    * Printed codes of one house, newest first, including the last reading.
    *
@@ -1546,14 +1541,6 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
     },
   };
   client.use(middleware);
-
-  // Finance paths land in api.generated.ts after `pnpm openapi:write`.
-  interface UntypedFinanceClient {
-    GET: (path: string, init?: object) => Promise<CallResult>;
-    POST: (path: string, init?: object) => Promise<CallResult>;
-    PUT: (path: string, init?: object) => Promise<CallResult>;
-  }
-  const financeClient = client as unknown as UntypedFinanceClient;
 
   return {
     async getMe() {
@@ -2535,7 +2522,7 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
     },
     listFinanceAccounts(familyId) {
       return collect((cursor) =>
-        financeClient
+        client
           .GET('/api/v1/families/{familyId}/finance/accounts', {
             params: {
               path: { familyId },
@@ -2546,16 +2533,16 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
       );
     },
     async createFinanceAccount(familyId, idempotencyKey, body) {
-      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/accounts', {
+      const result = await client.POST('/api/v1/families/{familyId}/finance/accounts', {
         params: { path: { familyId } },
-        body,
+        body: body as components['schemas']['CreateFinAccountRequestInput'],
         headers: { [HEADERS.idempotencyKey]: idempotencyKey },
       });
       return unwrap(finAccountSchema, result);
     },
     listFinanceTransactions(familyId) {
       return collect((cursor) =>
-        financeClient
+        client
           .GET('/api/v1/families/{familyId}/finance/transactions', {
             params: {
               path: { familyId },
@@ -2566,19 +2553,19 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
       );
     },
     async createFinanceTransaction(familyId, idempotencyKey, body) {
-      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/transactions', {
+      const result = await client.POST('/api/v1/families/{familyId}/finance/transactions', {
         params: { path: { familyId } },
-        body,
+        body: body as components['schemas']['CreateFinTransactionRequestInput'],
         headers: { [HEADERS.idempotencyKey]: idempotencyKey },
       });
       return unwrap(finTransactionSchema, result);
     },
     async putFinanceSplits(familyId, transactionId, idempotencyKey, body) {
-      const result = await financeClient.PUT(
+      const result = await client.PUT(
         '/api/v1/families/{familyId}/finance/transactions/{transactionId}/splits',
         {
           params: { path: { familyId, transactionId } },
-          body,
+          body: body as components['schemas']['PutFinSplitsRequestInput'],
           headers: { [HEADERS.idempotencyKey]: idempotencyKey },
         },
       );
@@ -2586,7 +2573,7 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
     },
     listFinanceBudgets(familyId) {
       return collect((cursor) =>
-        financeClient
+        client
           .GET('/api/v1/families/{familyId}/finance/budgets', {
             params: {
               path: { familyId },
@@ -2597,16 +2584,16 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
       );
     },
     async createFinanceBudget(familyId, idempotencyKey, body) {
-      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/budgets', {
+      const result = await client.POST('/api/v1/families/{familyId}/finance/budgets', {
         params: { path: { familyId } },
-        body,
+        body: body as components['schemas']['CreateFinBudgetRequestInput'],
         headers: { [HEADERS.idempotencyKey]: idempotencyKey },
       });
       return unwrap(finBudgetSchema, result);
     },
     listFinanceSavingsGoals(familyId) {
       return collect((cursor) =>
-        financeClient
+        client
           .GET('/api/v1/families/{familyId}/finance/savings-goals', {
             params: {
               path: { familyId },
@@ -2617,16 +2604,16 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
       );
     },
     async createFinanceSavingsGoal(familyId, idempotencyKey, body) {
-      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/savings-goals', {
+      const result = await client.POST('/api/v1/families/{familyId}/finance/savings-goals', {
         params: { path: { familyId } },
-        body,
+        body: body as components['schemas']['CreateFinSavingsGoalRequestInput'],
         headers: { [HEADERS.idempotencyKey]: idempotencyKey },
       });
       return unwrap(finSavingsGoalSchema, result);
     },
     listFinanceRecurring(familyId) {
       return collect((cursor) =>
-        financeClient
+        client
           .GET('/api/v1/families/{familyId}/finance/recurring', {
             params: {
               path: { familyId },
@@ -2637,15 +2624,15 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
       );
     },
     async createFinanceRecurring(familyId, idempotencyKey, body) {
-      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/recurring', {
+      const result = await client.POST('/api/v1/families/{familyId}/finance/recurring', {
         params: { path: { familyId } },
-        body,
+        body: body as components['schemas']['CreateFinRecurringRequestInput'],
         headers: { [HEADERS.idempotencyKey]: idempotencyKey },
       });
       return unwrap(finRecurringSchema, result);
     },
     async getFinanceReport(familyId, kind, from, to) {
-      const result = await financeClient.GET('/api/v1/families/{familyId}/finance/reports/{kind}', {
+      const result = await client.GET('/api/v1/families/{familyId}/finance/reports/{kind}', {
         params: { path: { familyId, kind }, query: { from, to } },
       });
       return unwrap(finReportSchema, result);

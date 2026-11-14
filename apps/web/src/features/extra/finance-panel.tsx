@@ -34,14 +34,7 @@ import { m } from '@/paraglide/messages.js';
 const touchControl =
   'min-h-12 w-full rounded-md border border-input bg-transparent px-3 text-[15px] text-foreground';
 
-type FinanceSection =
-  | 'accounts'
-  | 'transactions'
-  | 'budgets'
-  | 'goals'
-  | 'recurring'
-  | 'splits'
-  | 'reports';
+type FinanceSection = 'accounts' | 'transactions' | 'budgets' | 'goals' | 'recurring' | 'splits' | 'reports';
 
 function todayLocal(): string {
   const now = new Date();
@@ -460,7 +453,13 @@ function FinanceBody(props: {
   async function saveSplits(): Promise<void> {
     const share1 = parsePositiveMinor(splitShare1);
     const share2 = parsePositiveMinor(splitShare2);
-    if (splitTxId === '' || splitResident1 === '' || splitResident2 === '' || share1 === null || share2 === null) {
+    if (
+      splitTxId === '' ||
+      splitResident1 === '' ||
+      splitResident2 === '' ||
+      share1 === null ||
+      share2 === null
+    ) {
       setError(m.extraFinanceNeedSplit());
       return;
     }
@@ -571,7 +570,10 @@ function FinanceBody(props: {
                 />
               </Field>
               <Field label={m.extraFinanceAccountType()} htmlFor="fin-account-type">
-                <Select value={accountType} onValueChange={(value) => setAccountType(value as FinAccountType)}>
+                <Select
+                  value={accountType}
+                  onValueChange={(value) => setAccountType(value as FinAccountType)}
+                >
                   <SelectTrigger id="fin-account-type" className="min-h-12 w-full text-[15px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -621,10 +623,14 @@ function FinanceBody(props: {
             ) : (
               <ul className="divide-y divide-border border-y border-border">
                 {accountRows.map((account) => (
-                  <li key={account.id} className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]">
+                  <li
+                    key={account.id}
+                    className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]"
+                  >
                     <span>{account.name}</span>
                     <span className="text-[13px] text-muted-foreground">
-                      {accountTypeLabel(account.type)} · {accountSubtypeLabel(account.subtype)} · {account.currency}
+                      {accountTypeLabel(account.type)} · {accountSubtypeLabel(account.subtype)} ·{' '}
+                      {account.currency}
                     </span>
                   </li>
                 ))}
@@ -790,7 +796,10 @@ function FinanceBody(props: {
             ) : null}
             <ul className="divide-y divide-border border-y border-border">
               {budgetRows.map((budget) => (
-                <li key={budget.id} className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]">
+                <li
+                  key={budget.id}
+                  className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]"
+                >
                   <span>
                     {accountRows.find((account) => account.id === budget.accountId)?.name ?? budget.accountId}
                   </span>
@@ -856,7 +865,10 @@ function FinanceBody(props: {
             ) : null}
             <ul className="divide-y divide-border border-y border-border">
               {goalRows.map((goal) => (
-                <li key={goal.id} className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]">
+                <li
+                  key={goal.id}
+                  className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]"
+                >
                   <span>{goal.name}</span>
                   <span className="text-[13px] text-muted-foreground">
                     {formatMinor(goal.balanceMinor, props.currencyDefault)} /{' '}
@@ -937,7 +949,10 @@ function FinanceBody(props: {
             ) : null}
             <ul className="divide-y divide-border border-y border-border">
               {recurringRows.map((row) => (
-                <li key={row.id} className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]">
+                <li
+                  key={row.id}
+                  className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]"
+                >
                   <span>{row.description}</span>
                   <span className="text-[13px] text-muted-foreground">
                     {m.extraFinanceRecurringNext({ date: row.nextRunOn })}
@@ -1068,7 +1083,10 @@ function FinanceBody(props: {
           ) : (
             <ul className="divide-y divide-border border-y border-border">
               {reportRows.map((row) => (
-                <li key={row.key} className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]">
+                <li
+                  key={row.key}
+                  className="flex min-h-12 items-center justify-between gap-3 py-2 text-[15px]"
+                >
                   <span>{row.label}</span>
                   <span className="text-[13px] text-muted-foreground">
                     {formatMinor(row.amountMinor, row.currency)}

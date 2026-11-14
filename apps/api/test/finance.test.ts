@@ -228,9 +228,7 @@ describe('family finance ledger', () => {
 
     const listed = await alice.request('GET', savingsUrl());
     expect(listed.statusCode).toBe(200);
-    expect(listed.json<{ items: FinSavingsGoal[] }>().items.some((item) => item.id === goal.id)).toBe(
-      true,
-    );
+    expect(listed.json<{ items: FinSavingsGoal[] }>().items.some((item) => item.id === goal.id)).toBe(true);
   });
 
   it('creates a recurring template and materialises a transaction on run', async () => {
@@ -263,9 +261,7 @@ describe('family finance ledger', () => {
 
     const listed = await alice.request('GET', transactionsUrl());
     expect(listed.statusCode).toBe(200);
-    expect(listed.json<{ items: FinTransaction[] }>().items.some((item) => item.id === posted.id)).toBe(
-      true,
-    );
+    expect(listed.json<{ items: FinTransaction[] }>().items.some((item) => item.id === posted.id)).toBe(true);
   });
 
   it('puts expense splits across two residents', async () => {
@@ -298,9 +294,7 @@ describe('family finance ledger', () => {
     const body = splits.json<FinTransaction>();
     expect(body.version).toBe(expenseTransaction.version + 1);
     expect(body.splits).toHaveLength(2);
-    expect(body.splits.map((share) => share.residentId).sort()).toEqual(
-      [residentAId, residentBId].sort(),
-    );
+    expect(body.splits.map((share) => share.residentId).sort()).toEqual([residentAId, residentBId].sort());
     expect(body.splits.reduce((sum, share) => sum + share.shareMinor, 0)).toBe(50_00);
     expenseTransaction = body;
   });
@@ -345,9 +339,9 @@ describe('family finance ledger', () => {
 
     const listedTx = await alice.request('GET', transactionsUrl());
     expect(listedTx.statusCode).toBe(200);
-    expect(
-      listedTx.json<{ items: FinTransaction[] }>().items.some((item) => item.id === current.id),
-    ).toBe(false);
+    expect(listedTx.json<{ items: FinTransaction[] }>().items.some((item) => item.id === current.id)).toBe(
+      false,
+    );
 
     const deletedAccount = await alice.request('DELETE', accountsUrl(`/${disposableAccount.id}`), {
       headers: { 'if-match': formatEtag(disposableAccount.version) },
@@ -357,9 +351,7 @@ describe('family finance ledger', () => {
     const listedAccounts = await alice.request('GET', accountsUrl());
     expect(listedAccounts.statusCode).toBe(200);
     expect(
-      listedAccounts
-        .json<{ items: FinAccount[] }>()
-        .items.some((item) => item.id === disposableAccount.id),
+      listedAccounts.json<{ items: FinAccount[] }>().items.some((item) => item.id === disposableAccount.id),
     ).toBe(false);
   });
 });

@@ -1591,19 +1591,17 @@ export async function reportByCategory(
  * @param on - Inclusive cutoff date.
  * @returns Asset, liability and net totals.
  */
-export async function reportNetWorth(
-  tx: Transaction,
-  familyId: string,
-  on: string,
-): Promise<ReportNetWorth> {
+export async function reportNetWorth(tx: Transaction, familyId: string, on: string): Promise<ReportNetWorth> {
   const [row] = await tx
     .select({
-      assetsBaseMinor: sql<number>`coalesce(sum(case when ${finAccounts.type} = 'asset' then ${finPostings.baseAmountMinor} else 0 end), 0)`.mapWith(
-        Number,
-      ),
-      liabilitiesBaseMinor: sql<number>`coalesce(sum(case when ${finAccounts.type} = 'liability' then ${finPostings.baseAmountMinor} else 0 end), 0)`.mapWith(
-        Number,
-      ),
+      assetsBaseMinor:
+        sql<number>`coalesce(sum(case when ${finAccounts.type} = 'asset' then ${finPostings.baseAmountMinor} else 0 end), 0)`.mapWith(
+          Number,
+        ),
+      liabilitiesBaseMinor:
+        sql<number>`coalesce(sum(case when ${finAccounts.type} = 'liability' then ${finPostings.baseAmountMinor} else 0 end), 0)`.mapWith(
+          Number,
+        ),
     })
     .from(finPostings)
     .innerJoin(
@@ -1646,10 +1644,7 @@ export async function reportNetWorth(
  * @param familyId - Family id.
  * @returns The base currency, or `null`.
  */
-export async function findFamilyBaseCurrency(
-  tx: Transaction,
-  familyId: string,
-): Promise<string | null> {
+export async function findFamilyBaseCurrency(tx: Transaction, familyId: string): Promise<string | null> {
   const [row] = await tx
     .select({ baseCurrency: families.baseCurrency })
     .from(families)

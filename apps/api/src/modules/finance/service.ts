@@ -346,7 +346,9 @@ function validateAccountRules(input: {
  *
  * @param postings - Posting inputs.
  */
-function validatePostingsBalance(postings: readonly { readonly currency: string; readonly amountMinor: number }[]): void {
+function validatePostingsBalance(
+  postings: readonly { readonly currency: string; readonly amountMinor: number }[],
+): void {
   if (postings.length < 2) {
     throw new ProblemError('domain_rule_violated', {
       detail: 'A transaction needs at least two posting lines',
@@ -378,14 +380,15 @@ function validatePostingsBalance(postings: readonly { readonly currency: string;
  */
 function advanceByRrule(on: string, rrule: string): string {
   const match = /^FREQ=(DAILY|WEEKLY|MONTHLY|YEARLY)/u.exec(rrule);
-  if (match === null) {
+  const freq = match?.[1];
+  if (freq !== 'DAILY' && freq !== 'WEEKLY' && freq !== 'MONTHLY' && freq !== 'YEARLY') {
     throw new ProblemError('validation_failed', { detail: 'Unsupported recurrence rule' });
   }
   const date = new Date(`${on}T00:00:00.000Z`);
   if (Number.isNaN(date.getTime())) {
     throw new ProblemError('validation_failed', { detail: 'Invalid run date' });
   }
-  switch (match[1]) {
+  switch (freq) {
     case 'DAILY':
       date.setUTCDate(date.getUTCDate() + 1);
       break;
@@ -398,8 +401,6 @@ function advanceByRrule(on: string, rrule: string): string {
     case 'YEARLY':
       date.setUTCFullYear(date.getUTCFullYear() + 1);
       break;
-    default:
-      throw new ProblemError('validation_failed', { detail: 'Unsupported recurrence rule' });
   }
   return date.toISOString().slice(0, 10);
 }
@@ -602,7 +603,11 @@ async function insertBalancedTransaction(
   return loadTransactionView(tx, tenant.familyId, header);
 }
 
-async function budgetWithSpent(tx: Transaction, familyId: string, row: repo.FinBudgetRow): Promise<FinBudget> {
+async function budgetWithSpent(
+  tx: Transaction,
+  familyId: string,
+  row: repo.FinBudgetRow,
+): Promise<FinBudget> {
   const spentMinor = await repo.sumSpentForBudget(tx, familyId, row.accountId, row.startsOn, row.period);
   return budgetView(row, spentMinor);
 }
@@ -655,7 +660,9 @@ export function createFinanceService(db: Database) {
         const visibility = body.visibility ?? 'family';
         const residentId = body.residentId ?? null;
         const ownerAccountId =
-          visibility === 'personal' ? (body.ownerAccountId ?? tenant.accountId) : (body.ownerAccountId ?? null);
+          visibility === 'personal'
+            ? (body.ownerAccountId ?? tenant.accountId)
+            : (body.ownerAccountId ?? null);
         if (visibility === 'personal' && ownerAccountId === null) {
           throw new ProblemError('domain_rule_violated', {
             detail: 'A personal account requires an owner',
@@ -900,14 +907,7 @@ export function createFinanceService(db: Database) {
           await repo.deletePostingsForTransaction(tx, tenant.familyId, transactionId);
           await repo.insertPostings(
             tx,
-            await buildPostingRows(
-              tx,
-              tenant.familyId,
-              transactionId,
-              bookedOn,
-              baseCurrency,
-              body.postings,
-            ),
+            await buildPostingRows(tx, tenant.familyId, transactionId, bookedOn, baseCurrency, body.postings),
           );
         }
         await trace(tx, tenant, {
@@ -1005,9 +1005,7 @@ export function createFinanceService(db: Database) {
       return inFamily(tenant, async (tx) => {
         const rows = await repo.listBudgets(tx, { familyId: tenant.familyId, ...query });
         const page = pageOfCreated(rows, query.limit, (row) => row);
-        const items = await Promise.all(
-          page.items.map((row) => budgetWithSpent(tx, tenant.familyId, row)),
-        );
+        const items = await Promise.all(page.items.map((row) => budgetWithSpent(tx, tenant.familyId, row)));
         return { items, nextCursor: page.nextCursor };
       });
     },
@@ -1393,12 +1391,7 @@ export function createFinanceService(db: Database) {
       });
     },
 
-    getReport(
-      tenant: TenantContext,
-      kind: FinReportKind,
-      from: string,
-      to: string,
-    ): Promise<FinReport> {
+    getReport(tenant: TenantContext, kind: FinReportKind, from: string, to: string): Promise<FinReport> {
       return inFamily(tenant, async (tx) => {
         const baseCurrency = await repo.findFamilyBaseCurrency(tx, tenant.familyId);
         if (baseCurrency === null) {
@@ -1481,8 +1474,7 @@ export function createFinanceService(db: Database) {
             };
           }
           default: {
-            const _exhaustive: never = kind;
-            throw new ProblemError('validation_failed', { detail: `Unknown report kind ${_exhaustive}` });
+            throw new ProblemError('validation_failed', { detail: 'Unknown report kind' });
           }
         }
       });

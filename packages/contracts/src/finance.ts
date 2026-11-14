@@ -1,11 +1,5 @@
 import { z } from 'zod';
-import {
-  currencySchema,
-  instantSchema,
-  localDateSchema,
-  pageSchema,
-  uuidSchema,
-} from './common.js';
+import { currencySchema, instantSchema, localDateSchema, pageSchema, uuidSchema } from './common.js';
 
 /** High-level type of a finance ledger account. */
 export const FIN_ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'income', 'expense'] as const;
@@ -133,9 +127,7 @@ export const updateFinAccountRequestSchema = z
 export type UpdateFinAccountRequest = z.infer<typeof updateFinAccountRequestSchema>;
 
 /** Path parameters of one ledger account. */
-export const finAccountParamsSchema = z
-  .object({ familyId: uuidSchema, accountId: uuidSchema })
-  .strict();
+export const finAccountParamsSchema = z.object({ familyId: uuidSchema, accountId: uuidSchema }).strict();
 /** Path parameters of one ledger account. */
 export type FinAccountParams = z.infer<typeof finAccountParamsSchema>;
 
@@ -177,8 +169,7 @@ export const finPostingInputSchema = z
     fxRate: fxRateSchema.optional(),
     memo: memoSchema.nullable().optional(),
   })
-  .strict()
-  .meta({ id: 'FinPostingInput' });
+  .strict();
 /** One posting line in a create/update body. */
 export type FinPostingInput = z.infer<typeof finPostingInputSchema>;
 
@@ -453,9 +444,7 @@ export const updateFinSavingsGoalRequestSchema = z
 export type UpdateFinSavingsGoalRequest = z.infer<typeof updateFinSavingsGoalRequestSchema>;
 
 /** Path parameters of one savings goal. */
-export const finSavingsGoalParamsSchema = z
-  .object({ familyId: uuidSchema, goalId: uuidSchema })
-  .strict();
+export const finSavingsGoalParamsSchema = z.object({ familyId: uuidSchema, goalId: uuidSchema }).strict();
 /** Path parameters of one savings goal. */
 export type FinSavingsGoalParams = z.infer<typeof finSavingsGoalParamsSchema>;
 
@@ -477,8 +466,7 @@ export const finRecurringPostingTemplateSchema = z
     currency: currencySchema,
     memo: memoSchema.nullable(),
   })
-  .strict()
-  .meta({ id: 'FinRecurringPostingTemplate' });
+  .strict();
 /** One posting line inside a recurring template. */
 export type FinRecurringPostingTemplate = z.infer<typeof finRecurringPostingTemplateSchema>;
 
@@ -491,8 +479,7 @@ export const finRecurringTemplateSchema = z
     notes: notesSchema.nullable(),
     postings: z.array(finRecurringPostingTemplateSchema).min(2).max(64),
   })
-  .strict()
-  .meta({ id: 'FinRecurringTemplate' });
+  .strict();
 /** Template body of a recurring entry. */
 export type FinRecurringTemplate = z.infer<typeof finRecurringTemplateSchema>;
 
@@ -556,9 +543,7 @@ export const updateFinRecurringRequestSchema = z
 export type UpdateFinRecurringRequest = z.infer<typeof updateFinRecurringRequestSchema>;
 
 /** Path parameters of one recurring entry. */
-export const finRecurringParamsSchema = z
-  .object({ familyId: uuidSchema, recurringId: uuidSchema })
-  .strict();
+export const finRecurringParamsSchema = z.object({ familyId: uuidSchema, recurringId: uuidSchema }).strict();
 /** Path parameters of one recurring entry. */
 export type FinRecurringParams = z.infer<typeof finRecurringParamsSchema>;
 
@@ -604,9 +589,7 @@ export const fxRateListQuerySchema = z
 export type FxRateListQuery = z.infer<typeof fxRateListQuerySchema>;
 
 /** Path parameters of a finance report. */
-export const finReportParamsSchema = z
-  .object({ familyId: uuidSchema, kind: reportKindSchema })
-  .strict();
+export const finReportParamsSchema = z.object({ familyId: uuidSchema, kind: reportKindSchema }).strict();
 /** Path parameters of a finance report. */
 export type FinReportParams = z.infer<typeof finReportParamsSchema>;
 

@@ -110,10 +110,7 @@ function fxRateCursor(cursor: string | undefined): readonly [string, string] | n
  * @param app - Fastify instance with the Zod type provider.
  * @param options - Finance service.
  */
-export const financeRoutes: FastifyPluginAsyncZod<{ finance: FinanceService }> = async (
-  app,
-  { finance },
-) => {
+export const financeRoutes: FastifyPluginAsyncZod<{ finance: FinanceService }> = async (app, { finance }) => {
   const family = '/api/v1/families/:familyId/finance';
   const accountsPath = `${family}/accounts`;
   const transactionsPath = `${family}/transactions`;
@@ -389,11 +386,7 @@ export const financeRoutes: FastifyPluginAsyncZod<{ finance: FinanceService }> =
       },
     },
     async (request, reply) => {
-      const row = await finance.putSplits(
-        tenantOf(request),
-        request.params.transactionId,
-        request.body,
-      );
+      const row = await finance.putSplits(tenantOf(request), request.params.transactionId, request.body);
       void reply.header('etag', formatEtag(row.version));
       return row;
     },
@@ -664,11 +657,7 @@ export const financeRoutes: FastifyPluginAsyncZod<{ finance: FinanceService }> =
       },
     },
     async (request, reply) => {
-      await finance.deleteRecurring(
-        tenantOf(request),
-        request.params.recurringId,
-        requireIfMatch(request),
-      );
+      await finance.deleteRecurring(tenantOf(request), request.params.recurringId, requireIfMatch(request));
       return reply.status(204).send(null);
     },
   );
