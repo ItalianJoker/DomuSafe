@@ -213,3 +213,11 @@ export const rewardRedemptionStatusEnum = pgEnum('reward_redemption_status', [
   'rejected',
   'fulfilled',
 ]);
+
+/** Lifecycle of a recipe URL import. */
+export const recipeImportStatusEnum = pgEnum('recipe_import_status', [
+  'queued',
+  'running',
+  'succeeded',
+  'failed',
+]);

@@ -41,6 +41,10 @@ export const openApiPlugin = fp(
             name: 'rewards',
             description: 'Family chores, points, streaks and the rewards store',
           },
+          {
+            name: 'kitchen',
+            description: 'Recipes, URL import, stores and shopping lists by aisle',
+          },
         ],
         components: {
           securitySchemes: {
