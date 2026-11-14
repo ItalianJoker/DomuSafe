@@ -47,3 +47,4 @@ pnpm verify
 | Marchio della famiglia                                | `packages/db/migrations/0014_family_branding.sql`                       |
 | Inventario (stanze, contenitori, oggetti, ricerca)    | `packages/db/migrations/0015_inventory.sql`                             |
 | Coordinamento assistenza (diario, Chi sono, consegne) | `packages/db/migrations/0016_care.sql`                                  |
+| Faccende, punti, serie e ricompense                   | `packages/db/migrations/0017_chores_rewards.sql`                        |

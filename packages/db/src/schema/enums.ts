@@ -192,3 +192,24 @@ export const vaultSectionEnum = pgEnum('vault_section', [
 ]);
 /** Who a caregiver handover note is written for. */
 export const handoverAudienceEnum = pgEnum('handover_audience', ['family', 'guest']);
+
+/** How a chore is assigned across residents. */
+export const choreAssignmentEnum = pgEnum('chore_assignment', ['fixed', 'rotation']);
+
+/** Parent decision state of a chore completion. */
+export const choreCompletionStatusEnum = pgEnum('chore_completion_status', [
+  'pending_approval',
+  'approved',
+  'rejected',
+]);
+
+/** Origin of a point ledger row. */
+export const pointSourceEnum = pgEnum('point_source', ['chore', 'reward', 'manual', 'streak_bonus']);
+
+/** Lifecycle of a reward redemption request. */
+export const rewardRedemptionStatusEnum = pgEnum('reward_redemption_status', [
+  'requested',
+  'approved',
+  'rejected',
+  'fulfilled',
+]);

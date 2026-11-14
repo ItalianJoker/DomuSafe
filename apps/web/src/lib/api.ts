@@ -101,7 +101,13 @@ import {
   type TaxChecklist,
   type TaxChecklistItem,
   type Vehicle,
+  type Chore,
+  type ChoreCompletion,
+  type CreateChoreCompletionRequest,
+  type CreateChoreRequest,
   type CreateHandoverRequest,
+  type CreateRedemptionRequest,
+  type CreateRewardRequest,
   type CreatePersonalBankAccountRequest,
   type CreatePersonalSubscriptionRequest,
   type CreatePetRequest,
@@ -111,7 +117,10 @@ import {
   type CreateVitalEntryRequest,
   type GenerateTaxChecklistRequest,
   type Handover,
+  type PointsView,
   type PutResidentAboutRequest,
+  type Reward,
+  type RewardRedemption,
   type ResidentAboutCard,
   type UpdateResidentRequest,
   type UpdateTaxChecklistItemRequest,
@@ -133,9 +142,18 @@ import {
   type UpdateFamilyRequest,
   type UpdateHouseRequest,
   type UpdateProfileRequest,
+  choreCompletionPageSchema,
+  choreCompletionSchema,
+  chorePageSchema,
+  choreSchema,
   handoverPageSchema,
   handoverSchema,
+  pointsViewSchema,
   residentAboutCardSchema,
+  rewardPageSchema,
+  rewardRedemptionPageSchema,
+  rewardRedemptionSchema,
+  rewardSchema,
   vitalEntryPageSchema,
   vitalEntrySchema,
 } from '@domusafe/contracts';
@@ -835,6 +853,48 @@ export interface DomusafeApi {
    * @param version - Version the form was loaded with.
    */
   deleteHandover(familyId: string, handoverId: string, version: number): Promise<void>;
+  /** Lists active chores for one house. */
+  listChores(familyId: string, houseId: string): Promise<readonly Chore[]>;
+  /** Creates a chore. */
+  createChore(familyId: string, idempotencyKey: string, body: CreateChoreRequest): Promise<Chore>;
+  /** Marks a chore completed, optionally with a proof photo. */
+  completeChore(
+    familyId: string,
+    choreId: string,
+    idempotencyKey: string,
+    body: CreateChoreCompletionRequest,
+  ): Promise<ChoreCompletion>;
+  /** Lists chore completions, optionally filtered by status. */
+  listChoreCompletions(
+    familyId: string,
+    status?: ChoreCompletion['status'],
+  ): Promise<readonly ChoreCompletion[]>;
+  /** Approves a pending chore completion. */
+  approveChoreCompletion(familyId: string, completionId: string): Promise<ChoreCompletion>;
+  /** Rejects a pending chore completion. */
+  rejectChoreCompletion(familyId: string, completionId: string): Promise<ChoreCompletion>;
+  /** Point balance, streak and ledger for one resident. */
+  getPoints(familyId: string, residentId: string): Promise<PointsView>;
+  /** Lists rewards in the family store. */
+  listRewards(familyId: string): Promise<readonly Reward[]>;
+  /** Adds a reward to the store. */
+  createReward(familyId: string, idempotencyKey: string, body: CreateRewardRequest): Promise<Reward>;
+  /** Requests a reward redemption for points. */
+  requestRewardRedemption(
+    familyId: string,
+    rewardId: string,
+    idempotencyKey: string,
+    body: CreateRedemptionRequest,
+  ): Promise<RewardRedemption>;
+  /** Lists redemption requests. */
+  listRedemptions(
+    familyId: string,
+    status?: RewardRedemption['status'],
+  ): Promise<readonly RewardRedemption[]>;
+  /** Approves a redemption and debits points. */
+  approveRedemption(familyId: string, redemptionId: string, version: number): Promise<RewardRedemption>;
+  /** Rejects a redemption. */
+  rejectRedemption(familyId: string, redemptionId: string, version: number): Promise<RewardRedemption>;
   /**
    * Printed codes of one house, newest first, including the last reading.
    *
@@ -1825,6 +1885,140 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         headers: { [HEADERS.ifMatch]: formatEtag(version) },
       });
       ensureOk(result);
+    },
+    listChores(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/chores', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, houseId, active: true, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(chorePageSchema, result)),
+      );
+    },
+    async createChore(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/chores', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateChoreRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(choreSchema, result);
+    },
+    async completeChore(familyId, choreId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/chores/{choreId}/completions', {
+        params: { path: { familyId, choreId } },
+        body: body as components['schemas']['CreateChoreCompletionRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(choreCompletionSchema, result);
+    },
+    listChoreCompletions(familyId, status) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/chore-completions', {
+            params: {
+              path: { familyId },
+              query: {
+                limit: 200,
+                ...(status === undefined ? {} : { status }),
+                ...(cursor === undefined ? {} : { cursor }),
+              },
+            },
+          })
+          .then((result) => unwrap(choreCompletionPageSchema, result)),
+      );
+    },
+    async approveChoreCompletion(familyId, completionId) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/chore-completions/{completionId}/approve',
+        {
+          params: { path: { familyId, completionId } },
+          headers: { [HEADERS.idempotencyKey]: crypto.randomUUID() },
+        },
+      );
+      return unwrap(choreCompletionSchema, result);
+    },
+    async rejectChoreCompletion(familyId, completionId) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/chore-completions/{completionId}/reject',
+        {
+          params: { path: { familyId, completionId } },
+          headers: { [HEADERS.idempotencyKey]: crypto.randomUUID() },
+        },
+      );
+      return unwrap(choreCompletionSchema, result);
+    },
+    async getPoints(familyId, residentId) {
+      const result = await client.GET('/api/v1/families/{familyId}/points', {
+        params: { path: { familyId }, query: { residentId, limit: 50 } },
+      });
+      return unwrap(pointsViewSchema, result);
+    },
+    listRewards(familyId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/rewards', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, active: true, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(rewardPageSchema, result)),
+      );
+    },
+    async createReward(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/rewards', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateRewardRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(rewardSchema, result);
+    },
+    async requestRewardRedemption(familyId, rewardId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/rewards/{rewardId}/redemptions', {
+        params: { path: { familyId, rewardId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(rewardRedemptionSchema, result);
+    },
+    listRedemptions(familyId, status) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/redemptions', {
+            params: {
+              path: { familyId },
+              query: {
+                limit: 200,
+                ...(status === undefined ? {} : { status }),
+                ...(cursor === undefined ? {} : { cursor }),
+              },
+            },
+          })
+          .then((result) => unwrap(rewardRedemptionPageSchema, result)),
+      );
+    },
+    async approveRedemption(familyId, redemptionId, version) {
+      const result = await client.POST('/api/v1/families/{familyId}/redemptions/{redemptionId}/approve', {
+        params: { path: { familyId, redemptionId } },
+        headers: {
+          [HEADERS.ifMatch]: formatEtag(version),
+          [HEADERS.idempotencyKey]: crypto.randomUUID(),
+        },
+      });
+      return unwrap(rewardRedemptionSchema, result);
+    },
+    async rejectRedemption(familyId, redemptionId, version) {
+      const result = await client.POST('/api/v1/families/{familyId}/redemptions/{redemptionId}/reject', {
+        params: { path: { familyId, redemptionId } },
+        headers: {
+          [HEADERS.ifMatch]: formatEtag(version),
+          [HEADERS.idempotencyKey]: crypto.randomUUID(),
+        },
+      });
+      return unwrap(rewardRedemptionSchema, result);
     },
     async listPublications(familyId, houseId) {
       const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publications', {
