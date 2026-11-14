@@ -136,6 +136,25 @@ export function utilitiesQuery(api: DomusafeApi, familyId: string, houseId: stri
 }
 
 /**
+ * Query of payment templates for bill recognition (system + family).
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param kind - Optional utility kind filter.
+ * @returns Options for TanStack Query.
+ */
+export function utilityTemplatesQuery(
+  api: DomusafeApi,
+  familyId: string,
+  kind?: Parameters<DomusafeApi['listUtilityTemplates']>[1],
+) {
+  return queryOptions({
+    queryKey: ['utility-templates', familyId, kind ?? null] as const,
+    queryFn: () => api.listUtilityTemplates(familyId, kind),
+  });
+}
+
+/**
  * Query of the people linked to one house.
  *
  * @param api - Shell API.

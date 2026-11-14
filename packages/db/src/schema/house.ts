@@ -6,6 +6,7 @@ import {
   date,
   integer,
   jsonb,
+  numeric,
   pgTable,
   smallint,
   text,
@@ -14,6 +15,7 @@ import {
 import { bytea, citext, instant } from '../columns.js';
 import {
   billingFrequencyEnum,
+  consumptionUnitEnum,
   contactKindEnum,
   guideAudienceEnum,
   guideTopicEnum,
@@ -140,12 +142,59 @@ export const utilities = pgTable('utilities', {
   currency: char('currency', { length: 3 }),
   autopay: boolean('autopay').notNull().default(false),
   notes: text('notes'),
+  templateId: uuid('template_id'),
   customFields: customFields(),
   deletedAt: instant('deleted_at'),
   encScopeId: uuid('enc_scope_id'),
   encKeyVersion: integer('enc_key_version'),
   encDek: bytea('enc_dek'),
   encPayload: bytea('enc_payload'),
+});
+
+/**
+ * Payment recognition templates for utility bills.
+ * Rows with `familyId` null are built-in system templates shared by every family.
+ */
+export const utilityTemplates = pgTable('utility_templates', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  version: integer('version').notNull().default(1),
+  createdAt: instant('created_at').notNull().defaultNow(),
+  updatedAt: instant('updated_at').notNull().defaultNow(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+  familyId: uuid('family_id'),
+  country: char('country', { length: 2 }).notNull(),
+  kind: utilityKindEnum('kind').notNull(),
+  providerName: text('provider_name').notNull(),
+  fieldHints: jsonb('field_hints').$type<Record<string, string>>().notNull().default({}),
+  recognitionPatterns: jsonb('recognition_patterns').$type<Record<string, string[]>>().notNull().default({}),
+  active: boolean('active').notNull().default(true),
+});
+
+/** One bill period for a utility contract. Extracted OCR values live in `extracted`. */
+export const utilityBills = pgTable('utility_bills', {
+  id: uuid('id').primaryKey(),
+  version: integer('version').notNull().default(1),
+  createdAt: instant('created_at').notNull().defaultNow(),
+  updatedAt: instant('updated_at').notNull().defaultNow(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+  familyId: uuid('family_id').notNull(),
+  houseId: uuid('house_id').notNull(),
+  utilityId: uuid('utility_id').notNull(),
+  periodStart: date('period_start', { mode: 'string' }),
+  periodEnd: date('period_end', { mode: 'string' }),
+  issueDate: date('issue_date', { mode: 'string' }),
+  dueDate: date('due_date', { mode: 'string' }),
+  amountMinor: bigint('amount_minor', { mode: 'number' }),
+  currency: char('currency', { length: 3 }),
+  consumption: numeric('consumption'),
+  consumptionUnit: consumptionUnitEnum('consumption_unit'),
+  paidOn: date('paid_on', { mode: 'string' }),
+  fileId: uuid('file_id'),
+  extracted: jsonb('extracted').$type<Record<string, unknown>>().notNull().default({}),
 });
 
 /** Recurring upkeep. The boiler check is a heating task with a due date. */

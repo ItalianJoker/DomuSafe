@@ -6,10 +6,12 @@ import {
   keyScopes,
   maintenanceTasks,
   utilities,
+  utilityBills,
+  utilityTemplates,
   wasteCollections,
   type Transaction,
 } from '@domusafe/db';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, or, sql } from 'drizzle-orm';
 
 /** Stored class B envelope, already decoded from base64url. */
 interface Envelope {
@@ -29,6 +31,10 @@ export type WasteRow = typeof wasteCollections.$inferSelect;
 export type ContactRow = typeof contacts.$inferSelect;
 /** Row of `utilities`. */
 export type UtilityRow = typeof utilities.$inferSelect;
+/** Row of `utility_templates`. */
+export type UtilityTemplateRow = typeof utilityTemplates.$inferSelect;
+/** Row of `utility_bills`. */
+export type UtilityBillRow = typeof utilityBills.$inferSelect;
 /** Row of `maintenance_tasks`. */
 export type MaintenanceRow = typeof maintenanceTasks.$inferSelect;
 /** Key scope fields needed to accept an envelope. */
@@ -969,6 +975,7 @@ export async function insertUtility(
     readonly currency: string | null;
     readonly autopay: boolean;
     readonly notes: string | null;
+    readonly templateId: string | null;
     readonly createdBy: string;
     readonly envelope: Envelope | null;
   },
@@ -992,6 +999,7 @@ export async function insertUtility(
       currency: input.currency,
       autopay: input.autopay,
       notes: input.notes,
+      templateId: input.templateId,
       createdBy: input.createdBy,
       updatedBy: input.createdBy,
       ...envelopeInsert(input.envelope),
@@ -1100,6 +1108,7 @@ export async function updateUtility(
     readonly currency?: string | null;
     readonly autopay?: boolean;
     readonly notes?: string | null;
+    readonly templateId?: string | null;
     readonly deletedAt?: Date;
     readonly updatedBy: string;
     readonly envelope?: Envelope | null;
@@ -1121,6 +1130,7 @@ export async function updateUtility(
       ...(patch.currency === undefined ? {} : { currency: patch.currency }),
       ...(patch.autopay === undefined ? {} : { autopay: patch.autopay }),
       ...(patch.notes === undefined ? {} : { notes: patch.notes }),
+      ...(patch.templateId === undefined ? {} : { templateId: patch.templateId }),
       ...(patch.deletedAt === undefined ? {} : { deletedAt: patch.deletedAt }),
       updatedBy: patch.updatedBy,
       ...envelopeUpdate(patch.envelope),
@@ -1312,4 +1322,398 @@ export async function updateMaintenance(
     )
     .returning();
   return row ?? null;
+}
+
+/**
+ * Lists system templates and the family's own templates.
+ *
+ * Preconditions: the transaction has the family context.
+ * Postconditions: inactive rows are omitted. System rows have `familyId` null.
+ * Data contract: recognition patterns are opaque JSON for the browser.
+ *
+ * @param tx - Transaction.
+ * @param scope - Family and optional filters.
+ * @returns Matching templates.
+ */
+export async function listUtilityTemplates(
+  tx: Transaction,
+  scope: {
+    readonly familyId: string;
+    readonly kind?: UtilityRow['kind'];
+    readonly country?: string;
+  },
+): Promise<UtilityTemplateRow[]> {
+  return tx
+    .select()
+    .from(utilityTemplates)
+    .where(
+      and(
+        or(isNull(utilityTemplates.familyId), eq(utilityTemplates.familyId, scope.familyId)),
+        eq(utilityTemplates.active, true),
+        scope.kind === undefined ? undefined : eq(utilityTemplates.kind, scope.kind),
+        scope.country === undefined ? undefined : eq(utilityTemplates.country, scope.country),
+      ),
+    )
+    .orderBy(asc(utilityTemplates.kind), asc(utilityTemplates.providerName), asc(utilityTemplates.id));
+}
+
+/**
+ * Reads one template visible to the family (system or own).
+ *
+ * @param tx - Transaction.
+ * @param scope - Family and template id.
+ * @returns The row, or `null`.
+ */
+export async function findUtilityTemplate(
+  tx: Transaction,
+  scope: { readonly familyId: string; readonly templateId: string },
+): Promise<UtilityTemplateRow | null> {
+  const [row] = await tx
+    .select()
+    .from(utilityTemplates)
+    .where(
+      and(
+        eq(utilityTemplates.id, scope.templateId),
+        or(isNull(utilityTemplates.familyId), eq(utilityTemplates.familyId, scope.familyId)),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Inserts a family-owned payment template.
+ *
+ * Preconditions: `familyId` is the current tenant.
+ * Postconditions: version is 1.
+ * Data contract: system templates are never created here.
+ *
+ * @param tx - Transaction.
+ * @param input - Columns.
+ * @returns The inserted row.
+ */
+export async function insertUtilityTemplate(
+  tx: Transaction,
+  input: {
+    readonly familyId: string;
+    readonly country: string;
+    readonly kind: UtilityRow['kind'];
+    readonly providerName: string;
+    readonly fieldHints: Record<string, string>;
+    readonly recognitionPatterns: Record<string, string[]>;
+    readonly active: boolean;
+    readonly createdBy: string;
+  },
+): Promise<UtilityTemplateRow> {
+  const [row] = await tx
+    .insert(utilityTemplates)
+    .values({
+      familyId: input.familyId,
+      country: input.country,
+      kind: input.kind,
+      providerName: input.providerName,
+      fieldHints: input.fieldHints,
+      recognitionPatterns: input.recognitionPatterns,
+      active: input.active,
+      createdBy: input.createdBy,
+      updatedBy: input.createdBy,
+    })
+    .returning();
+  if (row === undefined) {
+    throw new Error('Utility template insert returned no row');
+  }
+  return row;
+}
+
+/**
+ * Updates a family-owned template when the version matches.
+ *
+ * @param tx - Transaction.
+ * @param target - Family, template and expected version.
+ * @param patch - Columns to change.
+ * @returns The updated row, or `null`.
+ */
+export async function updateUtilityTemplate(
+  tx: Transaction,
+  target: {
+    readonly familyId: string;
+    readonly templateId: string;
+    readonly expectedVersion: number;
+  },
+  patch: {
+    readonly country?: string;
+    readonly kind?: UtilityRow['kind'];
+    readonly providerName?: string;
+    readonly fieldHints?: Record<string, string>;
+    readonly recognitionPatterns?: Record<string, string[]>;
+    readonly active?: boolean;
+    readonly updatedBy: string;
+  },
+): Promise<UtilityTemplateRow | null> {
+  const [row] = await tx
+    .update(utilityTemplates)
+    .set({
+      ...(patch.country === undefined ? {} : { country: patch.country }),
+      ...(patch.kind === undefined ? {} : { kind: patch.kind }),
+      ...(patch.providerName === undefined ? {} : { providerName: patch.providerName }),
+      ...(patch.fieldHints === undefined ? {} : { fieldHints: patch.fieldHints }),
+      ...(patch.recognitionPatterns === undefined ? {} : { recognitionPatterns: patch.recognitionPatterns }),
+      ...(patch.active === undefined ? {} : { active: patch.active }),
+      updatedBy: patch.updatedBy,
+      version: sql`${utilityTemplates.version} + 1`,
+    })
+    .where(
+      and(
+        eq(utilityTemplates.familyId, target.familyId),
+        eq(utilityTemplates.id, target.templateId),
+        eq(utilityTemplates.version, target.expectedVersion),
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Deletes a family-owned template.
+ *
+ * @param tx - Transaction.
+ * @param target - Family, template and expected version.
+ * @returns True when a row was removed.
+ */
+export async function deleteUtilityTemplate(
+  tx: Transaction,
+  target: {
+    readonly familyId: string;
+    readonly templateId: string;
+    readonly expectedVersion: number;
+  },
+): Promise<boolean> {
+  const rows = await tx
+    .delete(utilityTemplates)
+    .where(
+      and(
+        eq(utilityTemplates.familyId, target.familyId),
+        eq(utilityTemplates.id, target.templateId),
+        eq(utilityTemplates.version, target.expectedVersion),
+      ),
+    )
+    .returning({ id: utilityTemplates.id });
+  return rows.length > 0;
+}
+
+/**
+ * Inserts a utility bill.
+ *
+ * Preconditions: the utility belongs to the house and family.
+ * Postconditions: version is 1.
+ * Data contract: `extracted` holds browser-recognised Class C values.
+ *
+ * @param tx - Transaction.
+ * @param input - Columns.
+ * @returns The inserted row.
+ */
+export async function insertUtilityBill(
+  tx: Transaction,
+  input: {
+    readonly id: string;
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly utilityId: string;
+    readonly periodStart: string | null;
+    readonly periodEnd: string | null;
+    readonly issueDate: string | null;
+    readonly dueDate: string | null;
+    readonly amountMinor: number | null;
+    readonly currency: string | null;
+    readonly consumption: string | null;
+    readonly consumptionUnit: UtilityBillRow['consumptionUnit'];
+    readonly paidOn: string | null;
+    readonly fileId: string | null;
+    readonly extracted: Record<string, unknown>;
+    readonly createdBy: string;
+  },
+): Promise<UtilityBillRow> {
+  const [row] = await tx
+    .insert(utilityBills)
+    .values({
+      id: input.id,
+      familyId: input.familyId,
+      houseId: input.houseId,
+      utilityId: input.utilityId,
+      periodStart: input.periodStart,
+      periodEnd: input.periodEnd,
+      issueDate: input.issueDate,
+      dueDate: input.dueDate,
+      amountMinor: input.amountMinor,
+      currency: input.currency,
+      consumption: input.consumption,
+      consumptionUnit: input.consumptionUnit,
+      paidOn: input.paidOn,
+      fileId: input.fileId,
+      extracted: input.extracted,
+      createdBy: input.createdBy,
+      updatedBy: input.createdBy,
+    })
+    .returning();
+  if (row === undefined) {
+    throw new Error('Utility bill insert returned no row');
+  }
+  return row;
+}
+
+/**
+ * Lists bills of one utility, newest period first.
+ *
+ * @param tx - Transaction.
+ * @param scope - Family, house, utility and page.
+ * @returns Up to `limit + 1` rows.
+ */
+export async function listUtilityBills(
+  tx: Transaction,
+  scope: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly utilityId: string;
+  } & Page,
+): Promise<UtilityBillRow[]> {
+  const after =
+    scope.after === null
+      ? undefined
+      : sql`(${utilityBills.createdAt}, ${utilityBills.id}) < (${scope.after[0]}::timestamptz, ${scope.after[1]})`;
+  return tx
+    .select()
+    .from(utilityBills)
+    .where(
+      and(
+        eq(utilityBills.familyId, scope.familyId),
+        eq(utilityBills.houseId, scope.houseId),
+        eq(utilityBills.utilityId, scope.utilityId),
+        after,
+      ),
+    )
+    .orderBy(desc(utilityBills.createdAt), desc(utilityBills.id))
+    .limit(scope.limit + 1);
+}
+
+/**
+ * Reads one bill.
+ *
+ * @param tx - Transaction.
+ * @param scope - Family, house, utility and bill id.
+ * @returns The row, or `null`.
+ */
+export async function findUtilityBill(
+  tx: Transaction,
+  scope: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly utilityId: string;
+    readonly billId: string;
+  },
+): Promise<UtilityBillRow | null> {
+  const [row] = await tx
+    .select()
+    .from(utilityBills)
+    .where(
+      and(
+        eq(utilityBills.familyId, scope.familyId),
+        eq(utilityBills.houseId, scope.houseId),
+        eq(utilityBills.utilityId, scope.utilityId),
+        eq(utilityBills.id, scope.billId),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Updates a bill when the version matches.
+ *
+ * @param tx - Transaction.
+ * @param target - Keys and expected version.
+ * @param patch - Columns to change.
+ * @returns The updated row, or `null`.
+ */
+export async function updateUtilityBill(
+  tx: Transaction,
+  target: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly utilityId: string;
+    readonly billId: string;
+    readonly expectedVersion: number;
+  },
+  patch: {
+    readonly periodStart?: string | null;
+    readonly periodEnd?: string | null;
+    readonly issueDate?: string | null;
+    readonly dueDate?: string | null;
+    readonly amountMinor?: number | null;
+    readonly currency?: string | null;
+    readonly consumption?: string | null;
+    readonly consumptionUnit?: UtilityBillRow['consumptionUnit'];
+    readonly paidOn?: string | null;
+    readonly fileId?: string | null;
+    readonly extracted?: Record<string, unknown>;
+    readonly updatedBy: string;
+  },
+): Promise<UtilityBillRow | null> {
+  const [row] = await tx
+    .update(utilityBills)
+    .set({
+      ...(patch.periodStart === undefined ? {} : { periodStart: patch.periodStart }),
+      ...(patch.periodEnd === undefined ? {} : { periodEnd: patch.periodEnd }),
+      ...(patch.issueDate === undefined ? {} : { issueDate: patch.issueDate }),
+      ...(patch.dueDate === undefined ? {} : { dueDate: patch.dueDate }),
+      ...(patch.amountMinor === undefined ? {} : { amountMinor: patch.amountMinor }),
+      ...(patch.currency === undefined ? {} : { currency: patch.currency }),
+      ...(patch.consumption === undefined ? {} : { consumption: patch.consumption }),
+      ...(patch.consumptionUnit === undefined ? {} : { consumptionUnit: patch.consumptionUnit }),
+      ...(patch.paidOn === undefined ? {} : { paidOn: patch.paidOn }),
+      ...(patch.fileId === undefined ? {} : { fileId: patch.fileId }),
+      ...(patch.extracted === undefined ? {} : { extracted: patch.extracted }),
+      updatedBy: patch.updatedBy,
+      version: sql`${utilityBills.version} + 1`,
+    })
+    .where(
+      and(
+        eq(utilityBills.familyId, target.familyId),
+        eq(utilityBills.houseId, target.houseId),
+        eq(utilityBills.utilityId, target.utilityId),
+        eq(utilityBills.id, target.billId),
+        eq(utilityBills.version, target.expectedVersion),
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+/**
+ * Deletes a bill when the version matches.
+ *
+ * @param tx - Transaction.
+ * @param target - Keys and expected version.
+ * @returns True when a row was removed.
+ */
+export async function deleteUtilityBill(
+  tx: Transaction,
+  target: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly utilityId: string;
+    readonly billId: string;
+    readonly expectedVersion: number;
+  },
+): Promise<boolean> {
+  const rows = await tx
+    .delete(utilityBills)
+    .where(
+      and(
+        eq(utilityBills.familyId, target.familyId),
+        eq(utilityBills.houseId, target.houseId),
+        eq(utilityBills.utilityId, target.utilityId),
+        eq(utilityBills.id, target.billId),
+        eq(utilityBills.version, target.expectedVersion),
+      ),
+    )
+    .returning({ id: utilityBills.id });
+  return rows.length > 0;
 }

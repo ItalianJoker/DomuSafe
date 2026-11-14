@@ -50,6 +50,7 @@ pnpm verify
 | Filtri inventario salvabili (AND/OR, max 5 in sidebar)     | `packages/db/migrations/0024_saved_filters.sql`                                                                        |
 | Notifiche e avvisi scadenze nel browser (Web Push)         | `packages/db/migrations/0025_notifications.sql`, `apps/api/src/modules/notifications/`, `apps/api/src/worker.ts`       |
 | Feed novità sul cruscotto (consigli di prodotto)           | `packages/db/migrations/0026_news.sql`, `apps/api/src/modules/news/`, `apps/web/src/features/home/news-feed-panel.tsx` |
+| Bollette e modelli di pagamento (lettura testo/foto)       | `packages/db/migrations/0027_utility_bills_templates.sql`, `apps/web/src/features/casa/bill-assist-panel.tsx`          |
 | Coordinamento assistenza (diario, Chi sono, consegne)      | `packages/db/migrations/0016_care.sql`                                                                                 |
 | Faccende, punti, serie e ricompense                        | `packages/db/migrations/0017_chores_rewards.sql`                                                                       |
 | Cucina (ricette, import URL, negozi, liste spesa)          | `packages/db/migrations/0018_kitchen.sql`                                                                              |

@@ -7,7 +7,9 @@ import {
   createGuideEntryRequestSchema,
   createMaintenanceTaskRequestSchema,
   createShutoffRequestSchema,
+  createUtilityBillRequestSchema,
   createUtilityRequestSchema,
+  createUtilityTemplateRequestSchema,
   createWasteCollectionRequestSchema,
   familyParamsSchema,
   formatEtag,
@@ -29,11 +31,20 @@ import {
   updateGuideEntryRequestSchema,
   updateMaintenanceTaskRequestSchema,
   updateShutoffRequestSchema,
+  updateUtilityBillRequestSchema,
   updateUtilityRequestSchema,
+  updateUtilityTemplateRequestSchema,
   updateWasteCollectionRequestSchema,
+  utilityBillPageSchema,
+  utilityBillParamsSchema,
+  utilityBillSchema,
   utilityPageSchema,
   utilityParamsSchema,
   utilitySchema,
+  utilityTemplateListQuerySchema,
+  utilityTemplateListSchema,
+  utilityTemplateParamsSchema,
+  utilityTemplateSchema,
   wasteCollectionPageSchema,
   wasteCollectionParamsSchema,
   wasteCollectionSchema,
@@ -802,6 +813,215 @@ export const houseRoutes: FastifyPluginAsyncZod<{ house: HouseService }> = async
     },
     async (request, reply) => {
       await house.deleteContact(tenantOf(request), request.params.contactId, requireIfMatch(request));
+      return reply.status(204).send(null);
+    },
+  );
+
+  app.get(
+    '/api/v1/families/:familyId/utility-templates',
+    {
+      config: { access: 'family', permission: 'utilities.read' },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.listUtilityTemplates',
+        summary: 'System and family payment templates for bill recognition',
+        params: familyParamsSchema,
+        querystring: utilityTemplateListQuerySchema,
+        response: { 200: utilityTemplateListSchema, ...problemResponses(400, 401, 403, 404) },
+      },
+    },
+    async (request) =>
+      house.listUtilityTemplates(tenantOf(request), {
+        ...(request.query.kind === undefined ? {} : { kind: request.query.kind }),
+        ...(request.query.country === undefined ? {} : { country: request.query.country }),
+      }),
+  );
+
+  app.post(
+    '/api/v1/families/:familyId/utility-templates',
+    {
+      config: { access: 'family', permission: 'utilities.write', idempotent: true },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.createUtilityTemplate',
+        summary: 'Add a family payment template',
+        params: familyParamsSchema,
+        headers: idempotencyHeaders,
+        body: createUtilityTemplateRequestSchema,
+        response: {
+          201: utilityTemplateSchema,
+          ...problemResponses(400, 401, 403, 404, 409, 422),
+        },
+      },
+    },
+    async (request, reply) => {
+      const tenant = tenantOf(request);
+      const row = await house.createUtilityTemplate(tenant, request.body);
+      void reply
+        .status(201)
+        .header('location', `/api/v1/families/${tenant.familyId}/utility-templates/${row.id}`)
+        .header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.patch(
+    '/api/v1/families/:familyId/utility-templates/:templateId',
+    {
+      config: { access: 'family', permission: 'utilities.write' },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.updateUtilityTemplate',
+        summary: 'Update a family payment template',
+        params: utilityTemplateParamsSchema,
+        headers: ifMatchHeaders,
+        body: updateUtilityTemplateRequestSchema,
+        response: {
+          200: utilityTemplateSchema,
+          ...problemResponses(400, 401, 403, 404, 409, 422, 428),
+        },
+      },
+    },
+    async (request, reply) => {
+      const row = await house.updateUtilityTemplate(
+        tenantOf(request),
+        request.params.templateId,
+        requireIfMatch(request),
+        request.body,
+      );
+      void reply.header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.delete(
+    '/api/v1/families/:familyId/utility-templates/:templateId',
+    {
+      config: { access: 'family', permission: 'utilities.write' },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.deleteUtilityTemplate',
+        summary: 'Delete a family payment template',
+        params: utilityTemplateParamsSchema,
+        headers: ifMatchHeaders,
+        response: { 204: z.null(), ...problemResponses(401, 403, 404, 409, 428) },
+      },
+    },
+    async (request, reply) => {
+      await house.deleteUtilityTemplate(
+        tenantOf(request),
+        request.params.templateId,
+        requireIfMatch(request),
+      );
+      return reply.status(204).send(null);
+    },
+  );
+
+  app.get(
+    `${base}/utilities/:utilityId/bills`,
+    {
+      config: { access: 'family', permission: 'utilities.read' },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.listUtilityBills',
+        summary: 'Bills of one utility contract',
+        params: utilityParamsSchema,
+        querystring: pageQuerySchema,
+        response: { 200: utilityBillPageSchema, ...problemResponses(400, 401, 403, 404) },
+      },
+    },
+    async (request) =>
+      house.listUtilityBills(tenantOf(request), request.params.houseId, request.params.utilityId, {
+        limit: request.query.limit,
+        after: instantCursor(request.query.cursor),
+      }),
+  );
+
+  app.post(
+    `${base}/utilities/:utilityId/bills`,
+    {
+      config: { access: 'family', permission: 'utilities.write', idempotent: true },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.createUtilityBill',
+        summary: 'Store a bill period with optional extracted values',
+        params: utilityParamsSchema,
+        headers: idempotencyHeaders,
+        body: createUtilityBillRequestSchema,
+        response: { 201: utilityBillSchema, ...problemResponses(400, 401, 403, 404, 409, 422) },
+      },
+    },
+    async (request, reply) => {
+      const tenant = tenantOf(request);
+      const row = await house.createUtilityBill(
+        tenant,
+        request.params.houseId,
+        request.params.utilityId,
+        request.body,
+      );
+      void reply
+        .status(201)
+        .header(
+          'location',
+          `${basePath(tenant.familyId, request.params.houseId)}/utilities/${request.params.utilityId}/bills/${row.id}`,
+        )
+        .header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.patch(
+    `${base}/utilities/:utilityId/bills/:billId`,
+    {
+      config: { access: 'family', permission: 'utilities.write' },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.updateUtilityBill',
+        summary: 'Update a stored utility bill',
+        params: utilityBillParamsSchema,
+        headers: ifMatchHeaders,
+        body: updateUtilityBillRequestSchema,
+        response: {
+          200: utilityBillSchema,
+          ...problemResponses(400, 401, 403, 404, 409, 422, 428),
+        },
+      },
+    },
+    async (request, reply) => {
+      const row = await house.updateUtilityBill(
+        tenantOf(request),
+        request.params.houseId,
+        request.params.utilityId,
+        request.params.billId,
+        requireIfMatch(request),
+        request.body,
+      );
+      void reply.header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.delete(
+    `${base}/utilities/:utilityId/bills/:billId`,
+    {
+      config: { access: 'family', permission: 'utilities.write' },
+      schema: {
+        tags: ['house'],
+        operationId: 'house.deleteUtilityBill',
+        summary: 'Delete a stored utility bill',
+        params: utilityBillParamsSchema,
+        headers: ifMatchHeaders,
+        response: { 204: z.null(), ...problemResponses(401, 403, 404, 409, 428) },
+      },
+    },
+    async (request, reply) => {
+      await house.deleteUtilityBill(
+        tenantOf(request),
+        request.params.houseId,
+        request.params.utilityId,
+        request.params.billId,
+        requireIfMatch(request),
+      );
       return reply.status(204).send(null);
     },
   );

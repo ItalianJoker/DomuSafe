@@ -90,6 +90,8 @@ export const billingFrequencyEnum = pgEnum('billing_frequency', [
   'semiannual',
   'annual',
 ]);
+/** Unit of consumption on a utility bill. */
+export const consumptionUnitEnum = pgEnum('consumption_unit', ['kwh', 'smc', 'm3', 'gb']);
 /** Category of a maintenance task. */
 export const maintenanceCategoryEnum = pgEnum('maintenance_category', [
   'heating',

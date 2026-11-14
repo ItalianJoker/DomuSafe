@@ -63,8 +63,12 @@ import {
   pushSubscriptionSchema,
   shutoffPageSchema,
   shutoffSchema,
+  utilityBillPageSchema,
+  utilityBillSchema,
   utilityPageSchema,
   utilitySchema,
+  utilityTemplateListSchema,
+  utilityTemplateSchema,
   wasteCollectionPageSchema,
   wasteCollectionSchema,
   problemDetailsSchema,
@@ -97,7 +101,9 @@ import {
   type CreateStorageUnitRequest,
   type InventoryFilterSearchRequest,
   type CreateShutoffRequest,
+  type CreateUtilityBillRequest,
   type CreateUtilityRequest,
+  type CreateUtilityTemplateRequest,
   type CreateWasteCollectionRequest,
   type Family,
   type FamilyBranding,
@@ -193,9 +199,13 @@ import {
   type UpdateRoomRequest,
   type UpdateStorageUnitRequest,
   type UpdateShutoffRequest,
+  type UpdateUtilityBillRequest,
   type UpdateUtilityRequest,
+  type UpdateUtilityTemplateRequest,
   type UpdateWasteCollectionRequest,
   type Utility,
+  type UtilityBill,
+  type UtilityTemplate,
   type VitalEntry,
   type WasteCollection,
   type ProblemDetails,
@@ -689,6 +699,87 @@ export interface DomusafeApi {
     version: number,
     patch: UpdateUtilityRequest,
   ): Promise<Utility>;
+  /**
+   * System and family payment templates for bill recognition.
+   *
+   * @param familyId - Family id.
+   * @param kind - Optional utility kind filter.
+   * @returns Active templates.
+   */
+  listUtilityTemplates(familyId: string, kind?: Utility['kind']): Promise<readonly UtilityTemplate[]>;
+  /**
+   * Adds a family-owned payment template.
+   *
+   * @param familyId - Family id.
+   * @param body - Template fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The template.
+   */
+  createUtilityTemplate(
+    familyId: string,
+    body: CreateUtilityTemplateRequest,
+    idempotencyKey: string,
+  ): Promise<UtilityTemplate>;
+  /**
+   * Updates a family-owned payment template.
+   *
+   * @param familyId - Family id.
+   * @param templateId - Template id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Template fields.
+   * @returns The template.
+   */
+  updateUtilityTemplate(
+    familyId: string,
+    templateId: string,
+    version: number,
+    patch: UpdateUtilityTemplateRequest,
+  ): Promise<UtilityTemplate>;
+  /**
+   * Bills of one utility contract.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param utilityId - Utility id.
+   * @returns Every page.
+   */
+  listUtilityBills(familyId: string, houseId: string, utilityId: string): Promise<readonly UtilityBill[]>;
+  /**
+   * Stores a bill with optional browser-extracted values.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param utilityId - Utility id.
+   * @param body - Bill fields.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The bill.
+   */
+  createUtilityBill(
+    familyId: string,
+    houseId: string,
+    utilityId: string,
+    body: CreateUtilityBillRequest,
+    idempotencyKey: string,
+  ): Promise<UtilityBill>;
+  /**
+   * Updates a stored bill.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param utilityId - Utility id.
+   * @param billId - Bill id.
+   * @param version - Version the form was loaded with.
+   * @param patch - Bill fields.
+   * @returns The bill.
+   */
+  updateUtilityBill(
+    familyId: string,
+    houseId: string,
+    utilityId: string,
+    billId: string,
+    version: number,
+    patch: UpdateUtilityBillRequest,
+  ): Promise<UtilityBill>;
   /**
    * Maintenance tasks of one house, including the boiler check.
    *
@@ -2341,6 +2432,65 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       );
       return unwrap(utilitySchema, result);
+    },
+    async listUtilityTemplates(familyId, kind) {
+      const result = await client.GET('/api/v1/families/{familyId}/utility-templates', {
+        params: {
+          path: { familyId },
+          query: kind === undefined ? {} : { kind },
+        },
+      });
+      return (await unwrap(utilityTemplateListSchema, result)).items;
+    },
+    async createUtilityTemplate(familyId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/utility-templates', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(utilityTemplateSchema, result);
+    },
+    async updateUtilityTemplate(familyId, templateId, version, patch) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/utility-templates/{templateId}', {
+        params: { path: { familyId, templateId } },
+        body: patch as components['schemas']['UpdateUtilityTemplateRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(utilityTemplateSchema, result);
+    },
+    listUtilityBills(familyId, houseId, utilityId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}/bills', {
+            params: {
+              path: { familyId, houseId, utilityId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(utilityBillPageSchema, result)),
+      );
+    },
+    async createUtilityBill(familyId, houseId, utilityId, body, idempotencyKey) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}/bills',
+        {
+          params: { path: { familyId, houseId, utilityId } },
+          body: body as components['schemas']['CreateUtilityBillRequestInput'],
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        },
+      );
+      return unwrap(utilityBillSchema, result);
+    },
+    async updateUtilityBill(familyId, houseId, utilityId, billId, version, patch) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/houses/{houseId}/utilities/{utilityId}/bills/{billId}',
+        {
+          params: { path: { familyId, houseId, utilityId, billId } },
+          body: patch as components['schemas']['UpdateUtilityBillRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(utilityBillSchema, result);
     },
     listMaintenance(familyId, houseId, category) {
       return collect((cursor) =>
