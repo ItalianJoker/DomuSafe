@@ -1,16 +1,23 @@
 import {
   currencySchema,
   encodeCursor,
+  inventoryFilterNodeSchema,
+  SAVED_FILTER_PIN_LIMIT,
   type CreateInventoryItemRequest,
   type CreateRoomRequest,
+  type CreateSavedFilterRequest,
   type CreateStorageUnitRequest,
+  type InventoryFilterNode,
   type InventoryItem,
   type InventorySearchHit,
   type InventorySearchResponse,
   type Room,
+  type SavedFilter,
+  type SavedFilterList,
   type StorageUnit,
   type UpdateInventoryItemRequest,
   type UpdateRoomRequest,
+  type UpdateSavedFilterRequest,
   type UpdateStorageUnitRequest,
 } from '@domusafe/contracts';
 import { recordAudit, recordRevision, withContext, type Database, type Transaction } from '@domusafe/db';
@@ -219,7 +226,8 @@ export function createInventoryService(db: Database, now: () => Date = () => new
       readonly version: number;
       readonly op: 'create' | 'update' | 'delete';
       readonly data: Record<string, unknown>;
-      readonly houseId: string;
+      readonly houseId?: string | null;
+      readonly ownerAccountId?: string | null;
     },
   ): Promise<void> {
     await recordRevision(tx, {
@@ -230,7 +238,8 @@ export function createInventoryService(db: Database, now: () => Date = () => new
       op: input.op,
       actor: { kind: 'account', id: tenant.accountId },
       data: input.data,
-      houseId: input.houseId,
+      houseId: input.houseId ?? null,
+      ownerAccountId: input.ownerAccountId ?? null,
     });
     await recordAudit(tx, {
       familyId: tenant.familyId,
@@ -1003,13 +1012,19 @@ export function createInventoryService(db: Database, now: () => Date = () => new
      *
      * @param tenant - Resolved tenant.
      * @param houseId - House id.
-     * @param input - Query text, optional tag and limit.
+     * @param input - Query text, optional tags and limit.
      * @returns Ranked hits.
      */
     async search(
       tenant: TenantContext,
       houseId: string,
-      input: { readonly query: string; readonly tag?: string; readonly limit: number },
+      input: {
+        readonly query: string;
+        readonly tag?: string;
+        readonly tags?: readonly string[];
+        readonly tagMode?: 'and' | 'or';
+        readonly limit: number;
+      },
     ): Promise<InventorySearchResponse> {
       return inFamily(tenant, async (tx) => {
         await requireHouse(tx, tenant.familyId, houseId);
@@ -1019,10 +1034,207 @@ export function createInventoryService(db: Database, now: () => Date = () => new
           query: input.query,
           limit: input.limit,
           ...(input.tag === undefined ? {} : { tag: input.tag }),
+          ...(input.tags === undefined ? {} : { tags: input.tags }),
+          ...(input.tagMode === undefined ? {} : { tagMode: input.tagMode }),
         });
         return { items: items as InventorySearchHit[] };
       });
     },
+
+    /**
+     * Nested AND/OR filter search over the house inventory index.
+     *
+     * @param tenant - Resolved tenant.
+     * @param houseId - House id.
+     * @param input - Filter tree and limit.
+     * @returns Ranked hits.
+     */
+    async searchFiltered(
+      tenant: TenantContext,
+      houseId: string,
+      input: { readonly filter: InventoryFilterNode; readonly limit: number },
+    ): Promise<InventorySearchResponse> {
+      return inFamily(tenant, async (tx) => {
+        await requireHouse(tx, tenant.familyId, houseId);
+        const items = await repo.searchInventory(tx, {
+          familyId: tenant.familyId,
+          houseId,
+          filter: input.filter,
+          limit: input.limit,
+        });
+        return { items: items as InventorySearchHit[] };
+      });
+    },
+
+    /**
+     * Lists the caller's saved inventory filters (at most five, sidebar order).
+     *
+     * @param tenant - Resolved tenant.
+     * @returns Owned filters.
+     */
+    listSavedFilters(tenant: TenantContext): Promise<SavedFilterList> {
+      return inFamily(tenant, async (tx) => {
+        const rows = await repo.listSavedFilters(tx, tenant.familyId, tenant.accountId);
+        return { items: rows.map(savedFilterView) };
+      });
+    },
+
+    /**
+     * Creates a saved inventory filter pinned in the sidebar.
+     *
+     * Preconditions: the caller owns fewer than five filters in this family.
+     * Postconditions: a new pin slot is occupied; revisions and audit are written.
+     *
+     * @param tenant - Resolved tenant.
+     * @param body - Name, filter tree and optional pin.
+     * @returns The saved filter.
+     */
+    createSavedFilter(tenant: TenantContext, body: CreateSavedFilterRequest): Promise<SavedFilter> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const count = await repo.countSavedFilters(tx, tenant.familyId, tenant.accountId);
+          if (count >= SAVED_FILTER_PIN_LIMIT) {
+            throw new ProblemError('domain_rule_violated', {
+              detail: 'At most five saved filters can be pinned in the sidebar',
+            });
+          }
+          let pinnedPosition = body.pinnedPosition;
+          if (pinnedPosition === undefined) {
+            const next = await repo.nextSavedFilterPin(tx, tenant.familyId, tenant.accountId);
+            if (next === null) {
+              throw new ProblemError('domain_rule_violated', {
+                detail: 'At most five saved filters can be pinned in the sidebar',
+              });
+            }
+            pinnedPosition = next;
+          }
+          const row = await repo.insertSavedFilter(tx, {
+            familyId: tenant.familyId,
+            accountId: tenant.accountId,
+            name: body.name,
+            definition: structuredClone(body.filter),
+            pinnedPosition,
+            createdBy: tenant.accountId,
+          });
+          await trace(tx, tenant, {
+            action: 'inventory.saved_filter.created',
+            resourceType: 'saved_filters',
+            resourceId: row.id,
+            version: row.version,
+            op: 'create',
+            ownerAccountId: tenant.accountId,
+            data: { name: row.name, pinnedPosition: row.pinnedPosition },
+          });
+          return savedFilterView(row);
+        }),
+      );
+    },
+
+    /**
+     * Updates a saved inventory filter owned by the caller.
+     *
+     * @param tenant - Resolved tenant.
+     * @param filterId - Filter id.
+     * @param expectedVersion - Version from If-Match.
+     * @param body - Patch fields.
+     * @returns The updated filter.
+     */
+    updateSavedFilter(
+      tenant: TenantContext,
+      filterId: string,
+      expectedVersion: number,
+      body: UpdateSavedFilterRequest,
+    ): Promise<SavedFilter> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const existing = await repo.findSavedFilter(tx, tenant.familyId, tenant.accountId, filterId);
+          if (existing === null) {
+            throw new ProblemError('not_found');
+          }
+          const updated = await repo.updateSavedFilter(
+            tx,
+            tenant.familyId,
+            tenant.accountId,
+            filterId,
+            expectedVersion,
+            {
+              updatedBy: tenant.accountId,
+              ...(body.name === undefined ? {} : { name: body.name }),
+              ...(body.filter === undefined ? {} : { definition: structuredClone(body.filter) }),
+              ...(body.pinnedPosition === undefined ? {} : { pinnedPosition: body.pinnedPosition }),
+            },
+          );
+          if (updated === null) {
+            conflict(existing.version);
+          }
+          await trace(tx, tenant, {
+            action: 'inventory.saved_filter.updated',
+            resourceType: 'saved_filters',
+            resourceId: updated.id,
+            version: updated.version,
+            op: 'update',
+            ownerAccountId: tenant.accountId,
+            data: { name: updated.name, pinnedPosition: updated.pinnedPosition },
+          });
+          return savedFilterView(updated);
+        }),
+      );
+    },
+
+    /**
+     * Deletes a saved inventory filter owned by the caller.
+     *
+     * @param tenant - Resolved tenant.
+     * @param filterId - Filter id.
+     * @param expectedVersion - Version from If-Match.
+     */
+    deleteSavedFilter(tenant: TenantContext, filterId: string, expectedVersion: number): Promise<void> {
+      return guarded(async () =>
+        inFamily(tenant, async (tx) => {
+          const existing = await repo.findSavedFilter(tx, tenant.familyId, tenant.accountId, filterId);
+          if (existing === null) {
+            throw new ProblemError('not_found');
+          }
+          const deleted = await repo.deleteSavedFilter(
+            tx,
+            tenant.familyId,
+            tenant.accountId,
+            filterId,
+            expectedVersion,
+          );
+          if (!deleted) {
+            conflict(existing.version);
+          }
+          await trace(tx, tenant, {
+            action: 'inventory.saved_filter.deleted',
+            resourceType: 'saved_filters',
+            resourceId: filterId,
+            version: expectedVersion + 1,
+            op: 'delete',
+            ownerAccountId: tenant.accountId,
+            data: { name: existing.name, pinnedPosition: existing.pinnedPosition },
+          });
+        }),
+      );
+    },
+  };
+}
+
+function savedFilterView(row: repo.SavedFilterRow): SavedFilter {
+  const parsed = inventoryFilterNodeSchema.safeParse(row.definition);
+  if (!parsed.success) {
+    throw new Error('Stored saved filter definition is invalid');
+  }
+  return {
+    id: row.id,
+    familyId: row.familyId,
+    accountId: row.accountId,
+    name: row.name,
+    filter: parsed.data,
+    pinnedPosition: row.pinnedPosition,
+    version: row.version,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 

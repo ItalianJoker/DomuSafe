@@ -1,5 +1,14 @@
-import { houses, inventoryItems, rooms, searchIndex, storageUnits, type Transaction } from '@domusafe/db';
-import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
+import type { InventoryFilterNode } from '@domusafe/contracts';
+import {
+  houses,
+  inventoryItems,
+  rooms,
+  savedFilters,
+  searchIndex,
+  storageUnits,
+  type Transaction,
+} from '@domusafe/db';
+import { and, asc, desc, eq, isNull, or, sql, type SQL } from 'drizzle-orm';
 
 /** Row of `rooms`. */
 export type RoomRow = typeof rooms.$inferSelect;
@@ -9,6 +18,8 @@ export type StorageUnitRow = typeof storageUnits.$inferSelect;
 export type InventoryItemRow = typeof inventoryItems.$inferSelect;
 /** Row of `search_index`. */
 export type SearchIndexRow = typeof searchIndex.$inferSelect;
+/** Row of `saved_filters`. */
+export type SavedFilterRow = typeof savedFilters.$inferSelect;
 
 interface Page {
   readonly limit: number;
@@ -609,15 +620,90 @@ export async function deleteSearchIndex(
     .where(and(eq(searchIndex.resourceType, resourceType), eq(searchIndex.resourceId, resourceId)));
 }
 
+function textMatchSql(query: string): SQL {
+  return sql`(
+    tsv @@ websearch_to_tsquery('public.domusafe_it', ${query})
+    or app.f_unaccent(${searchIndex.title}) % app.f_unaccent(${query})
+    or ${searchIndex.title} ilike ${'%' + query + '%'}
+    or ${searchIndex.body} ilike ${'%' + query + '%'}
+  )`;
+}
+
+function tagsMatchSql(tags: readonly string[], mode: 'and' | 'or'): SQL {
+  const values = sql.join(
+    tags.map((tag) => sql`${tag}`),
+    sql`, `,
+  );
+  return mode === 'and'
+    ? sql`${searchIndex.tags} @> array[${values}]::text[]`
+    : sql`${searchIndex.tags} && array[${values}]::text[]`;
+}
+
+/**
+ * Compiles one inventory filter node into a SQL predicate over `search_index`.
+ *
+ * Preconditions: `node` was validated by the contracts schema.
+ * Postconditions: returns a parameterised predicate with no raw client SQL.
+ * Data contract: text uses `domusafe_it`; tags use containment (`@>`) or overlap (`&&`).
+ *
+ * @param node - Nested filter tree.
+ * @returns Drizzle SQL fragment.
+ */
+export function compileInventoryFilter(node: InventoryFilterNode): SQL {
+  switch (node.kind) {
+    case 'text':
+      return textMatchSql(node.q);
+    case 'tags':
+      return tagsMatchSql(node.tags, node.mode);
+    case 'types':
+      return sql`${searchIndex.resourceType} = any (array[${sql.join(
+        node.types.map((type) => sql`${type}`),
+        sql`, `,
+      )}]::text[])`;
+    case 'group': {
+      const parts = node.children.map((child) => compileInventoryFilter(child));
+      const combined = node.op === 'and' ? and(...parts) : or(...parts);
+      if (combined === undefined) {
+        throw new Error('Filter group compiled to an empty predicate');
+      }
+      return combined;
+    }
+  }
+}
+
+/**
+ * First full-text leaf in document order, used to rank hits.
+ *
+ * @param node - Nested filter tree.
+ * @returns Query text, or `null` when the tree has no text leaf.
+ */
+export function firstTextQuery(node: InventoryFilterNode): string | null {
+  switch (node.kind) {
+    case 'text':
+      return node.q;
+    case 'tags':
+    case 'types':
+      return null;
+    case 'group':
+      for (const child of node.children) {
+        const found = firstTextQuery(child);
+        if (found !== null) {
+          return found;
+        }
+      }
+      return null;
+  }
+}
+
 /**
  * Full-text search over the house inventory index.
  *
- * Preconditions: `query` is a non-empty trimmed string.
+ * Preconditions: either `query` is a non-empty trimmed string, or `filter` is a validated tree.
  * Postconditions: at most `limit` hits, highest rank first.
  * Data contract: only rooms, storage units and inventory items of the house.
  *
  * @param tx - Transaction.
- * @param scope - Family, house, query text, optional tag and limit.
+ * @param scope - Family, house, simple query and/or nested filter, optional tags and limit.
  * @returns Ranked hits.
  */
 export async function searchInventory(
@@ -625,8 +711,11 @@ export async function searchInventory(
   scope: {
     readonly familyId: string;
     readonly houseId: string;
-    readonly query: string;
+    readonly query?: string;
     readonly tag?: string;
+    readonly tags?: readonly string[];
+    readonly tagMode?: 'and' | 'or';
+    readonly filter?: InventoryFilterNode;
     readonly limit: number;
   },
 ): Promise<
@@ -639,6 +728,26 @@ export async function searchInventory(
     readonly rank: number;
   }[]
 > {
+  const filterPredicate = scope.filter === undefined ? undefined : compileInventoryFilter(scope.filter);
+  const queryText =
+    scope.filter === undefined
+      ? (scope.query ?? null)
+      : (firstTextQuery(scope.filter) ?? scope.query ?? null);
+  const simpleText =
+    scope.filter === undefined && scope.query !== undefined ? textMatchSql(scope.query) : undefined;
+  const tagPredicate =
+    scope.tags !== undefined && scope.tags.length > 0
+      ? tagsMatchSql(scope.tags, scope.tagMode ?? 'and')
+      : scope.tag === undefined
+        ? undefined
+        : tagsMatchSql([scope.tag], 'and');
+
+  const rankExpression =
+    queryText === null
+      ? sql<number>`0::float8`
+      : sql<number>`ts_rank_cd(tsv, websearch_to_tsquery('public.domusafe_it', ${queryText}))
+          + similarity(app.f_unaccent(${searchIndex.title}), app.f_unaccent(${queryText}))`;
+
   const rows = await tx
     .select({
       resourceType: searchIndex.resourceType,
@@ -646,8 +755,7 @@ export async function searchInventory(
       title: searchIndex.title,
       body: searchIndex.body,
       tags: searchIndex.tags,
-      rank: sql<number>`ts_rank_cd(tsv, websearch_to_tsquery('public.domusafe_it', ${scope.query}))
-        + similarity(app.f_unaccent(${searchIndex.title}), app.f_unaccent(${scope.query}))`,
+      rank: rankExpression,
     })
     .from(searchIndex)
     .where(
@@ -655,19 +763,17 @@ export async function searchInventory(
         eq(searchIndex.familyId, scope.familyId),
         eq(searchIndex.houseId, scope.houseId),
         sql`${searchIndex.resourceType} = any (array['rooms','storage_units','inventory_items']::text[])`,
-        sql`(
-          tsv @@ websearch_to_tsquery('public.domusafe_it', ${scope.query})
-          or app.f_unaccent(${searchIndex.title}) % app.f_unaccent(${scope.query})
-          or ${searchIndex.title} ilike ${'%' + scope.query + '%'}
-          or ${searchIndex.body} ilike ${'%' + scope.query + '%'}
-        )`,
-        scope.tag === undefined ? undefined : sql`${searchIndex.tags} @> array[${scope.tag}]::text[]`,
+        filterPredicate,
+        simpleText,
+        tagPredicate,
       ),
     )
     .orderBy(
       desc(
-        sql`ts_rank_cd(tsv, websearch_to_tsquery('public.domusafe_it', ${scope.query}))
-          + similarity(app.f_unaccent(${searchIndex.title}), app.f_unaccent(${scope.query}))`,
+        queryText === null
+          ? sql`0::float8`
+          : sql`ts_rank_cd(tsv, websearch_to_tsquery('public.domusafe_it', ${queryText}))
+              + similarity(app.f_unaccent(${searchIndex.title}), app.f_unaccent(${queryText}))`,
       ),
       asc(searchIndex.title),
     )
@@ -681,4 +787,209 @@ export async function searchInventory(
     tags: row.tags,
     rank: row.rank,
   }));
+}
+
+/**
+ * Lists saved inventory filters of one account in a family, sidebar order.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param accountId - Owner account id.
+ * @returns Up to five pinned filters.
+ */
+export async function listSavedFilters(
+  tx: Transaction,
+  familyId: string,
+  accountId: string,
+): Promise<readonly SavedFilterRow[]> {
+  return tx
+    .select()
+    .from(savedFilters)
+    .where(and(eq(savedFilters.familyId, familyId), eq(savedFilters.accountId, accountId)))
+    .orderBy(asc(savedFilters.pinnedPosition));
+}
+
+/**
+ * Counts saved inventory filters of one account in a family.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param accountId - Owner account id.
+ * @returns Current count under the pin limit.
+ */
+export async function countSavedFilters(
+  tx: Transaction,
+  familyId: string,
+  accountId: string,
+): Promise<number> {
+  const rows = await tx
+    .select({ value: sql<number>`count(*)::int` })
+    .from(savedFilters)
+    .where(and(eq(savedFilters.familyId, familyId), eq(savedFilters.accountId, accountId)));
+  return rows[0]?.value ?? 0;
+}
+
+/**
+ * Finds the lowest free pin slot from 1 to 5.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param accountId - Owner account id.
+ * @returns Free position, or `null` when all five slots are taken.
+ */
+export async function nextSavedFilterPin(
+  tx: Transaction,
+  familyId: string,
+  accountId: string,
+): Promise<number | null> {
+  const rows = await listSavedFilters(tx, familyId, accountId);
+  const used = new Set(rows.map((row) => row.pinnedPosition));
+  for (let position = 1; position <= 5; position += 1) {
+    if (!used.has(position)) {
+      return position;
+    }
+  }
+  return null;
+}
+
+/**
+ * Reads one saved filter owned by the current account.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param accountId - Owner account id.
+ * @param filterId - Filter id.
+ * @returns The row, or `null`.
+ */
+export async function findSavedFilter(
+  tx: Transaction,
+  familyId: string,
+  accountId: string,
+  filterId: string,
+): Promise<SavedFilterRow | null> {
+  const rows = await tx
+    .select()
+    .from(savedFilters)
+    .where(
+      and(
+        eq(savedFilters.familyId, familyId),
+        eq(savedFilters.accountId, accountId),
+        eq(savedFilters.id, filterId),
+      ),
+    )
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * Inserts a saved inventory filter.
+ *
+ * @param tx - Transaction.
+ * @param input - Row fields.
+ * @returns The inserted row.
+ */
+export async function insertSavedFilter(
+  tx: Transaction,
+  input: {
+    readonly familyId: string;
+    readonly accountId: string;
+    readonly name: string;
+    readonly definition: InventoryFilterNode;
+    readonly pinnedPosition: number;
+    readonly createdBy: string;
+  },
+): Promise<SavedFilterRow> {
+  const rows = await tx
+    .insert(savedFilters)
+    .values({
+      familyId: input.familyId,
+      accountId: input.accountId,
+      name: input.name,
+      definition: { ...input.definition },
+      pinnedPosition: input.pinnedPosition,
+      createdBy: input.createdBy,
+      updatedBy: input.createdBy,
+    })
+    .returning();
+  const row = rows[0];
+  if (row === undefined) {
+    throw new Error('Insert of saved_filters returned no row');
+  }
+  return row;
+}
+
+/**
+ * Updates a saved inventory filter with optimistic concurrency.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param accountId - Owner account id.
+ * @param filterId - Filter id.
+ * @param expectedVersion - Version the client loaded.
+ * @param patch - Fields to change.
+ * @returns The updated row, or `null` on version conflict / missing row.
+ */
+export async function updateSavedFilter(
+  tx: Transaction,
+  familyId: string,
+  accountId: string,
+  filterId: string,
+  expectedVersion: number,
+  patch: {
+    readonly name?: string;
+    readonly definition?: InventoryFilterNode;
+    readonly pinnedPosition?: number;
+    readonly updatedBy: string;
+  },
+): Promise<SavedFilterRow | null> {
+  const rows = await tx
+    .update(savedFilters)
+    .set({
+      ...(patch.name === undefined ? {} : { name: patch.name }),
+      ...(patch.definition === undefined ? {} : { definition: { ...patch.definition } }),
+      ...(patch.pinnedPosition === undefined ? {} : { pinnedPosition: patch.pinnedPosition }),
+      updatedBy: patch.updatedBy,
+      version: sql`${savedFilters.version} + 1`,
+    })
+    .where(
+      and(
+        eq(savedFilters.familyId, familyId),
+        eq(savedFilters.accountId, accountId),
+        eq(savedFilters.id, filterId),
+        eq(savedFilters.version, expectedVersion),
+      ),
+    )
+    .returning();
+  return rows[0] ?? null;
+}
+
+/**
+ * Deletes a saved inventory filter owned by the current account.
+ *
+ * @param tx - Transaction.
+ * @param familyId - Family id.
+ * @param accountId - Owner account id.
+ * @param filterId - Filter id.
+ * @param expectedVersion - Version the client loaded.
+ * @returns Whether a row was deleted.
+ */
+export async function deleteSavedFilter(
+  tx: Transaction,
+  familyId: string,
+  accountId: string,
+  filterId: string,
+  expectedVersion: number,
+): Promise<boolean> {
+  const rows = await tx
+    .delete(savedFilters)
+    .where(
+      and(
+        eq(savedFilters.familyId, familyId),
+        eq(savedFilters.accountId, accountId),
+        eq(savedFilters.id, filterId),
+        eq(savedFilters.version, expectedVersion),
+      ),
+    )
+    .returning({ id: savedFilters.id });
+  return rows.length > 0;
 }

@@ -1,25 +1,79 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useState, type ChangeEvent, type SubmitEvent } from 'react';
 import type {
+  InventoryFilterNode,
   InventoryItem,
   InventorySearchHit,
+  InventorySearchResourceType,
   Room,
   RoomKind,
+  SavedFilter,
   StorageUnit,
   StorageUnitKind,
 } from '@domusafe/contracts';
+import { SAVED_FILTER_PIN_LIMIT } from '@domusafe/contracts';
 import { useApi } from '@/components/api-context.js';
 import { Field } from '@/components/shell/page.js';
 import { Button } from '@/components/ui/button.js';
 import { Input } from '@/components/ui/input.js';
 import { Textarea } from '@/components/ui/textarea.js';
 import { problemText } from '@/lib/copy.js';
-import { inventoryItemsQuery, inventorySearchQuery, roomsQuery, storageUnitsQuery } from '@/lib/queries.js';
+import {
+  inventoryFilterSearchQuery,
+  inventoryItemsQuery,
+  inventorySearchQuery,
+  roomsQuery,
+  savedFiltersQuery,
+  storageUnitsQuery,
+} from '@/lib/queries.js';
 import { m } from '@/paraglide/messages.js';
 import { ROOM_KINDS, STORAGE_KINDS } from './model.js';
 
 const touchControl =
   'min-h-12 w-full rounded-md border border-input bg-transparent px-3 text-[15px] text-foreground';
+
+const ALL_SEARCH_TYPES: readonly InventorySearchResourceType[] = [
+  'rooms',
+  'storage_units',
+  'inventory_items',
+];
+
+/**
+ * Builds a nested inventory filter from the sidebar form fields.
+ *
+ * Preconditions: at least one of text, tags or types is present.
+ * Postconditions: a single leaf or an AND/OR group with at most one nesting level of mixed leaves.
+ *
+ * @param input - Builder fields.
+ * @returns Filter tree, or `null` when empty.
+ */
+function buildInventoryFilter(input: {
+  readonly text: string;
+  readonly tags: readonly string[];
+  readonly tagMode: 'and' | 'or';
+  readonly combine: 'and' | 'or';
+  readonly types: readonly InventorySearchResourceType[];
+}): InventoryFilterNode | null {
+  const children: InventoryFilterNode[] = [];
+  const text = input.text.trim();
+  if (text.length > 0) {
+    children.push({ kind: 'text', q: text });
+  }
+  if (input.tags.length > 0) {
+    children.push({ kind: 'tags', tags: [...input.tags], mode: input.tagMode });
+  }
+  if (input.types.length > 0 && input.types.length < ALL_SEARCH_TYPES.length) {
+    children.push({ kind: 'types', types: [...input.types] });
+  }
+  const first = children[0];
+  if (first === undefined) {
+    return null;
+  }
+  if (children.length === 1) {
+    return first;
+  }
+  return { kind: 'group', op: input.combine, children };
+}
 
 function blank(value: string): string | null {
   const trimmed = value.trim();
@@ -116,7 +170,8 @@ async function readImageDataUrl(file: File): Promise<string> {
 }
 
 /**
- * Hierarchical inventory of the open house: rooms, closets, items and full-text search.
+ * Hierarchical inventory of the open house: rooms, closets, items, nested AND/OR search
+ * and up to five saved filters in the sidebar.
  *
  * Preconditions: the caller can read inventory. Writes need manager role.
  * Postconditions: edits persist through the inventory API with `If-Match`.
@@ -135,12 +190,26 @@ export function InventoryPanel(props: {
   const rooms = useQuery(roomsQuery(api, props.familyId, props.houseId));
   const units = useQuery(storageUnitsQuery(api, props.familyId, props.houseId));
   const items = useQuery(inventoryItemsQuery(api, props.familyId, props.houseId));
+  const saved = useQuery(savedFiltersQuery(api, props.familyId));
   const [search, setSearch] = useState('');
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
+  const [filterText, setFilterText] = useState('');
+  const [filterTags, setFilterTags] = useState('');
+  const [tagMode, setTagMode] = useState<'and' | 'or'>('and');
+  const [combine, setCombine] = useState<'and' | 'or'>('and');
+  const [types, setTypes] = useState<InventorySearchResourceType[]>([...ALL_SEARCH_TYPES]);
+  const [activeFilter, setActiveFilter] = useState<InventoryFilterNode | null>(null);
+  const [filterName, setFilterName] = useState('');
+  const [filterError, setFilterError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const deferredSearch = search.trim();
   const hits = useQuery({
     ...inventorySearchQuery(api, props.familyId, props.houseId, deferredSearch),
-    enabled: deferredSearch.length > 0,
+    enabled: deferredSearch.length > 0 && activeFilter === null,
+  });
+  const filterHits = useQuery({
+    ...inventoryFilterSearchQuery(api, props.familyId, props.houseId, activeFilter),
+    enabled: activeFilter !== null,
   });
 
   async function refresh(): Promise<void> {
@@ -155,165 +224,392 @@ export function InventoryPanel(props: {
         queryKey: inventoryItemsQuery(api, props.familyId, props.houseId).queryKey,
       }),
       queryClient.invalidateQueries({ queryKey: ['inventory-search', props.familyId, props.houseId] }),
+      queryClient.invalidateQueries({
+        queryKey: ['inventory-filter-search', props.familyId, props.houseId],
+      }),
+      queryClient.invalidateQueries({ queryKey: savedFiltersQuery(api, props.familyId).queryKey }),
     ]);
   }
 
   const roomList = rooms.data ?? [];
   const unitList = units.data ?? [];
   const itemList = items.data ?? [];
+  const savedList = saved.data ?? [];
   const selectedRoomId = activeRoomId ?? roomList[0]?.id ?? null;
   const selectedRoom = roomList.find((room) => room.id === selectedRoomId) ?? null;
   const roomUnits = unitList.filter((unit) => unit.roomId === selectedRoomId);
   const roomItems = itemList.filter((item) => item.roomId === selectedRoomId);
+  const resultHits = activeFilter !== null ? filterHits : hits;
+  const showingResults = activeFilter !== null || deferredSearch.length > 0;
+
+  function runBuiltFilter(): void {
+    const built = buildInventoryFilter({
+      text: filterText,
+      tags: parseTags(filterTags),
+      tagMode,
+      combine,
+      types,
+    });
+    if (built === null) {
+      setFilterError(m.casaInventoryFilterNeedSomething());
+      return;
+    }
+    setFilterError(null);
+    setSearch('');
+    setActiveFilter(built);
+  }
+
+  async function saveBuiltFilter(): Promise<void> {
+    const built = buildInventoryFilter({
+      text: filterText,
+      tags: parseTags(filterTags),
+      tagMode,
+      combine,
+      types,
+    });
+    const name = filterName.trim();
+    if (built === null) {
+      setFilterError(m.casaInventoryFilterNeedSomething());
+      return;
+    }
+    if (name.length === 0) {
+      setFilterError(m.casaInventorySaveFilterName());
+      return;
+    }
+    if (savedList.length >= SAVED_FILTER_PIN_LIMIT) {
+      setFilterError(m.casaInventorySavedFull());
+      return;
+    }
+    setBusy(true);
+    setFilterError(null);
+    try {
+      await api.createSavedFilter(props.familyId, { name, filter: built }, crypto.randomUUID());
+      setFilterName('');
+      await refresh();
+    } catch (error) {
+      setFilterError(problemText(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeSaved(filter: SavedFilter): Promise<void> {
+    setBusy(true);
+    setFilterError(null);
+    try {
+      await api.deleteSavedFilter(props.familyId, filter.id, filter.version);
+      setActiveFilter(null);
+      await refresh();
+    } catch (error) {
+      setFilterError(problemText(error));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <div className="grid max-w-2xl gap-8">
-      {!props.canWrite ? <p className="text-[13px] text-muted-foreground">{m.casaReadOnly()}</p> : null}
-      <p className="text-[13px] text-muted-foreground">{m.casaInventoryLead()}</p>
+    <div className="grid gap-8 lg:grid-cols-[13rem_minmax(0,42rem)]">
+      <aside className="grid h-fit gap-3 border-b border-border pb-4 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-4">
+        <div>
+          <p className="text-[14px] font-medium">{m.casaInventorySavedFilters()}</p>
+          <p className="text-[12px] text-muted-foreground">{m.casaInventorySavedFiltersLead()}</p>
+        </div>
+        {saved.isPending ? <p className="text-[13px] text-muted-foreground">{m.loading()}</p> : null}
+        {saved.isError ? (
+          <p role="alert" className="text-[13px] text-destructive">
+            {problemText(saved.error)}
+          </p>
+        ) : null}
+        {savedList.length === 0 && !saved.isPending ? (
+          <p className="text-[13px] text-muted-foreground">{m.casaInventorySavedEmpty()}</p>
+        ) : null}
+        <ul className="grid gap-2">
+          {savedList.map((filter) => (
+            <li key={filter.id} className="grid gap-1">
+              <button
+                type="button"
+                className="min-h-12 rounded-md border border-border px-3 text-left text-[14px] hover:bg-muted"
+                onClick={() => {
+                  setSearch('');
+                  setActiveFilter(filter.filter);
+                }}
+              >
+                {filter.name}
+              </button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="min-h-12 justify-start px-3"
+                disabled={busy}
+                onClick={() => void removeSaved(filter)}
+              >
+                {m.casaInventoryRemoveFilter()}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </aside>
 
-      <section className="grid gap-3" aria-label={m.casaInventorySearch()}>
-        <Field htmlFor="inv-field-1" label={m.casaInventorySearch()}>
-          {' '}
-          <Input
-            id="inv-field-1"
-            className={touchControl}
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={m.casaInventorySearchHint()}
-            autoComplete="off"
-          />
-        </Field>
-        {deferredSearch.length > 0 ? (
-          <div className="grid gap-2">
-            {hits.isPending ? <p className="text-[13px] text-muted-foreground">{m.loading()}</p> : null}
-            {hits.isError ? (
+      <div className="grid max-w-2xl gap-8">
+        {!props.canWrite ? <p className="text-[13px] text-muted-foreground">{m.casaReadOnly()}</p> : null}
+        <p className="text-[13px] text-muted-foreground">{m.casaInventoryLead()}</p>
+
+        <section className="grid gap-3" aria-label={m.casaInventorySearch()}>
+          <Field htmlFor="inv-field-1" label={m.casaInventorySearch()}>
+            {' '}
+            <Input
+              id="inv-field-1"
+              className={touchControl}
+              value={search}
+              onChange={(event) => {
+                setActiveFilter(null);
+                setSearch(event.target.value);
+              }}
+              placeholder={m.casaInventorySearchHint()}
+              autoComplete="off"
+            />
+          </Field>
+
+          <div className="grid gap-3 border-t border-border pt-3" aria-label={m.casaInventoryFilterBuilder()}>
+            <p className="text-[14px] font-medium">{m.casaInventoryFilterBuilder()}</p>
+            <Field htmlFor="inv-filter-text" label={m.casaInventoryFilterText()}>
+              <Input
+                id="inv-filter-text"
+                className={touchControl}
+                value={filterText}
+                onChange={(event) => setFilterText(event.target.value)}
+                autoComplete="off"
+              />
+            </Field>
+            <Field htmlFor="inv-filter-tags" label={m.casaInventoryFilterTags()}>
+              <Input
+                id="inv-filter-tags"
+                className={touchControl}
+                value={filterTags}
+                onChange={(event) => setFilterTags(event.target.value)}
+                placeholder={m.casaInventoryTagsHint()}
+                autoComplete="off"
+              />
+            </Field>
+            <Field htmlFor="inv-filter-tag-mode" label={m.casaInventoryFilterTagMode()}>
+              <select
+                id="inv-filter-tag-mode"
+                className={touchControl}
+                value={tagMode}
+                onChange={(event) => setTagMode(event.target.value as 'and' | 'or')}
+              >
+                <option value="and">{m.casaInventoryFilterTagAnd()}</option>
+                <option value="or">{m.casaInventoryFilterTagOr()}</option>
+              </select>
+            </Field>
+            <Field htmlFor="inv-filter-combine" label={m.casaInventoryFilterCombine()}>
+              <select
+                id="inv-filter-combine"
+                className={touchControl}
+                value={combine}
+                onChange={(event) => setCombine(event.target.value as 'and' | 'or')}
+              >
+                <option value="and">{m.casaInventoryFilterCombineAnd()}</option>
+                <option value="or">{m.casaInventoryFilterCombineOr()}</option>
+              </select>
+            </Field>
+            <fieldset className="grid gap-2">
+              <legend className="text-[13px] text-muted-foreground">{m.casaInventoryFilterTypes()}</legend>
+              {ALL_SEARCH_TYPES.map((type) => (
+                <label key={type} className="flex min-h-12 items-center gap-3 text-[14px]">
+                  <input
+                    type="checkbox"
+                    className="size-5"
+                    checked={types.includes(type)}
+                    onChange={(event) => {
+                      setTypes((current) =>
+                        event.target.checked ? [...current, type] : current.filter((item) => item !== type),
+                      );
+                    }}
+                  />
+                  {type === 'rooms'
+                    ? m.casaInventoryHitRoom()
+                    : type === 'storage_units'
+                      ? m.casaInventoryHitStorage()
+                      : m.casaInventoryHitItem()}
+                </label>
+              ))}
+            </fieldset>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" className="min-h-12" onClick={runBuiltFilter}>
+                {m.casaInventoryFilterRun()}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-12"
+                onClick={() => {
+                  setActiveFilter(null);
+                  setFilterError(null);
+                }}
+              >
+                {m.casaInventoryFilterClear()}
+              </Button>
+            </div>
+            <Field htmlFor="inv-filter-name" label={m.casaInventorySaveFilterName()}>
+              <Input
+                id="inv-filter-name"
+                className={touchControl}
+                value={filterName}
+                onChange={(event) => setFilterName(event.target.value)}
+                autoComplete="off"
+              />
+            </Field>
+            <Button
+              type="button"
+              variant="secondary"
+              className="min-h-12"
+              disabled={busy || savedList.length >= SAVED_FILTER_PIN_LIMIT}
+              onClick={() => void saveBuiltFilter()}
+            >
+              {m.casaInventorySaveFilter()}
+            </Button>
+            {filterError !== null ? (
               <p role="alert" className="text-[13px] text-destructive">
-                {problemText(hits.error)}
+                {filterError}
               </p>
             ) : null}
-            {hits.data?.items.length === 0 ? (
-              <p className="text-[13px] text-muted-foreground">{m.casaInventoryNoHits()}</p>
-            ) : null}
-            {hits.data?.items.map((hit) => (
-              <div key={`${hit.resourceType}:${hit.resourceId}`} className="border-b border-border py-2">
-                <p className="text-[12px] text-muted-foreground">{resourceLabel(hit)}</p>
-                <p className="text-[14px] font-medium">{hit.title}</p>
-                {hit.body.trim() === '' ? null : (
-                  <p className="text-[13px] text-muted-foreground">{hit.body.slice(0, 160)}</p>
-                )}
-                {hit.tags.length === 0 ? null : (
-                  <p className="text-[12px] text-muted-foreground">{hit.tags.join(' · ')}</p>
-                )}
-              </div>
-            ))}
           </div>
-        ) : null}
-      </section>
 
-      {(rooms.isPending || units.isPending || items.isPending) && deferredSearch.length === 0 ? (
-        <p className="text-[13px] text-muted-foreground">{m.loading()}</p>
-      ) : null}
-      {rooms.isError ? (
-        <p role="alert" className="text-[13px] text-destructive">
-          {problemText(rooms.error)}
-        </p>
-      ) : null}
-
-      {deferredSearch.length > 0 ? null : (
-        <>
-          {props.canWrite ? (
-            <RoomForm
-              onSave={async (input) => {
-                await api.createRoom(
-                  props.familyId,
-                  props.houseId,
-                  { ...input, sortOrder: 0 },
-                  crypto.randomUUID(),
-                );
-                await refresh();
-              }}
-            />
-          ) : null}
-
-          {roomList.length === 0 ? (
-            <p className="text-[13px] text-muted-foreground">{m.casaInventoryEmpty()}</p>
-          ) : (
-            <div className="flex flex-wrap gap-2" role="tablist" aria-label={m.casaInventoryRooms()}>
-              {roomList.map((room) => (
-                <button
-                  key={room.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={room.id === selectedRoomId}
-                  className={
-                    room.id === selectedRoomId
-                      ? 'min-h-12 rounded-md border border-foreground bg-muted px-3 text-[14px]'
-                      : 'min-h-12 rounded-md border border-border px-3 text-[14px] text-muted-foreground'
-                  }
-                  onClick={() => setActiveRoomId(room.id)}
-                >
-                  {room.name}
-                </button>
+          {showingResults ? (
+            <div className="grid gap-2">
+              {resultHits.isPending ? (
+                <p className="text-[13px] text-muted-foreground">{m.loading()}</p>
+              ) : null}
+              {resultHits.isError ? (
+                <p role="alert" className="text-[13px] text-destructive">
+                  {problemText(resultHits.error)}
+                </p>
+              ) : null}
+              {resultHits.data?.items.length === 0 ? (
+                <p className="text-[13px] text-muted-foreground">{m.casaInventoryNoHits()}</p>
+              ) : null}
+              {resultHits.data?.items.map((hit) => (
+                <div key={`${hit.resourceType}:${hit.resourceId}`} className="border-b border-border py-2">
+                  <p className="text-[12px] text-muted-foreground">{resourceLabel(hit)}</p>
+                  <p className="text-[14px] font-medium">{hit.title}</p>
+                  {hit.body.trim() === '' ? null : (
+                    <p className="text-[13px] text-muted-foreground">{hit.body.slice(0, 160)}</p>
+                  )}
+                  {hit.tags.length === 0 ? null : (
+                    <p className="text-[12px] text-muted-foreground">{hit.tags.join(' · ')}</p>
+                  )}
+                </div>
               ))}
             </div>
-          )}
+          ) : null}
+        </section>
 
-          {selectedRoom === null ? null : (
-            <RoomDetail
-              room={selectedRoom}
-              units={roomUnits}
-              items={roomItems}
-              canWrite={props.canWrite}
-              onRefresh={refresh}
-              onUpdateRoom={async (patch) => {
-                await api.updateRoom(
-                  props.familyId,
-                  props.houseId,
-                  selectedRoom.id,
-                  selectedRoom.version,
-                  patch,
-                );
-                await refresh();
-              }}
-              onDeleteRoom={async () => {
-                await api.deleteRoom(props.familyId, props.houseId, selectedRoom.id, selectedRoom.version);
-                setActiveRoomId(null);
-                await refresh();
-              }}
-              onCreateUnit={async (input) => {
-                await api.createStorageUnit(
-                  props.familyId,
-                  props.houseId,
-                  { ...input, roomId: selectedRoom.id, sortOrder: 0 },
-                  crypto.randomUUID(),
-                );
-                await refresh();
-              }}
-              onDeleteUnit={async (unit) => {
-                await api.deleteStorageUnit(props.familyId, props.houseId, unit.id, unit.version);
-                await refresh();
-              }}
-              onCreateItem={async (input) => {
-                await api.createInventoryItem(
-                  props.familyId,
-                  props.houseId,
-                  { ...input, roomId: selectedRoom.id, quantity: 1 },
-                  crypto.randomUUID(),
-                );
-                await refresh();
-              }}
-              onUpdateItem={async (item, patch) => {
-                await api.updateInventoryItem(props.familyId, props.houseId, item.id, item.version, patch);
-                await refresh();
-              }}
-              onDeleteItem={async (item) => {
-                await api.deleteInventoryItem(props.familyId, props.houseId, item.id, item.version);
-                await refresh();
-              }}
-            />
-          )}
-        </>
-      )}
+        {(rooms.isPending || units.isPending || items.isPending) && !showingResults ? (
+          <p className="text-[13px] text-muted-foreground">{m.loading()}</p>
+        ) : null}
+        {rooms.isError ? (
+          <p role="alert" className="text-[13px] text-destructive">
+            {problemText(rooms.error)}
+          </p>
+        ) : null}
+
+        {showingResults ? null : (
+          <>
+            {props.canWrite ? (
+              <RoomForm
+                onSave={async (input) => {
+                  await api.createRoom(
+                    props.familyId,
+                    props.houseId,
+                    { ...input, sortOrder: 0 },
+                    crypto.randomUUID(),
+                  );
+                  await refresh();
+                }}
+              />
+            ) : null}
+
+            {roomList.length === 0 ? (
+              <p className="text-[13px] text-muted-foreground">{m.casaInventoryEmpty()}</p>
+            ) : (
+              <div className="flex flex-wrap gap-2" role="tablist" aria-label={m.casaInventoryRooms()}>
+                {roomList.map((room) => (
+                  <button
+                    key={room.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={room.id === selectedRoomId}
+                    className={
+                      room.id === selectedRoomId
+                        ? 'min-h-12 rounded-md border border-foreground bg-muted px-3 text-[14px]'
+                        : 'min-h-12 rounded-md border border-border px-3 text-[14px] text-muted-foreground'
+                    }
+                    onClick={() => setActiveRoomId(room.id)}
+                  >
+                    {room.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {selectedRoom === null ? null : (
+              <RoomDetail
+                room={selectedRoom}
+                units={roomUnits}
+                items={roomItems}
+                canWrite={props.canWrite}
+                onRefresh={refresh}
+                onUpdateRoom={async (patch) => {
+                  await api.updateRoom(
+                    props.familyId,
+                    props.houseId,
+                    selectedRoom.id,
+                    selectedRoom.version,
+                    patch,
+                  );
+                  await refresh();
+                }}
+                onDeleteRoom={async () => {
+                  await api.deleteRoom(props.familyId, props.houseId, selectedRoom.id, selectedRoom.version);
+                  setActiveRoomId(null);
+                  await refresh();
+                }}
+                onCreateUnit={async (input) => {
+                  await api.createStorageUnit(
+                    props.familyId,
+                    props.houseId,
+                    { ...input, roomId: selectedRoom.id, sortOrder: 0 },
+                    crypto.randomUUID(),
+                  );
+                  await refresh();
+                }}
+                onDeleteUnit={async (unit) => {
+                  await api.deleteStorageUnit(props.familyId, props.houseId, unit.id, unit.version);
+                  await refresh();
+                }}
+                onCreateItem={async (input) => {
+                  await api.createInventoryItem(
+                    props.familyId,
+                    props.houseId,
+                    { ...input, roomId: selectedRoom.id, quantity: 1 },
+                    crypto.randomUUID(),
+                  );
+                  await refresh();
+                }}
+                onUpdateItem={async (item, patch) => {
+                  await api.updateInventoryItem(props.familyId, props.houseId, item.id, item.version, patch);
+                  await refresh();
+                }}
+                onDeleteItem={async (item) => {
+                  await api.deleteInventoryItem(props.familyId, props.houseId, item.id, item.version);
+                  await refresh();
+                }}
+              />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

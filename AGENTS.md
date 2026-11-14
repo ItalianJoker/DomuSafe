@@ -47,6 +47,7 @@ pnpm verify
 | Registro letture dei codici pubblici                       | `packages/db/migrations/0013_publication_readings.sql`                  |
 | Marchio della famiglia                                     | `packages/db/migrations/0014_family_branding.sql`                       |
 | Inventario (stanze, contenitori, oggetti, ricerca)         | `packages/db/migrations/0015_inventory.sql`                             |
+| Filtri inventario salvabili (AND/OR, max 5 in sidebar)     | `packages/db/migrations/0024_saved_filters.sql`                         |
 | Coordinamento assistenza (diario, Chi sono, consegne)      | `packages/db/migrations/0016_care.sql`                                  |
 | Faccende, punti, serie e ricompense                        | `packages/db/migrations/0017_chores_rewards.sql`                        |
 | Cucina (ricette, import URL, negozi, liste spesa)          | `packages/db/migrations/0018_kitchen.sql`                               |

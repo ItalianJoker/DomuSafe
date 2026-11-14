@@ -317,12 +317,22 @@ export const inventorySearchHitSchema = z
 /** One search hit. */
 export type InventorySearchHit = z.infer<typeof inventorySearchHitSchema>;
 
+/** Resource types covered by the house inventory search index. */
+export const INVENTORY_SEARCH_RESOURCE_TYPES = ['rooms', 'storage_units', 'inventory_items'] as const;
+/** Resource type covered by the house inventory search index. */
+export type InventorySearchResourceType = (typeof INVENTORY_SEARCH_RESOURCE_TYPES)[number];
+
+const inventorySearchResourceTypeSchema = z.enum(INVENTORY_SEARCH_RESOURCE_TYPES);
+const tagModeSchema = z.enum(['and', 'or']);
+
 /** Query of `GET …/inventory/search`. */
 export const inventorySearchQuerySchema = z
   .object({
     q: z.string().trim().min(1).max(200),
     limit: z.coerce.number().int().min(1).max(50).default(20),
     tag: tagSchema.optional(),
+    tags: z.array(tagSchema).min(1).max(16).optional(),
+    tagMode: tagModeSchema.default('and'),
   })
   .strict();
 
@@ -333,3 +343,134 @@ export const inventorySearchResponseSchema = z
   .meta({ id: 'InventorySearchResponse' });
 /** Response of inventory search. */
 export type InventorySearchResponse = z.infer<typeof inventorySearchResponseSchema>;
+
+/** Leaf that matches full-text and trigram search. */
+const inventoryFilterTextSchema = z
+  .object({
+    kind: z.literal('text'),
+    q: z.string().trim().min(1).max(200),
+  })
+  .strict();
+
+/** Leaf that matches inventory tags with AND or OR semantics. */
+const inventoryFilterTagsSchema = z
+  .object({
+    kind: z.literal('tags'),
+    tags: z.array(tagSchema).min(1).max(16),
+    mode: tagModeSchema,
+  })
+  .strict();
+
+/** Leaf that restricts hits to one or more inventory resource types. */
+const inventoryFilterTypesSchema = z
+  .object({
+    kind: z.literal('types'),
+    types: z.array(inventorySearchResourceTypeSchema).min(1).max(3),
+  })
+  .strict();
+
+/** One leaf condition of an inventory filter. */
+export const inventoryFilterLeafSchema = z
+  .discriminatedUnion('kind', [
+    inventoryFilterTextSchema,
+    inventoryFilterTagsSchema,
+    inventoryFilterTypesSchema,
+  ])
+  .meta({ id: 'InventoryFilterLeaf' });
+/** One leaf condition of an inventory filter. */
+export type InventoryFilterLeaf = z.infer<typeof inventoryFilterLeafSchema>;
+
+function filterGroupOf<T extends z.ZodType>(child: T) {
+  return z
+    .object({
+      kind: z.literal('group'),
+      op: z.enum(['and', 'or']),
+      children: z.array(child).min(1).max(8),
+    })
+    .strict();
+}
+
+/** Nesting level 0: leaves only. */
+const inventoryFilterNodeL0 = inventoryFilterLeafSchema;
+/** Nesting level 1: leaves or a group of leaves. */
+const inventoryFilterNodeL1 = z.union([inventoryFilterLeafSchema, filterGroupOf(inventoryFilterNodeL0)]);
+/** Nesting level 2: leaves or a group of level-1 nodes. */
+const inventoryFilterNodeL2 = z.union([inventoryFilterLeafSchema, filterGroupOf(inventoryFilterNodeL1)]);
+
+/**
+ * Nested inventory search filter (maximum three group levels).
+ * Groups combine children with AND or OR; leaves are full-text, tags or resource types.
+ */
+export const inventoryFilterNodeSchema = z
+  .union([inventoryFilterLeafSchema, filterGroupOf(inventoryFilterNodeL2)])
+  .meta({ id: 'InventoryFilterNode' });
+/** Nested inventory search filter. */
+export type InventoryFilterNode = z.infer<typeof inventoryFilterNodeSchema>;
+
+/** Body of `POST …/inventory/search`. */
+export const inventoryFilterSearchRequestSchema = z
+  .object({
+    filter: inventoryFilterNodeSchema,
+    limit: z.int().min(1).max(50).default(20),
+  })
+  .strict()
+  .meta({ id: 'InventoryFilterSearchRequest' });
+/** Body of `POST …/inventory/search`. */
+export type InventoryFilterSearchRequest = z.infer<typeof inventoryFilterSearchRequestSchema>;
+
+/** Maximum number of saved inventory filters pinned in the sidebar. */
+export const SAVED_FILTER_PIN_LIMIT = 5;
+
+/** Saved inventory filter owned by one family member. */
+export const savedFilterSchema = z
+  .object({
+    id: uuidSchema,
+    familyId: uuidSchema,
+    accountId: uuidSchema,
+    name: z.string().trim().min(1).max(80),
+    filter: inventoryFilterNodeSchema,
+    pinnedPosition: z.int().min(1).max(SAVED_FILTER_PIN_LIMIT),
+    version: z.int().min(1),
+    createdAt: instantSchema,
+    updatedAt: instantSchema,
+  })
+  .strict()
+  .meta({ id: 'SavedFilter' });
+/** Saved inventory filter. */
+export type SavedFilter = z.infer<typeof savedFilterSchema>;
+
+/** Body of `POST …/saved-filters`. */
+export const createSavedFilterRequestSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80),
+    filter: inventoryFilterNodeSchema,
+    pinnedPosition: z.int().min(1).max(SAVED_FILTER_PIN_LIMIT).optional(),
+  })
+  .strict()
+  .meta({ id: 'CreateSavedFilterRequest' });
+/** Body of `POST …/saved-filters`. */
+export type CreateSavedFilterRequest = z.infer<typeof createSavedFilterRequestSchema>;
+
+/** Body of `PATCH …/saved-filters/{filterId}`. */
+export const updateSavedFilterRequestSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80).optional(),
+    filter: inventoryFilterNodeSchema.optional(),
+    pinnedPosition: z.int().min(1).max(SAVED_FILTER_PIN_LIMIT).optional(),
+  })
+  .strict()
+  .refine(atLeastOneField, 'At least one field is required')
+  .meta({ id: 'UpdateSavedFilterRequest' });
+/** Body of `PATCH …/saved-filters/{filterId}`. */
+export type UpdateSavedFilterRequest = z.infer<typeof updateSavedFilterRequestSchema>;
+
+/** Response of `GET …/saved-filters`. */
+export const savedFilterListSchema = z
+  .object({ items: z.array(savedFilterSchema).max(SAVED_FILTER_PIN_LIMIT) })
+  .strict()
+  .meta({ id: 'SavedFilterList' });
+/** Response of `GET …/saved-filters`. */
+export type SavedFilterList = z.infer<typeof savedFilterListSchema>;
+
+/** Path params of one saved filter. */
+export const savedFilterParamsSchema = z.object({ familyId: uuidSchema, filterId: uuidSchema }).strict();

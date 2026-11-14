@@ -126,9 +126,97 @@ describe('inventory', () => {
     expect(tagged.statusCode).toBe(200);
     expect(tagged.json<{ items: unknown[] }>().items.length).toBeGreaterThan(0);
 
+    const filtered = await alice.request('POST', houseUrl('/inventory/search'), {
+      body: {
+        filter: {
+          kind: 'group',
+          op: 'and',
+          children: [
+            { kind: 'text', q: 'frullatore' },
+            {
+              kind: 'group',
+              op: 'or',
+              children: [
+                { kind: 'tags', tags: ['elettrodomestico'], mode: 'and' },
+                { kind: 'types', types: ['rooms'] },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    expect(filtered.statusCode).toBe(200);
+    expect(
+      filtered
+        .json<{ items: { resourceType: string }[] }>()
+        .items.some((hit) => hit.resourceType === 'inventory_items'),
+    ).toBe(true);
+
+    const orTags = await alice.request('POST', houseUrl('/inventory/search'), {
+      body: {
+        filter: {
+          kind: 'tags',
+          tags: ['elettrodomestico', 'inesistente'],
+          mode: 'or',
+        },
+      },
+    });
+    expect(orTags.statusCode).toBe(200);
+    expect(orTags.json<{ items: unknown[] }>().items.length).toBeGreaterThan(0);
+
+    const andMiss = await alice.request('POST', houseUrl('/inventory/search'), {
+      body: {
+        filter: {
+          kind: 'tags',
+          tags: ['elettrodomestico', 'inesistente'],
+          mode: 'and',
+        },
+      },
+    });
+    expect(andMiss.statusCode).toBe(200);
+    expect(andMiss.json<{ items: unknown[] }>().items).toEqual([]);
+
+    const saved = await alice.create(`/api/v1/families/${familyId}/saved-filters`, {
+      name: 'Attrezzi cucina',
+      filter: {
+        kind: 'group',
+        op: 'and',
+        children: [
+          { kind: 'text', q: 'frullatore' },
+          { kind: 'tags', tags: ['cucina'], mode: 'and' },
+        ],
+      },
+    });
+    expect(saved.statusCode).toBe(201);
+    expect(saved.headers.etag).toBe('"1"');
+    const savedBody = saved.json<{ id: string; pinnedPosition: number; version: number }>();
+    expect(savedBody.pinnedPosition).toBe(1);
+
+    const listed = await alice.request('GET', `/api/v1/families/${familyId}/saved-filters`);
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json<{ items: unknown[] }>().items).toHaveLength(1);
+
+    for (let index = 2; index <= 5; index += 1) {
+      const extra = await alice.create(`/api/v1/families/${familyId}/saved-filters`, {
+        name: `Filtro ${String(index)}`,
+        filter: { kind: 'text', q: `prova ${String(index)}` },
+      });
+      expect(extra.statusCode).toBe(201);
+    }
+    const sixth = await alice.create(`/api/v1/families/${familyId}/saved-filters`, {
+      name: 'Troppo',
+      filter: { kind: 'text', q: 'eccesso' },
+    });
+    expect(sixth.statusCode).toBe(422);
+    expect(problem(sixth).code).toBe('domain_rule_violated');
+
     const childList = await child.request('GET', houseUrl('/rooms'));
     expect(childList.statusCode).toBe(200);
     expect(childList.json<{ items: Room[] }>().items.length).toBeGreaterThan(0);
+
+    const childFilters = await child.request('GET', `/api/v1/families/${familyId}/saved-filters`);
+    expect(childFilters.statusCode).toBe(200);
+    expect(childFilters.json<{ items: unknown[] }>().items).toEqual([]);
 
     const childWrite = await child.create(houseUrl('/rooms'), { name: 'Bagno', kind: 'bathroom' });
     expect(childWrite.statusCode).toBe(403);
@@ -138,5 +226,8 @@ describe('inventory', () => {
 
     const guestItems = await guest.request('GET', houseUrl('/inventory-items'));
     expect(guestItems.statusCode).toBe(403);
+
+    const guestFilters = await guest.request('GET', `/api/v1/families/${familyId}/saved-filters`);
+    expect(guestFilters.statusCode).toBe(403);
   });
 });

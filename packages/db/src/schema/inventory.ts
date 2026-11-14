@@ -109,6 +109,26 @@ export const inventoryItems = pgTable('inventory_items', {
 });
 
 /**
+ * One account-owned inventory search filter pinned in the Casa sidebar (at most five).
+ * Class C readable definition; personal encryption of the payload is a later step.
+ */
+export const savedFilters = pgTable('saved_filters', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`uuidv7()`),
+  version: integer('version').notNull().default(1),
+  createdAt: instant('created_at').notNull().defaultNow(),
+  updatedAt: instant('updated_at').notNull().defaultNow(),
+  createdBy: uuid('created_by'),
+  updatedBy: uuid('updated_by'),
+  familyId: uuid('family_id').notNull(),
+  accountId: uuid('account_id').notNull(),
+  name: text('name').notNull(),
+  definition: jsonb('definition').$type<Record<string, unknown>>().notNull(),
+  pinnedPosition: smallint('pinned_position').notNull(),
+});
+
+/**
  * Unified full-text index for class C resources.
  * Modules upsert a row in the same write transaction. Guests only see `audience_guest` rows.
  */

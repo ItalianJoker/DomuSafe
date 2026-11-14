@@ -17,6 +17,8 @@ import {
   inventorySearchResponseSchema,
   roomPageSchema,
   roomSchema,
+  savedFilterListSchema,
+  savedFilterSchema,
   storageUnitPageSchema,
   storageUnitSchema,
   bankAccountPageSchema,
@@ -80,7 +82,9 @@ import {
   type CreateInventoryItemRequest,
   type CreateMaintenanceTaskRequest,
   type CreateRoomRequest,
+  type CreateSavedFilterRequest,
   type CreateStorageUnitRequest,
+  type InventoryFilterSearchRequest,
   type CreateShutoffRequest,
   type CreateUtilityRequest,
   type CreateWasteCollectionRequest,
@@ -93,7 +97,9 @@ import {
   type InventorySearchResponse,
   type MaintenanceTask,
   type Room,
+  type SavedFilter,
   type StorageUnit,
+  type UpdateSavedFilterRequest,
   type Me,
   type PersonalBankAccount,
   type PersonalSubscription,
@@ -810,6 +816,62 @@ export interface DomusafeApi {
     query: string,
     tag?: string,
   ): Promise<InventorySearchResponse>;
+  /**
+   * Nested AND/OR filter search over the house inventory.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @param body - Filter tree and limit.
+   * @returns Ranked hits.
+   */
+  searchInventoryFiltered(
+    familyId: string,
+    houseId: string,
+    body: InventoryFilterSearchRequest,
+  ): Promise<InventorySearchResponse>;
+  /**
+   * Saved inventory filters of the signed-in member (at most five).
+   *
+   * @param familyId - Family id.
+   * @returns Owned filters in sidebar order.
+   */
+  listSavedFilters(familyId: string): Promise<readonly SavedFilter[]>;
+  /**
+   * Saves an inventory filter in the sidebar.
+   *
+   * @param familyId - Family id.
+   * @param body - Name and filter tree.
+   * @param idempotencyKey - UUID for this attempt.
+   * @returns The saved filter.
+   */
+  createSavedFilter(
+    familyId: string,
+    body: CreateSavedFilterRequest,
+    idempotencyKey: string,
+  ): Promise<SavedFilter>;
+  /**
+   * Updates one saved inventory filter.
+   *
+   * @param familyId - Family id.
+   * @param filterId - Filter id.
+   * @param version - Version the form was loaded with.
+   * @param body - Patch fields.
+   * @returns The updated filter.
+   */
+  updateSavedFilter(
+    familyId: string,
+    filterId: string,
+    version: number,
+    body: UpdateSavedFilterRequest,
+  ): Promise<SavedFilter>;
+  /**
+   * Deletes one saved inventory filter.
+   *
+   * @param familyId - Family id.
+   * @param filterId - Filter id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteSavedFilter(familyId: string, filterId: string, version: number): Promise<void>;
   /**
    * People linked to one house.
    *
@@ -2367,6 +2429,50 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       });
       return unwrap(inventorySearchResponseSchema, result);
+    },
+    async searchInventoryFiltered(familyId, houseId, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/houses/{houseId}/inventory/search', {
+        params: { path: { familyId, houseId } },
+        body,
+      });
+      return unwrap(inventorySearchResponseSchema, result);
+    },
+    async listSavedFilters(familyId) {
+      const result = await client.GET('/api/v1/families/{familyId}/saved-filters', {
+        params: { path: { familyId } },
+      });
+      return (await unwrap(savedFilterListSchema, result)).items;
+    },
+    async createSavedFilter(familyId, body, idempotencyKey) {
+      const result = await client.POST('/api/v1/families/{familyId}/saved-filters', {
+        params: { path: { familyId } },
+        body: {
+          name: body.name,
+          filter: body.filter,
+          ...(body.pinnedPosition === undefined ? {} : { pinnedPosition: body.pinnedPosition }),
+        },
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(savedFilterSchema, result);
+    },
+    async updateSavedFilter(familyId, filterId, version, body) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/saved-filters/{filterId}', {
+        params: { path: { familyId, filterId } },
+        body: {
+          ...(body.name === undefined ? {} : { name: body.name }),
+          ...(body.filter === undefined ? {} : { filter: body.filter }),
+          ...(body.pinnedPosition === undefined ? {} : { pinnedPosition: body.pinnedPosition }),
+        },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(savedFilterSchema, result);
+    },
+    async deleteSavedFilter(familyId, filterId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/saved-filters/{filterId}', {
+        params: { path: { familyId, filterId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
     },
     listResidents(familyId, houseId) {
       return collect((cursor) =>
