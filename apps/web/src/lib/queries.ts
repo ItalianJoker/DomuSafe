@@ -630,3 +630,73 @@ export function inventorySearchQuery(api: DomusafeApi, familyId: string, houseId
     queryFn: () => api.searchInventory(familyId, houseId, query),
   });
 }
+
+/**
+ * Query of family ledger accounts.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function financeAccountsQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['finance-accounts', familyId] as const,
+    queryFn: () => api.listFinanceAccounts(familyId),
+  });
+}
+
+/**
+ * Query of finance transactions.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function financeTransactionsQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['finance-transactions', familyId] as const,
+    queryFn: () => api.listFinanceTransactions(familyId),
+  });
+}
+
+/**
+ * Query of finance budgets.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function financeBudgetsQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['finance-budgets', familyId] as const,
+    queryFn: () => api.listFinanceBudgets(familyId),
+  });
+}
+
+/**
+ * Query of savings goals.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function financeSavingsGoalsQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['finance-savings-goals', familyId] as const,
+    queryFn: () => api.listFinanceSavingsGoals(familyId),
+  });
+}
+
+/**
+ * Query of recurring finance templates.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function financeRecurringQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['finance-recurring', familyId] as const,
+    queryFn: () => api.listFinanceRecurring(familyId),
+  });
+}

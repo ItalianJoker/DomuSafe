@@ -853,6 +853,272 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/fx-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List foreign-exchange reference rates */
+        get: operations["finance.listFxRates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List ledger accounts */
+        get: operations["finance.listAccounts"];
+        put?: never;
+        /** Create a ledger account */
+        post: operations["finance.createAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/accounts/{accountId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-delete a ledger account */
+        delete: operations["finance.deleteAccount"];
+        options?: never;
+        head?: never;
+        /** Update a ledger account */
+        patch: operations["finance.updateAccount"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/accounts/{accountId}/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the ledger page of one account */
+        get: operations["finance.getAccountLedger"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List finance transactions */
+        get: operations["finance.listTransactions"];
+        put?: never;
+        /** Create a double-entry transaction */
+        post: operations["finance.createTransaction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/transactions/{transactionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get one finance transaction */
+        get: operations["finance.getTransaction"];
+        put?: never;
+        post?: never;
+        /** Soft-delete a finance transaction */
+        delete: operations["finance.deleteTransaction"];
+        options?: never;
+        head?: never;
+        /** Update a finance transaction */
+        patch: operations["finance.updateTransaction"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/transactions/{transactionId}/splits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace expense split shares on a transaction */
+        put: operations["finance.putSplits"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/budgets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List budgets */
+        get: operations["finance.listBudgets"];
+        put?: never;
+        /** Create a budget */
+        post: operations["finance.createBudget"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/budgets/{budgetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-delete a budget */
+        delete: operations["finance.deleteBudget"];
+        options?: never;
+        head?: never;
+        /** Update a budget */
+        patch: operations["finance.updateBudget"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/savings-goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List savings goals */
+        get: operations["finance.listSavingsGoals"];
+        put?: never;
+        /** Create a savings goal */
+        post: operations["finance.createSavingsGoal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/savings-goals/{goalId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-delete a savings goal */
+        delete: operations["finance.deleteSavingsGoal"];
+        options?: never;
+        head?: never;
+        /** Update a savings goal */
+        patch: operations["finance.updateSavingsGoal"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/recurring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List recurring transaction templates */
+        get: operations["finance.listRecurring"];
+        put?: never;
+        /** Create a recurring transaction template */
+        post: operations["finance.createRecurring"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/recurring/{recurringId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-delete a recurring transaction template */
+        delete: operations["finance.deleteRecurring"];
+        options?: never;
+        head?: never;
+        /** Update a recurring transaction template */
+        patch: operations["finance.updateRecurring"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/recurring/{recurringId}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Materialise the next run of a recurring template */
+        post: operations["finance.runRecurring"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/finance/reports/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a finance report for a date range */
+        get: operations["finance.getReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/families/{familyId}/residents/{residentId}/vitals": {
         parameters: {
             query?: never;
@@ -2727,6 +2993,542 @@ export interface components {
             overdue: components["schemas"]["DeadlineItemInput"][];
             week: components["schemas"]["DeadlineItemInput"][];
             month: components["schemas"]["DeadlineItemInput"][];
+        };
+        FinAccountInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /** @enum {string} */
+            visibility: "family" | "personal";
+            ownerAccountId: string | null;
+            residentId: string | null;
+            /** @enum {string} */
+            type: "asset" | "liability" | "equity" | "income" | "expense";
+            /** @enum {string} */
+            subtype: "cash" | "bank" | "card" | "savings" | "piggy_bank" | "loan" | "mortgage" | "investment" | "currency_exchange" | "opening_balance" | "category";
+            name: string;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            parentId: string | null;
+            archivedAt: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinAccountPageInput: {
+            items: components["schemas"]["FinAccountInput"][];
+            nextCursor: string | null;
+        };
+        CreateFinAccountRequestInput: {
+            /** @enum {string} */
+            visibility?: "family" | "personal";
+            ownerAccountId?: string | null;
+            residentId?: string | null;
+            /** @enum {string} */
+            type: "asset" | "liability" | "equity" | "income" | "expense";
+            /** @enum {string} */
+            subtype: "cash" | "bank" | "card" | "savings" | "piggy_bank" | "loan" | "mortgage" | "investment" | "currency_exchange" | "opening_balance" | "category";
+            name: string;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            parentId?: string | null;
+        };
+        UpdateFinAccountRequestInput: {
+            name?: string;
+            parentId?: string | null;
+            residentId?: string | null;
+            archivedAt?: string | null;
+        };
+        FinPostingInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            fxRate: number;
+            baseAmountMinor: number;
+            memo: string | null;
+        };
+        FinSplitShareInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            transactionId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            shareMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            settledTransactionId: string | null;
+        };
+        FinTransactionInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            bookedOn: string;
+            description: string;
+            payee: string | null;
+            /** @enum {string} */
+            status: "pending" | "cleared" | "reconciled";
+            recurringId: string | null;
+            tags: string[];
+            notes: string | null;
+            postings: components["schemas"]["FinPostingInput"][];
+            splits: components["schemas"]["FinSplitShareInput"][];
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinTransactionPageInput: {
+            items: components["schemas"]["FinTransactionInput"][];
+            nextCursor: string | null;
+        };
+        CreateFinTransactionRequestInput: {
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            bookedOn: string;
+            description: string;
+            payee?: string | null;
+            /** @enum {string} */
+            status?: "pending" | "cleared" | "reconciled";
+            tags?: string[];
+            notes?: string | null;
+            postings: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                accountId: string;
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                fxRate?: number;
+                memo?: string | null;
+            }[];
+        };
+        UpdateFinTransactionRequestInput: {
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            bookedOn?: string;
+            description?: string;
+            payee?: string | null;
+            /** @enum {string} */
+            status?: "pending" | "cleared" | "reconciled";
+            tags?: string[];
+            notes?: string | null;
+            postings?: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                accountId: string;
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                fxRate?: number;
+                memo?: string | null;
+            }[];
+        };
+        PutFinSplitsRequestInput: {
+            shares: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                residentId: string;
+                shareMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                settledTransactionId?: string | null;
+            }[];
+        };
+        FinAccountLedgerInput: {
+            account: components["schemas"]["FinAccountInput"];
+            balanceMinor: number;
+            baseBalanceMinor: number;
+            items: components["schemas"]["FinTransactionInput"][];
+            nextCursor: string | null;
+        };
+        FinBudgetInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            /** @enum {string} */
+            period: "monthly" | "yearly";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startsOn: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            rollover: boolean;
+            spentMinor: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinBudgetPageInput: {
+            items: components["schemas"]["FinBudgetInput"][];
+            nextCursor: string | null;
+        };
+        CreateFinBudgetRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            /** @enum {string} */
+            period: "monthly" | "yearly";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startsOn: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            rollover?: boolean;
+        };
+        UpdateFinBudgetRequestInput: {
+            amountMinor?: number;
+            rollover?: boolean;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startsOn?: string;
+        };
+        FinSavingsGoalInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            residentId: string | null;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            name: string;
+            targetMinor: number;
+            targetDate: string | null;
+            balanceMinor: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinSavingsGoalPageInput: {
+            items: components["schemas"]["FinSavingsGoalInput"][];
+            nextCursor: string | null;
+        };
+        CreateFinSavingsGoalRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            residentId?: string | null;
+            name: string;
+            targetMinor: number;
+            targetDate?: string | null;
+        };
+        UpdateFinSavingsGoalRequestInput: {
+            name?: string;
+            targetMinor?: number;
+            targetDate?: string | null;
+            residentId?: string | null;
+        };
+        FinRecurringInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            description: string;
+            rrule: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            nextRunOn: string;
+            endOn: string | null;
+            template: {
+                description: string;
+                payee: string | null;
+                tags: string[];
+                notes: string | null;
+                postings: {
+                    /**
+                     * Format: uuid
+                     * @description UUID in canonical lowercase form
+                     */
+                    accountId: string;
+                    amountMinor: number;
+                    /**
+                     * @description ISO 4217 currency code
+                     * @enum {string}
+                     */
+                    currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                    memo: string | null;
+                }[];
+            };
+            autoPost: boolean;
+            active: boolean;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinRecurringPageInput: {
+            items: components["schemas"]["FinRecurringInput"][];
+            nextCursor: string | null;
+        };
+        CreateFinRecurringRequestInput: {
+            description: string;
+            rrule: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            nextRunOn: string;
+            endOn?: string | null;
+            template: {
+                description: string;
+                payee: string | null;
+                tags: string[];
+                notes: string | null;
+                postings: {
+                    /**
+                     * Format: uuid
+                     * @description UUID in canonical lowercase form
+                     */
+                    accountId: string;
+                    amountMinor: number;
+                    /**
+                     * @description ISO 4217 currency code
+                     * @enum {string}
+                     */
+                    currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                    memo: string | null;
+                }[];
+            };
+            autoPost?: boolean;
+            active?: boolean;
+        };
+        UpdateFinRecurringRequestInput: {
+            description?: string;
+            rrule?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            nextRunOn?: string;
+            endOn?: string | null;
+            template?: {
+                description: string;
+                payee: string | null;
+                tags: string[];
+                notes: string | null;
+                postings: {
+                    /**
+                     * Format: uuid
+                     * @description UUID in canonical lowercase form
+                     */
+                    accountId: string;
+                    amountMinor: number;
+                    /**
+                     * @description ISO 4217 currency code
+                     * @enum {string}
+                     */
+                    currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                    memo: string | null;
+                }[];
+            };
+            autoPost?: boolean;
+            active?: boolean;
+        };
+        FxRateInput: {
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            base: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            quote: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            rateDate: string;
+            rate: number;
+            source: string;
+        };
+        FxRatePageInput: {
+            items: components["schemas"]["FxRateInput"][];
+            nextCursor: string | null;
+        };
+        FinReportRowInput: {
+            key: string;
+            label: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+        };
+        FinReportInput: {
+            /** @enum {string} */
+            kind: "balances" | "income-expense" | "by-category" | "net-worth";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            from: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            to: string;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            rows: components["schemas"]["FinReportRowInput"][];
         };
         GuideEntryInput: {
             /**
@@ -5538,6 +6340,542 @@ export interface components {
             overdue: components["schemas"]["DeadlineItem"][];
             week: components["schemas"]["DeadlineItem"][];
             month: components["schemas"]["DeadlineItem"][];
+        };
+        FinAccount: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /** @enum {string} */
+            visibility: "family" | "personal";
+            ownerAccountId: string | null;
+            residentId: string | null;
+            /** @enum {string} */
+            type: "asset" | "liability" | "equity" | "income" | "expense";
+            /** @enum {string} */
+            subtype: "cash" | "bank" | "card" | "savings" | "piggy_bank" | "loan" | "mortgage" | "investment" | "currency_exchange" | "opening_balance" | "category";
+            name: string;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            parentId: string | null;
+            archivedAt: string | null;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinAccountPage: {
+            items: components["schemas"]["FinAccount"][];
+            nextCursor: string | null;
+        };
+        CreateFinAccountRequest: {
+            /** @enum {string} */
+            visibility?: "family" | "personal";
+            ownerAccountId?: string | null;
+            residentId?: string | null;
+            /** @enum {string} */
+            type: "asset" | "liability" | "equity" | "income" | "expense";
+            /** @enum {string} */
+            subtype: "cash" | "bank" | "card" | "savings" | "piggy_bank" | "loan" | "mortgage" | "investment" | "currency_exchange" | "opening_balance" | "category";
+            name: string;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            parentId?: string | null;
+        };
+        UpdateFinAccountRequest: {
+            name?: string;
+            parentId?: string | null;
+            residentId?: string | null;
+            archivedAt?: string | null;
+        };
+        FinPosting: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            fxRate: number;
+            baseAmountMinor: number;
+            memo: string | null;
+        };
+        FinSplitShare: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            transactionId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            shareMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            settledTransactionId: string | null;
+        };
+        FinTransaction: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            bookedOn: string;
+            description: string;
+            payee: string | null;
+            /** @enum {string} */
+            status: "pending" | "cleared" | "reconciled";
+            recurringId: string | null;
+            tags: string[];
+            notes: string | null;
+            postings: components["schemas"]["FinPosting"][];
+            splits: components["schemas"]["FinSplitShare"][];
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinTransactionPage: {
+            items: components["schemas"]["FinTransaction"][];
+            nextCursor: string | null;
+        };
+        CreateFinTransactionRequest: {
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            bookedOn: string;
+            description: string;
+            payee?: string | null;
+            /** @enum {string} */
+            status?: "pending" | "cleared" | "reconciled";
+            tags?: string[];
+            notes?: string | null;
+            postings: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                accountId: string;
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                fxRate?: number;
+                memo?: string | null;
+            }[];
+        };
+        UpdateFinTransactionRequest: {
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            bookedOn?: string;
+            description?: string;
+            payee?: string | null;
+            /** @enum {string} */
+            status?: "pending" | "cleared" | "reconciled";
+            tags?: string[];
+            notes?: string | null;
+            postings?: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                accountId: string;
+                amountMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                fxRate?: number;
+                memo?: string | null;
+            }[];
+        };
+        PutFinSplitsRequest: {
+            shares: {
+                /**
+                 * Format: uuid
+                 * @description UUID in canonical lowercase form
+                 */
+                residentId: string;
+                shareMinor: number;
+                /**
+                 * @description ISO 4217 currency code
+                 * @enum {string}
+                 */
+                currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                settledTransactionId?: string | null;
+            }[];
+        };
+        FinAccountLedger: {
+            account: components["schemas"]["FinAccount"];
+            balanceMinor: number;
+            baseBalanceMinor: number;
+            items: components["schemas"]["FinTransaction"][];
+            nextCursor: string | null;
+        };
+        FinBudget: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            /** @enum {string} */
+            period: "monthly" | "yearly";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startsOn: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            rollover: boolean;
+            spentMinor: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinBudgetPage: {
+            items: components["schemas"]["FinBudget"][];
+            nextCursor: string | null;
+        };
+        CreateFinBudgetRequest: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            /** @enum {string} */
+            period: "monthly" | "yearly";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startsOn: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            rollover?: boolean;
+        };
+        UpdateFinBudgetRequest: {
+            amountMinor?: number;
+            rollover?: boolean;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startsOn?: string;
+        };
+        FinSavingsGoal: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            residentId: string | null;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            name: string;
+            targetMinor: number;
+            targetDate: string | null;
+            balanceMinor: number;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinSavingsGoalPage: {
+            items: components["schemas"]["FinSavingsGoal"][];
+            nextCursor: string | null;
+        };
+        CreateFinSavingsGoalRequest: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            accountId: string;
+            residentId?: string | null;
+            name: string;
+            targetMinor: number;
+            targetDate?: string | null;
+        };
+        UpdateFinSavingsGoalRequest: {
+            name?: string;
+            targetMinor?: number;
+            targetDate?: string | null;
+            residentId?: string | null;
+        };
+        FinRecurring: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            description: string;
+            rrule: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            nextRunOn: string;
+            endOn: string | null;
+            template: {
+                description: string;
+                payee: string | null;
+                tags: string[];
+                notes: string | null;
+                postings: {
+                    /**
+                     * Format: uuid
+                     * @description UUID in canonical lowercase form
+                     */
+                    accountId: string;
+                    amountMinor: number;
+                    /**
+                     * @description ISO 4217 currency code
+                     * @enum {string}
+                     */
+                    currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                    memo: string | null;
+                }[];
+            };
+            autoPost: boolean;
+            active: boolean;
+            version: number;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        FinRecurringPage: {
+            items: components["schemas"]["FinRecurring"][];
+            nextCursor: string | null;
+        };
+        CreateFinRecurringRequest: {
+            description: string;
+            rrule: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            nextRunOn: string;
+            endOn?: string | null;
+            template: {
+                description: string;
+                payee: string | null;
+                tags: string[];
+                notes: string | null;
+                postings: {
+                    /**
+                     * Format: uuid
+                     * @description UUID in canonical lowercase form
+                     */
+                    accountId: string;
+                    amountMinor: number;
+                    /**
+                     * @description ISO 4217 currency code
+                     * @enum {string}
+                     */
+                    currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                    memo: string | null;
+                }[];
+            };
+            autoPost?: boolean;
+            active?: boolean;
+        };
+        UpdateFinRecurringRequest: {
+            description?: string;
+            rrule?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            nextRunOn?: string;
+            endOn?: string | null;
+            template?: {
+                description: string;
+                payee: string | null;
+                tags: string[];
+                notes: string | null;
+                postings: {
+                    /**
+                     * Format: uuid
+                     * @description UUID in canonical lowercase form
+                     */
+                    accountId: string;
+                    amountMinor: number;
+                    /**
+                     * @description ISO 4217 currency code
+                     * @enum {string}
+                     */
+                    currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                    memo: string | null;
+                }[];
+            };
+            autoPost?: boolean;
+            active?: boolean;
+        };
+        FxRate: {
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            base: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            quote: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            rateDate: string;
+            rate: number;
+            source: string;
+        };
+        FxRatePage: {
+            items: components["schemas"]["FxRate"][];
+            nextCursor: string | null;
+        };
+        FinReportRow: {
+            key: string;
+            label: string;
+            amountMinor: number;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+        };
+        FinReport: {
+            /** @enum {string} */
+            kind: "balances" | "income-expense" | "by-category" | "net-worth";
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            from: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            to: string;
+            /**
+             * @description ISO 4217 currency code
+             * @enum {string}
+             */
+            currency: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+            rows: components["schemas"]["FinReportRow"][];
         };
         GuideEntry: {
             /**
@@ -14457,6 +15795,1973 @@ export interface operations {
             };
             /** @description Default Response */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.listFxRates": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                /** @description ISO 4217 currency code */
+                quote?: "EUR" | "USD" | "JPY" | "CZK" | "DKK" | "GBP" | "HUF" | "PLN" | "RON" | "SEK" | "CHF" | "ISK" | "NOK" | "TRY" | "AUD" | "BRL" | "CAD" | "CNY" | "HKD" | "IDR" | "ILS" | "INR" | "KRW" | "MXN" | "MYR" | "NZD" | "PHP" | "SGD" | "THB" | "ZAR";
+                /** @description Calendar date in the family time zone */
+                on?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FxRatePage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.listAccounts": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                type?: "asset" | "liability" | "equity" | "income" | "expense";
+                subtype?: "cash" | "bank" | "card" | "savings" | "piggy_bank" | "loan" | "mortgage" | "investment" | "currency_exchange" | "opening_balance" | "category";
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinAccountPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.createAccount": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFinAccountRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinAccount"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.deleteAccount": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.updateAccount": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFinAccountRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinAccount"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.getAccountLedger": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                /** @description Calendar date in the family time zone */
+                from?: string;
+                /** @description Calendar date in the family time zone */
+                to?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinAccountLedger"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.listTransactions": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                /** @description Calendar date in the family time zone */
+                from?: string;
+                /** @description Calendar date in the family time zone */
+                to?: string;
+                /** @description UUID in canonical lowercase form */
+                accountId?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinTransactionPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.createTransaction": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFinTransactionRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinTransaction"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.getTransaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                transactionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinTransaction"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.deleteTransaction": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                transactionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.updateTransaction": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                transactionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFinTransactionRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinTransaction"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.putSplits": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                transactionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutFinSplitsRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinTransaction"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.listBudgets": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinBudgetPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.createBudget": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFinBudgetRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinBudget"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.deleteBudget": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                budgetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.updateBudget": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                budgetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFinBudgetRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinBudget"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.listSavingsGoals": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinSavingsGoalPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.createSavingsGoal": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFinSavingsGoalRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinSavingsGoal"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.deleteSavingsGoal": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                goalId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.updateSavingsGoal": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                goalId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFinSavingsGoalRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinSavingsGoal"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.listRecurring": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinRecurringPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.createRecurring": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFinRecurringRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinRecurring"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.deleteRecurring": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                recurringId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.updateRecurring": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                recurringId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFinRecurringRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinRecurring"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.runRecurring": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                recurringId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinTransaction"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "finance.getReport": {
+        parameters: {
+            query: {
+                /** @description Calendar date in the family time zone */
+                from: string;
+                /** @description Calendar date in the family time zone */
+                to: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                kind: "balances" | "income-expense" | "by-category" | "net-worth";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinReport"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
