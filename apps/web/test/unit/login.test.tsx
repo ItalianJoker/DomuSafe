@@ -39,6 +39,9 @@ function unusedApi(partial: Partial<DomusafeApi>): DomusafeApi {
   return {
     getMe: fail,
     updateProfile: fail,
+    listNotifications: fail,
+    markNotificationRead: fail,
+    markAllNotificationsRead: fail,
     listNotificationPreferences: fail,
     updateNotificationPreferences: fail,
     createPushSubscription: fail,

@@ -36,6 +36,9 @@ export function SyncStatus(props: {
             if (!Array.isArray(key)) {
               return false;
             }
+            if (key[0] === 'notifications' || event.kind === 'notification.created') {
+              return true;
+            }
             return (
               key.includes(props.familyId) || key.includes(props.houseId) || key.includes(event.resource)
             );

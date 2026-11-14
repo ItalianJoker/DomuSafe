@@ -42,6 +42,8 @@ export type Notification = z.infer<typeof notificationSchema>;
 
 /** Page of notifications. */
 export const notificationPageSchema = pageSchema(notificationSchema).meta({ id: 'NotificationPage' });
+/** Page of notifications. */
+export type NotificationPage = z.infer<typeof notificationPageSchema>;
 
 /** Query of `GET /me/notifications`. */
 export const notificationListQuerySchema = z
