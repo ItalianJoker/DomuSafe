@@ -224,3 +224,37 @@ export const recipeImportStatusEnum = pgEnum('recipe_import_status', [
 
 /** Slot of a meal on the weekly plan. */
 export const mealSlotEnum = pgEnum('meal_slot', ['breakfast', 'lunch', 'dinner', 'snack']);
+
+/** High-level type of a finance ledger account. */
+export const finAccountTypeEnum = pgEnum('fin_account_type', [
+  'asset',
+  'liability',
+  'equity',
+  'income',
+  'expense',
+]);
+
+/** Concrete subtype of a finance ledger account. */
+export const finAccountSubtypeEnum = pgEnum('fin_account_subtype', [
+  'cash',
+  'bank',
+  'card',
+  'savings',
+  'piggy_bank',
+  'loan',
+  'mortgage',
+  'investment',
+  'currency_exchange',
+  'opening_balance',
+  'category',
+]);
+
+/** Clearing state of a finance transaction. */
+export const finTransactionStatusEnum = pgEnum('fin_transaction_status', [
+  'pending',
+  'cleared',
+  'reconciled',
+]);
+
+/** Cadence of a budget limit. */
+export const finBudgetPeriodEnum = pgEnum('fin_budget_period', ['monthly', 'yearly']);

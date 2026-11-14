@@ -25,6 +25,8 @@ import { inventoryRoutes } from './modules/inventory/routes.js';
 import { createInventoryService } from './modules/inventory/service.js';
 import { kitchenRoutes } from './modules/kitchen/routes.js';
 import { createKitchenService } from './modules/kitchen/service.js';
+import { financeRoutes } from './modules/finance/routes.js';
+import { createFinanceService } from './modules/finance/service.js';
 import { printRoutes } from './modules/print/routes.js';
 import { createPrintService } from './modules/print/service.js';
 import { createHouseService } from './modules/house/service.js';
@@ -88,6 +90,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   const house = createHouseService(db);
   const inventory = createInventoryService(db);
   const kitchen = createKitchenService(db);
+  const finance = createFinanceService(db);
   const care = createCareService(db);
   const rewards = createRewardsService(db);
   const deadlines = createDeadlinesService(db);
@@ -208,6 +211,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   await app.register(houseRoutes, { house });
   await app.register(inventoryRoutes, { inventory });
   await app.register(kitchenRoutes, { kitchen });
+  await app.register(financeRoutes, { finance });
   await app.register(careRoutes, { care });
   await app.register(rewardsRoutes, { rewards });
   await app.register(deadlineRoutes, { deadlines });
