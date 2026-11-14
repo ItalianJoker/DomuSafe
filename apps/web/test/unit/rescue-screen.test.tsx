@@ -39,6 +39,7 @@ describe('rescue screen', () => {
         houseName="Casa al mare"
         cutoffs={{ status: 'ready', value: cutoffs }}
         people={{ status: 'ready', value: people }}
+        canDraft={false}
         onClose={() => {
           closed.called = true;
         }}
@@ -80,11 +81,13 @@ describe('rescue screen', () => {
         houseName="Casa al mare"
         cutoffs={{ status: 'hidden' }}
         people={{ status: 'hidden' }}
+        canDraft={false}
         onClose={() => undefined}
       />,
     );
     expect(screen.getByRole('link', { name: 'Chiama il soccorso sanitario, 118' })).toBeTruthy();
     expect(screen.getByText('Le chiusure non sono visibili con il tuo ruolo.')).toBeTruthy();
     expect(screen.getByText('Le schede non sono visibili con il tuo ruolo.')).toBeTruthy();
+    expect(screen.queryByText('Messaggi di soccorso')).toBeNull();
   });
 });

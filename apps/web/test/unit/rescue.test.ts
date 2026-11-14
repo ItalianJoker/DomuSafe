@@ -151,6 +151,16 @@ describe('rescue route', () => {
     expect(card).not.toContain('rescue-page');
     expect(card).not.toContain('rescue-screen');
     expect(page).not.toMatch(/vault|listUtilities|listAccounts|sms/i);
+    const screenSource = readFileSync(resolve(root, 'src/features/rescue/rescue-screen.tsx'), 'utf8');
+    expect(screenSource).toMatch(/lazy\(\(\) =>\s*import\('\.\/message-drafts-panel\.js'\)/);
+    expect(screenSource).not.toMatch(/sms:|wa\.me|https:\/\/wa/);
+    const drafts = readFileSync(resolve(root, 'src/features/rescue/message-drafts.ts'), 'utf8');
+    expect(drafts).toMatch(/sms:/);
+    expect(drafts).toMatch(/https:\/\/wa\.me\//);
+    expect(drafts).not.toMatch(/\bfetch\s*\(|\buseApi\b|\/api\/v1\/|XMLHttpRequest/);
+    const panel = readFileSync(resolve(root, 'src/features/rescue/message-drafts-panel.tsx'), 'utf8');
+    expect(panel).toMatch(/smsDraftHref|whatsAppDraftHref/);
+    expect(panel).not.toMatch(/\bfetch\s*\(|\buseApi\b|\/api\/v1\//);
     const css = readFileSync(resolve(root, 'src/styles/app.css'), 'utf8');
     expect(css).toMatch(/\.rescue-screen\s*\{[^}]*--background:\s*#000000/);
     expect(css).toMatch(/\.rescue-screen\s*\{[^}]*--foreground:\s*#ffffff/);

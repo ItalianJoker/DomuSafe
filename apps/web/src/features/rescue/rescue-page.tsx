@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type { Me } from '@domusafe/contracts';
+import { hasFeature } from '@domusafe/plans';
 import { useApi } from '@/components/api-context.js';
 import { problemText } from '@/lib/copy.js';
 import { roleAllows } from '@/lib/permissions.js';
@@ -13,6 +14,7 @@ import { RescueScreen, type RescueSection } from './rescue-screen.js';
  *
  * Preconditions: `houseId` belongs to `familyId` and the caller is signed in.
  * Postconditions: closing returns to the previous screen, or to the dashboard when there is none.
+ * Premium phone drafts appear only with `sos` and `emergency.sos`; they never call the server to send.
  * Data contract: cutoffs and the rescue sheet only. Encrypted documents and payment accounts are not requested.
  *
  * @param props - Account and the open house.
@@ -26,9 +28,12 @@ export function RescuePage(props: {
 }) {
   const api = useApi();
   const navigate = useNavigate();
-  const role = props.me.families.find((family) => family.id === props.familyId)?.role;
+  const membership = props.me.families.find((family) => family.id === props.familyId);
+  const role = membership?.role;
+  const plan = membership?.plan ?? 'free';
   const canHealth = role !== undefined && roleAllows(role, 'health.read');
   const canCutoffs = role !== undefined && roleAllows(role, 'house.technical.read');
+  const canDraft = role !== undefined && roleAllows(role, 'emergency.sos') && hasFeature(plan, 'sos');
   const sheet = useQuery({
     ...rescueSheetQuery(api, props.familyId, props.houseId),
     enabled: canHealth,
@@ -65,6 +70,7 @@ export function RescuePage(props: {
           ? { status: 'ready', value: rescuePeople(peopleSection.value) }
           : peopleSection
       }
+      canDraft={canDraft}
       onClose={close}
     />
   );

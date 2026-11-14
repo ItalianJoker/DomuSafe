@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button.js';
 import { bloodLabel, mobilityLabel, telHref } from '@/features/personale/model.js';
 import { m } from '@/paraglide/messages.js';
@@ -11,20 +11,26 @@ export type RescueSection<T> =
   | { readonly status: 'error'; readonly message: string }
   | { readonly status: 'ready'; readonly value: T };
 
+const MessageDraftsPanel = lazy(() =>
+  import('./message-drafts-panel.js').then((mod) => ({ default: mod.MessageDraftsPanel })),
+);
+
 /**
  * Full-screen rescue view. High-contrast colors come from `.rescue-screen` in both themes.
  *
  * Preconditions: `cutoffs` and `people` describe the open house, or explain why they are absent.
  * Postconditions: the medical-emergency control and the close control are at least 48 pixels.
+ * Premium drafts load in a separate chunk and open only as phone-side message drafts.
  * Data contract: cutoffs, essential cards and ordered contacts. No vault and no account numbers.
  *
- * @param props - House name, the two sections and the close handler.
+ * @param props - House name, the two sections, whether phone drafts are allowed, and the close handler.
  * @returns The screen.
  */
 export function RescueScreen(props: {
   readonly houseName: string;
   readonly cutoffs: RescueSection<readonly RescueCutoff[]>;
   readonly people: RescueSection<readonly RescuePerson[]>;
+  readonly canDraft: boolean;
   readonly onClose: () => void;
 }) {
   const callRef = useRef<HTMLAnchorElement>(null);
@@ -66,6 +72,11 @@ export function RescueScreen(props: {
             {m.rescueCall()}
           </a>
         </Button>
+        {props.canDraft ? (
+          <Suspense fallback={<p className="text-lg">{m.loading()}</p>}>
+            <MessageDraftsPanel houseName={props.houseName} people={props.people} />
+          </Suspense>
+        ) : null}
         <section className="grid gap-3" aria-label={m.rescueCutoffs()}>
           <h2 className="text-2xl font-medium">{m.rescueCutoffs()}</h2>
           <SectionBody
