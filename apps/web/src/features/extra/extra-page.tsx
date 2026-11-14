@@ -24,12 +24,17 @@ const MealPlanPanel = lazy(async () => {
   return { default: module.MealPlanPanel };
 });
 
+const FinancePanel = lazy(async () => {
+  const module = await import('./finance-panel.js');
+  return { default: module.FinancePanel };
+});
+
 const ReadingsPage = lazy(async () => {
   const module = await import('@/features/readings/readings-page.js');
   return { default: module.ReadingsPage };
 });
 
-type ExtraTab = 'recipes' | 'mealPlan' | 'pantry' | 'shopping' | 'readings';
+type ExtraTab = 'recipes' | 'mealPlan' | 'pantry' | 'shopping' | 'finance' | 'readings';
 
 function tabLabel(tab: ExtraTab): string {
   switch (tab) {
@@ -41,17 +46,20 @@ function tabLabel(tab: ExtraTab): string {
       return m.extraPantry();
     case 'shopping':
       return m.extraShopping();
+    case 'finance':
+      return m.extraFinance();
     case 'readings':
       return m.extraReadings();
   }
 }
 
 /**
- * Extra section: recipes, weekly meal plan, pantry, shopping lists, and the public-code reading log.
+ * Extra section: recipes, weekly meal plan, pantry, shopping lists, family ledger and the public-code reading log.
  *
  * Preconditions: `houseId` belongs to `familyId`.
- * Postconditions: kitchen and shopping are available on every plan; the reading log stays Premium-gated.
- * Data contract: edits are manual and persisted by the kitchen and shopping APIs.
+ * Postconditions: kitchen and shopping are available on every plan; the ledger needs Basic or above and
+ * `finance.read`; the reading log stays Premium-gated.
+ * Data contract: edits are manual and persisted by the kitchen, shopping and finance APIs.
  *
  * @param props - Account and the open house.
  * @returns The section.
@@ -63,6 +71,8 @@ export function ExtraPage(props: { readonly me: Me; readonly familyId: string; r
   const canWriteKitchen = role !== undefined && roleAllows(role, 'kitchen.write');
   const canReadShopping = role !== undefined && roleAllows(role, 'shopping.read');
   const canWriteShopping = role !== undefined && roleAllows(role, 'shopping.write');
+  const canReadFinance = role !== undefined && roleAllows(role, 'finance.read');
+  const canWriteFinance = role !== undefined && roleAllows(role, 'finance.write');
 
   const tabs: ExtraTab[] = [];
   if (canReadKitchen) {
@@ -70,6 +80,9 @@ export function ExtraPage(props: { readonly me: Me; readonly familyId: string; r
   }
   if (canReadShopping) {
     tabs.push('shopping');
+  }
+  if (canReadFinance) {
+    tabs.push('finance');
   }
   tabs.push('readings');
 
@@ -107,6 +120,9 @@ export function ExtraPage(props: { readonly me: Me; readonly familyId: string; r
         ) : null}
         {active === 'shopping' ? (
           <ShoppingPanel familyId={props.familyId} houseId={props.houseId} canWrite={canWriteShopping} />
+        ) : null}
+        {active === 'finance' ? (
+          <FinancePanel me={props.me} familyId={props.familyId} canWrite={canWriteFinance} />
         ) : null}
         {active === 'readings' ? (
           <ReadingsPage me={props.me} familyId={props.familyId} houseId={props.houseId} />

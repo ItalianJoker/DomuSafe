@@ -169,6 +169,17 @@ import {
   choreCompletionSchema,
   chorePageSchema,
   choreSchema,
+  finAccountPageSchema,
+  finAccountSchema,
+  finBudgetPageSchema,
+  finBudgetSchema,
+  finRecurringPageSchema,
+  finRecurringSchema,
+  finReportSchema,
+  finSavingsGoalPageSchema,
+  finSavingsGoalSchema,
+  finTransactionPageSchema,
+  finTransactionSchema,
   handoverPageSchema,
   handoverSchema,
   pointsViewSchema,
@@ -193,6 +204,19 @@ import {
   storeSchema,
   vitalEntryPageSchema,
   vitalEntrySchema,
+  type CreateFinAccountRequest,
+  type CreateFinBudgetRequest,
+  type CreateFinRecurringRequest,
+  type CreateFinSavingsGoalRequest,
+  type CreateFinTransactionRequest,
+  type FinAccount,
+  type FinBudget,
+  type FinRecurring,
+  type FinReport,
+  type FinReportKind,
+  type FinSavingsGoal,
+  type FinTransaction,
+  type PutFinSplitsRequest,
 } from '@domusafe/contracts';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { z } from 'zod';
@@ -1053,6 +1077,60 @@ export interface DomusafeApi {
     idempotencyKey: string,
     body: UpsertBarcodeProductRequest,
   ): Promise<BarcodeProduct>;
+  /** Lists family ledger accounts. */
+  listFinanceAccounts(familyId: string): Promise<readonly FinAccount[]>;
+  /** Creates a ledger account by hand. */
+  createFinanceAccount(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateFinAccountRequest,
+  ): Promise<FinAccount>;
+  /** Lists finance transactions. */
+  listFinanceTransactions(familyId: string): Promise<readonly FinTransaction[]>;
+  /** Creates a double-entry transaction by hand. */
+  createFinanceTransaction(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateFinTransactionRequest,
+  ): Promise<FinTransaction>;
+  /** Replaces expense split shares on a transaction. */
+  putFinanceSplits(
+    familyId: string,
+    transactionId: string,
+    idempotencyKey: string,
+    body: PutFinSplitsRequest,
+  ): Promise<FinTransaction>;
+  /** Lists budgets. */
+  listFinanceBudgets(familyId: string): Promise<readonly FinBudget[]>;
+  /** Creates a budget by hand. */
+  createFinanceBudget(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateFinBudgetRequest,
+  ): Promise<FinBudget>;
+  /** Lists savings goals. */
+  listFinanceSavingsGoals(familyId: string): Promise<readonly FinSavingsGoal[]>;
+  /** Creates a savings goal by hand. */
+  createFinanceSavingsGoal(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateFinSavingsGoalRequest,
+  ): Promise<FinSavingsGoal>;
+  /** Lists recurring transaction templates. */
+  listFinanceRecurring(familyId: string): Promise<readonly FinRecurring[]>;
+  /** Creates a recurring template by hand. */
+  createFinanceRecurring(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateFinRecurringRequest,
+  ): Promise<FinRecurring>;
+  /** Loads a finance report for a date range. */
+  getFinanceReport(
+    familyId: string,
+    kind: FinReportKind,
+    from: string,
+    to: string,
+  ): Promise<FinReport>;
   /**
    * Printed codes of one house, newest first, including the last reading.
    *
@@ -1468,6 +1546,14 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
     },
   };
   client.use(middleware);
+
+  // Finance paths land in api.generated.ts after `pnpm openapi:write`.
+  interface UntypedFinanceClient {
+    GET: (path: string, init?: object) => Promise<CallResult>;
+    POST: (path: string, init?: object) => Promise<CallResult>;
+    PUT: (path: string, init?: object) => Promise<CallResult>;
+  }
+  const financeClient = client as unknown as UntypedFinanceClient;
 
   return {
     async getMe() {
@@ -2446,6 +2532,123 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         headers: { [HEADERS.idempotencyKey]: idempotencyKey },
       });
       return unwrap(barcodeProductSchema, result);
+    },
+    listFinanceAccounts(familyId) {
+      return collect((cursor) =>
+        financeClient
+          .GET('/api/v1/families/{familyId}/finance/accounts', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(finAccountPageSchema, result)),
+      );
+    },
+    async createFinanceAccount(familyId, idempotencyKey, body) {
+      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/accounts', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(finAccountSchema, result);
+    },
+    listFinanceTransactions(familyId) {
+      return collect((cursor) =>
+        financeClient
+          .GET('/api/v1/families/{familyId}/finance/transactions', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(finTransactionPageSchema, result)),
+      );
+    },
+    async createFinanceTransaction(familyId, idempotencyKey, body) {
+      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/transactions', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(finTransactionSchema, result);
+    },
+    async putFinanceSplits(familyId, transactionId, idempotencyKey, body) {
+      const result = await financeClient.PUT(
+        '/api/v1/families/{familyId}/finance/transactions/{transactionId}/splits',
+        {
+          params: { path: { familyId, transactionId } },
+          body,
+          headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+        },
+      );
+      return unwrap(finTransactionSchema, result);
+    },
+    listFinanceBudgets(familyId) {
+      return collect((cursor) =>
+        financeClient
+          .GET('/api/v1/families/{familyId}/finance/budgets', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(finBudgetPageSchema, result)),
+      );
+    },
+    async createFinanceBudget(familyId, idempotencyKey, body) {
+      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/budgets', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(finBudgetSchema, result);
+    },
+    listFinanceSavingsGoals(familyId) {
+      return collect((cursor) =>
+        financeClient
+          .GET('/api/v1/families/{familyId}/finance/savings-goals', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(finSavingsGoalPageSchema, result)),
+      );
+    },
+    async createFinanceSavingsGoal(familyId, idempotencyKey, body) {
+      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/savings-goals', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(finSavingsGoalSchema, result);
+    },
+    listFinanceRecurring(familyId) {
+      return collect((cursor) =>
+        financeClient
+          .GET('/api/v1/families/{familyId}/finance/recurring', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(finRecurringPageSchema, result)),
+      );
+    },
+    async createFinanceRecurring(familyId, idempotencyKey, body) {
+      const result = await financeClient.POST('/api/v1/families/{familyId}/finance/recurring', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(finRecurringSchema, result);
+    },
+    async getFinanceReport(familyId, kind, from, to) {
+      const result = await financeClient.GET('/api/v1/families/{familyId}/finance/reports/{kind}', {
+        params: { path: { familyId, kind }, query: { from, to } },
+      });
+      return unwrap(finReportSchema, result);
     },
     async listPublications(familyId, houseId) {
       const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publications', {
