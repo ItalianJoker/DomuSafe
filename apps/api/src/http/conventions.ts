@@ -79,6 +79,24 @@ export function instantCursor(cursor: string | undefined): readonly [string, str
 }
 
 /**
+ * Decodes a cursor whose sort key is a free-form string (for example a display name).
+ *
+ * @param cursor - Opaque cursor or `undefined` for the first page.
+ * @returns The position, or `null` for the first page.
+ * @throws ProblemError `cursor_invalid`.
+ */
+export function stringCursor(cursor: string | undefined): readonly [string, string] | null {
+  if (cursor === undefined) {
+    return null;
+  }
+  const position = decodeCursor(cursor);
+  if (position === null || typeof position[0] !== 'string' || position[0].length === 0) {
+    throw new ProblemError('cursor_invalid');
+  }
+  return [position[0], position[1]];
+}
+
+/**
  * Problem Details response schemas for OpenAPI, keyed by status.
  *
  * @param statuses - HTTP statuses the route can answer with a problem.

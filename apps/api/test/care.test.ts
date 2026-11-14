@@ -1,5 +1,12 @@
-import type { Handover, ProblemDetails, Resident, ResidentAboutCard, VitalEntry } from '@domusafe/contracts';
-import { formatEtag } from '@domusafe/contracts';
+import type {
+  Handover,
+  ProblemDetails,
+  RelationshipEntry,
+  Resident,
+  ResidentAboutCard,
+  VitalEntry,
+} from '@domusafe/contracts';
+import { calendarDateInTimeZone, formatEtag, shiftCalendarDate } from '@domusafe/contracts';
 import type { LightMyRequestResponse } from 'fastify';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -167,5 +174,59 @@ describe('care coordination', () => {
     });
     expect(invalid.statusCode).toBe(400);
     expect(problem(invalid).code).toBe('validation_failed');
+  });
+
+  it('keeps an ethical personal contact notebook with simple reminders on Free', async () => {
+    const today = calendarDateInTimeZone(new Date(), 'Europe/Rome');
+    const overdueContact = shiftCalendarDate(today, -20);
+    const relationships = `/api/v1/families/${familyId}/relationships`;
+
+    const created = await alice.create(relationships, {
+      displayName: 'Marco Amico',
+      relation: 'Amico del liceo',
+      lastContactOn: overdueContact,
+      contactIntervalDays: 14,
+      notes: 'Preferisce una telefonata la sera',
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    const entry = created.json<RelationshipEntry>();
+    expect(entry.displayName).toBe('Marco Amico');
+    expect(entry.ownerAccountId).toBeTruthy();
+    expect(entry.reminderState).toBe('overdue');
+    expect(entry.nextReminderOn).toBe(shiftCalendarDate(overdueContact, 14));
+    expect(entry.notes).toContain('telefonata');
+
+    const listed = await alice.request('GET', relationships);
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json<{ items: RelationshipEntry[] }>().items.map((item) => item.id)).toContain(entry.id);
+
+    const childOwn = await child.create(relationships, {
+      displayName: 'Compagna di classe',
+      contactIntervalDays: 30,
+      lastContactOn: today,
+    });
+    expect(childOwn.statusCode, childOwn.body).toBe(201);
+    expect(childOwn.json<RelationshipEntry>().reminderState).toBe('upcoming');
+
+    const childSeesAlice = await child.request('GET', relationships);
+    expect(childSeesAlice.statusCode).toBe(200);
+    expect(childSeesAlice.json<{ items: RelationshipEntry[] }>().items.map((item) => item.id)).not.toContain(
+      entry.id,
+    );
+
+    const touched = await alice.request('PATCH', `${relationships}/${entry.id}`, {
+      headers: { 'if-match': formatEtag(entry.version) },
+      body: { lastContactOn: today },
+    });
+    expect(touched.statusCode, touched.body).toBe(200);
+    expect(touched.json<RelationshipEntry>().reminderState).toBe('upcoming');
+
+    const guestDenied = await guest.request('GET', relationships);
+    expect(guestDenied.statusCode).toBe(403);
+
+    const removed = await alice.request('DELETE', `${relationships}/${entry.id}`, {
+      headers: { 'if-match': formatEtag(touched.json<RelationshipEntry>().version) },
+    });
+    expect(removed.statusCode).toBe(204);
   });
 });

@@ -1,11 +1,16 @@
 import {
+  calendarDateInTimeZone,
   encodeCursor,
+  relationshipReminder,
   type CreateHandoverRequest,
+  type CreateRelationshipRequest,
   type CreateVitalEntryRequest,
   type Handover,
   type PutResidentAboutRequest,
+  type RelationshipEntry,
   type ResidentAboutCard,
   type UpdateHandoverRequest,
+  type UpdateRelationshipRequest,
   type UpdateVitalEntryRequest,
   type VitalEntry,
 } from '@domusafe/contracts';
@@ -85,6 +90,42 @@ function pageOfPosted<TRow extends { postedAt: Date; id: string }, TView>(
   return {
     items: slice.map(view),
     nextCursor: hasMore && last !== undefined ? encodeCursor([last.postedAt.toISOString(), last.id]) : null,
+  };
+}
+
+function pageOfNamed<TRow extends { displayName: string; id: string }, TView>(
+  rows: TRow[],
+  limit: number,
+  view: (row: TRow) => TView,
+): Page<TView> {
+  const hasMore = rows.length > limit;
+  const slice = hasMore ? rows.slice(0, limit) : rows;
+  const last = slice.at(-1);
+  return {
+    items: slice.map(view),
+    nextCursor: hasMore && last !== undefined ? encodeCursor([last.displayName, last.id]) : null,
+  };
+}
+
+function relationshipView(row: repo.RelationshipRow, today: string): RelationshipEntry {
+  if (row.ownerAccountId === null) {
+    throw new Error('Personal relationship row is missing an owner');
+  }
+  const reminder = relationshipReminder(row.lastContactOn, row.contactIntervalDays, today);
+  return {
+    id: row.id,
+    familyId: row.familyId,
+    ownerAccountId: row.ownerAccountId,
+    displayName: row.displayName,
+    relation: row.relation,
+    lastContactOn: row.lastContactOn,
+    contactIntervalDays: row.contactIntervalDays,
+    notes: row.notes,
+    nextReminderOn: reminder.nextReminderOn,
+    reminderState: reminder.reminderState,
+    version: row.version,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
@@ -211,6 +252,7 @@ export function createCareService(db: Database) {
       readonly data: Record<string, unknown>;
       readonly houseId?: string | null;
       readonly residentId?: string | null;
+      readonly ownerAccountId?: string | null;
     },
   ): Promise<void> {
     const actor = { kind: 'account' as const, id: tenant.accountId };
@@ -224,6 +266,7 @@ export function createCareService(db: Database) {
       data: input.data,
       houseId: input.houseId ?? null,
       residentId: input.residentId ?? null,
+      ownerAccountId: input.ownerAccountId ?? null,
     });
     await recordAudit(tx, {
       familyId: tenant.familyId,
@@ -745,6 +788,173 @@ export function createCareService(db: Database) {
             op: 'delete',
             houseId: row.houseId,
             residentId: row.residentId,
+            data: {},
+          });
+        }),
+      );
+    },
+
+    /**
+     * Lists the caller's personal relationship notebook.
+     *
+     * @param tenant - Caller in the family.
+     * @param page - Limit and cursor.
+     * @returns A page of entries with simple reminders.
+     */
+    listRelationships(
+      tenant: TenantContext,
+      page: { readonly limit: number; readonly after: readonly [string, string] | null },
+    ): Promise<Page<RelationshipEntry>> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const timezone = (await repo.familyTimeZone(tx, tenant.familyId)) ?? 'Europe/Rome';
+          const today = calendarDateInTimeZone(new Date(), timezone);
+          const rows = await repo.listRelationships(tx, {
+            familyId: tenant.familyId,
+            ownerAccountId: tenant.accountId,
+            limit: page.limit,
+            after: page.after,
+          });
+          return pageOfNamed(rows, page.limit, (row) => relationshipView(row, today));
+        }),
+      );
+    },
+
+    /**
+     * Adds a personal relationship notebook entry.
+     *
+     * @param tenant - Caller in the family.
+     * @param body - Name, relation, last contact, interval and notes.
+     * @returns The stored entry.
+     */
+    createRelationship(tenant: TenantContext, body: CreateRelationshipRequest): Promise<RelationshipEntry> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const timezone = (await repo.familyTimeZone(tx, tenant.familyId)) ?? 'Europe/Rome';
+          const today = calendarDateInTimeZone(new Date(), timezone);
+          const row = await repo.insertRelationship(tx, {
+            familyId: tenant.familyId,
+            ownerAccountId: tenant.accountId,
+            displayName: body.displayName,
+            relation: body.relation ?? null,
+            lastContactOn: body.lastContactOn ?? null,
+            contactIntervalDays: body.contactIntervalDays ?? null,
+            notes: body.notes ?? null,
+            createdBy: tenant.accountId,
+          });
+          await trace(tx, tenant, {
+            action: 'care.relationship.created',
+            resourceType: 'relationship_entries',
+            resourceId: row.id,
+            version: row.version,
+            op: 'create',
+            ownerAccountId: tenant.accountId,
+            data: { displayName: row.displayName },
+          });
+          return relationshipView(row, today);
+        }),
+      );
+    },
+
+    /**
+     * Updates a personal relationship notebook entry.
+     *
+     * @param tenant - Caller in the family.
+     * @param entryId - Entry id.
+     * @param expectedVersion - Version the form was loaded with.
+     * @param body - Fields to change.
+     * @returns The updated entry.
+     */
+    updateRelationship(
+      tenant: TenantContext,
+      entryId: string,
+      expectedVersion: number,
+      body: UpdateRelationshipRequest,
+    ): Promise<RelationshipEntry> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const current = await repo.getRelationship(tx, tenant.familyId, entryId, tenant.accountId);
+          if (current === null) {
+            throw new ProblemError('not_found');
+          }
+          if (current.version !== expectedVersion) {
+            conflict(current.version);
+          }
+          const timezone = (await repo.familyTimeZone(tx, tenant.familyId)) ?? 'Europe/Rome';
+          const today = calendarDateInTimeZone(new Date(), timezone);
+          const row = await repo.updateRelationship(
+            tx,
+            tenant.familyId,
+            entryId,
+            tenant.accountId,
+            expectedVersion,
+            {
+              ...(body.displayName === undefined ? {} : { displayName: body.displayName }),
+              ...(body.relation === undefined ? {} : { relation: body.relation }),
+              ...(body.lastContactOn === undefined ? {} : { lastContactOn: body.lastContactOn }),
+              ...(body.contactIntervalDays === undefined
+                ? {}
+                : { contactIntervalDays: body.contactIntervalDays }),
+              ...(body.notes === undefined ? {} : { notes: body.notes }),
+              updatedBy: tenant.accountId,
+            },
+          );
+          if (row === null) {
+            const again = await repo.getRelationship(tx, tenant.familyId, entryId, tenant.accountId);
+            if (again === null) {
+              throw new ProblemError('not_found');
+            }
+            conflict(again.version);
+          }
+          await trace(tx, tenant, {
+            action: 'care.relationship.updated',
+            resourceType: 'relationship_entries',
+            resourceId: row.id,
+            version: row.version,
+            op: 'update',
+            ownerAccountId: tenant.accountId,
+            data: { displayName: row.displayName },
+          });
+          return relationshipView(row, today);
+        }),
+      );
+    },
+
+    /**
+     * Soft-deletes a personal relationship notebook entry.
+     *
+     * @param tenant - Caller in the family.
+     * @param entryId - Entry id.
+     * @param expectedVersion - Version the form was loaded with.
+     */
+    deleteRelationship(tenant: TenantContext, entryId: string, expectedVersion: number): Promise<void> {
+      return guarded(() =>
+        inFamily(tenant, async (tx) => {
+          const current = await repo.getRelationship(tx, tenant.familyId, entryId, tenant.accountId);
+          if (current === null) {
+            throw new ProblemError('not_found');
+          }
+          if (current.version !== expectedVersion) {
+            conflict(current.version);
+          }
+          const row = await repo.softDeleteRelationship(
+            tx,
+            tenant.familyId,
+            entryId,
+            tenant.accountId,
+            expectedVersion,
+            tenant.accountId,
+          );
+          if (row === null) {
+            conflict(current.version);
+          }
+          await trace(tx, tenant, {
+            action: 'care.relationship.deleted',
+            resourceType: 'relationship_entries',
+            resourceId: row.id,
+            version: row.version,
+            op: 'delete',
+            ownerAccountId: tenant.accountId,
             data: {},
           });
         }),

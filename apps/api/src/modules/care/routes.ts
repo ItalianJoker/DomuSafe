@@ -1,5 +1,6 @@
 import {
   createHandoverRequestSchema,
+  createRelationshipRequestSchema,
   createVitalEntryRequestSchema,
   familyParamsSchema,
   formatEtag,
@@ -8,9 +9,14 @@ import {
   handoverParamsSchema,
   handoverSchema,
   putResidentAboutRequestSchema,
+  relationshipEntryPageSchema,
+  relationshipEntrySchema,
+  relationshipListQuerySchema,
+  relationshipParamsSchema,
   residentAboutCardSchema,
   residentParamsSchema,
   updateHandoverRequestSchema,
+  updateRelationshipRequestSchema,
   updateVitalEntryRequestSchema,
   vitalEntryPageSchema,
   vitalEntryParamsSchema,
@@ -25,6 +31,7 @@ import {
   instantCursor,
   problemResponses,
   requireIfMatch,
+  stringCursor,
 } from '../../http/conventions.js';
 import { ProblemError } from '../../http/problem.js';
 import type { TenantContext } from '../../types.js';
@@ -38,8 +45,10 @@ function tenantOf(request: { tenant: TenantContext | null }): TenantContext {
 }
 
 /**
- * Routes of care coordination: vital diary, «Chi sono» and caregiver handovers.
+ * Routes of care coordination: vital diary, «Chi sono», caregiver handovers and
+ * the ethical personal relationship notebook.
  * Vitals and the identity sheet use `health.*`. Handovers use `care.*`.
+ * Relationships use `care.relationships` (own data only).
  * No plan feature gate — Free includes them within resident limits.
  *
  * @param app - Fastify instance with the Zod type provider.
@@ -50,6 +59,7 @@ export const careRoutes: FastifyPluginAsyncZod<{ care: CareService }> = async (a
   const vitals = `${resident}/vitals`;
   const about = `${resident}/about`;
   const handovers = '/api/v1/families/:familyId/handovers';
+  const relationships = '/api/v1/families/:familyId/relationships';
 
   app.get(
     vitals,
@@ -314,6 +324,102 @@ export const careRoutes: FastifyPluginAsyncZod<{ care: CareService }> = async (a
     },
     async (request, reply) => {
       await care.deleteHandover(tenantOf(request), request.params.handoverId, requireIfMatch(request));
+      return reply.status(204).send(null);
+    },
+  );
+
+  app.get(
+    relationships,
+    {
+      config: { access: 'family', permission: 'care.relationships' },
+      schema: {
+        tags: ['care'],
+        operationId: 'care.listRelationships',
+        summary: 'Personal relationship notebook of the caller',
+        params: familyParamsSchema,
+        querystring: relationshipListQuerySchema,
+        response: { 200: relationshipEntryPageSchema, ...problemResponses(400, 401, 403, 404) },
+      },
+    },
+    async (request) =>
+      care.listRelationships(tenantOf(request), {
+        limit: request.query.limit,
+        after: stringCursor(request.query.cursor),
+      }),
+  );
+
+  app.post(
+    relationships,
+    {
+      config: { access: 'family', permission: 'care.relationships', idempotent: true },
+      schema: {
+        tags: ['care'],
+        operationId: 'care.createRelationship',
+        summary: 'Add a personal relationship notebook entry',
+        params: familyParamsSchema,
+        headers: idempotencyHeaders,
+        body: createRelationshipRequestSchema,
+        response: { 201: relationshipEntrySchema, ...problemResponses(400, 401, 403, 404, 409, 422) },
+      },
+    },
+    async (request, reply) => {
+      const tenant = tenantOf(request);
+      const row = await care.createRelationship(tenant, request.body);
+      void reply
+        .status(201)
+        .header('location', `/api/v1/families/${tenant.familyId}/relationships/${row.id}`)
+        .header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.patch(
+    `${relationships}/:entryId`,
+    {
+      config: { access: 'family', permission: 'care.relationships' },
+      schema: {
+        tags: ['care'],
+        operationId: 'care.updateRelationship',
+        summary: 'Update a personal relationship notebook entry',
+        params: relationshipParamsSchema,
+        headers: ifMatchHeaders,
+        body: updateRelationshipRequestSchema,
+        response: {
+          200: relationshipEntrySchema,
+          ...problemResponses(400, 401, 403, 404, 409, 422, 428),
+        },
+      },
+    },
+    async (request, reply) => {
+      const row = await care.updateRelationship(
+        tenantOf(request),
+        request.params.entryId,
+        requireIfMatch(request),
+        request.body,
+      );
+      void reply.header('etag', formatEtag(row.version));
+      return row;
+    },
+  );
+
+  app.delete(
+    `${relationships}/:entryId`,
+    {
+      config: { access: 'family', permission: 'care.relationships' },
+      schema: {
+        tags: ['care'],
+        operationId: 'care.deleteRelationship',
+        summary: 'Remove a personal relationship notebook entry',
+        params: relationshipParamsSchema,
+        headers: ifMatchHeaders,
+        response: {
+          204: z.null(),
+          ...problemResponses(400, 401, 403, 404, 409, 428),
+        },
+      },
+    },
+    async (request, reply) => {
+      await care.deleteRelationship(tenantOf(request), request.params.entryId, requireIfMatch(request));
       return reply.status(204).send(null);
     },
   );

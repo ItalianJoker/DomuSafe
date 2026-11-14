@@ -351,879 +351,6 @@
           }
         ]
       },
-      "VitalEntryInput": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "familyId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "residentId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "measuredAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "systolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 40,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "diastolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 200
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "heartRateBpm": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "temperatureCelsius": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 30,
-                "maximum": 45
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "bloodGlucoseMgDl": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 800
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "weightKg": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "oxygenSaturationPercent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 50,
-                "maximum": 100
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "id",
-          "familyId",
-          "residentId",
-          "measuredAt",
-          "systolicMmhg",
-          "diastolicMmhg",
-          "heartRateBpm",
-          "temperatureCelsius",
-          "bloodGlucoseMgDl",
-          "weightKg",
-          "oxygenSaturationPercent",
-          "notes",
-          "version",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "VitalEntryPageInput": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/VitalEntryInput"
-            }
-          },
-          "nextCursor": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "nextCursor"
-        ],
-        "additionalProperties": false
-      },
-      "CreateVitalEntryRequestInput": {
-        "type": "object",
-        "properties": {
-          "measuredAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "systolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 40,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "diastolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 200
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "heartRateBpm": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "temperatureCelsius": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 30,
-                "maximum": 45
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "bloodGlucoseMgDl": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 800
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "weightKg": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "oxygenSaturationPercent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 50,
-                "maximum": 100
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "measuredAt"
-        ],
-        "additionalProperties": false
-      },
-      "UpdateVitalEntryRequestInput": {
-        "type": "object",
-        "properties": {
-          "measuredAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "systolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 40,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "diastolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 200
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "heartRateBpm": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "temperatureCelsius": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 30,
-                "maximum": 45
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "bloodGlucoseMgDl": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 800
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "weightKg": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "oxygenSaturationPercent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 50,
-                "maximum": 100
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
-      "ResidentAboutCardInput": {
-        "type": "object",
-        "properties": {
-          "residentId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "familyId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "preferredName": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 80
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "howToAddress": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "likes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dislikes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dailyRoutine": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "calmingTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "communicationTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "importantNotes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "residentId",
-          "familyId",
-          "preferredName",
-          "howToAddress",
-          "likes",
-          "dislikes",
-          "dailyRoutine",
-          "calmingTips",
-          "communicationTips",
-          "importantNotes",
-          "version",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "PutResidentAboutRequestInput": {
-        "type": "object",
-        "properties": {
-          "preferredName": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 80
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "howToAddress": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "likes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dislikes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dailyRoutine": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "calmingTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "communicationTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "importantNotes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "preferredName",
-          "howToAddress",
-          "likes",
-          "dislikes",
-          "dailyRoutine",
-          "calmingTips",
-          "communicationTips",
-          "importantNotes"
-        ],
-        "additionalProperties": false
-      },
-      "HandoverInput": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "familyId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "houseId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "residentId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "audience": {
-            "type": "string",
-            "enum": [
-              "family",
-              "guest"
-            ]
-          },
-          "body": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
-          },
-          "postedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "acknowledgedAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-                "description": "RFC 3339 instant in UTC"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "acknowledgedBy": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "id",
-          "familyId",
-          "houseId",
-          "residentId",
-          "audience",
-          "body",
-          "postedAt",
-          "acknowledgedAt",
-          "acknowledgedBy",
-          "version",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "HandoverPageInput": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/HandoverInput"
-            }
-          },
-          "nextCursor": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "nextCursor"
-        ],
-        "additionalProperties": false
-      },
-      "CreateHandoverRequestInput": {
-        "type": "object",
-        "properties": {
-          "body": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
-          },
-          "audience": {
-            "default": "family",
-            "type": "string",
-            "enum": [
-              "family",
-              "guest"
-            ]
-          },
-          "houseId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "residentId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "postedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "body"
-        ],
-        "additionalProperties": false
-      },
-      "UpdateHandoverRequestInput": {
-        "type": "object",
-        "properties": {
-          "body": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
-          },
-          "audience": {
-            "type": "string",
-            "enum": [
-              "family",
-              "guest"
-            ]
-          },
-          "houseId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "residentId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
       "ResidentInput": {
         "type": "object",
         "properties": {
@@ -4137,6 +3264,1153 @@
           "week",
           "month"
         ],
+        "additionalProperties": false
+      },
+      "VitalEntryInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "residentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "measuredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "systolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 40,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "diastolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartRateBpm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperatureCelsius": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 30,
+                "maximum": 45
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bloodGlucoseMgDl": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 800
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weightKg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "oxygenSaturationPercent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 50,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "residentId",
+          "measuredAt",
+          "systolicMmhg",
+          "diastolicMmhg",
+          "heartRateBpm",
+          "temperatureCelsius",
+          "bloodGlucoseMgDl",
+          "weightKg",
+          "oxygenSaturationPercent",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "VitalEntryPageInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VitalEntryInput"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateVitalEntryRequestInput": {
+        "type": "object",
+        "properties": {
+          "measuredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "systolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 40,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "diastolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartRateBpm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperatureCelsius": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 30,
+                "maximum": 45
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bloodGlucoseMgDl": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 800
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weightKg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "oxygenSaturationPercent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 50,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "measuredAt"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateVitalEntryRequestInput": {
+        "type": "object",
+        "properties": {
+          "measuredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "systolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 40,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "diastolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartRateBpm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperatureCelsius": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 30,
+                "maximum": 45
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bloodGlucoseMgDl": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 800
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weightKg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "oxygenSaturationPercent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 50,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResidentAboutCardInput": {
+        "type": "object",
+        "properties": {
+          "residentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "preferredName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "howToAddress": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "likes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dislikes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dailyRoutine": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calmingTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "communicationTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "importantNotes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "residentId",
+          "familyId",
+          "preferredName",
+          "howToAddress",
+          "likes",
+          "dislikes",
+          "dailyRoutine",
+          "calmingTips",
+          "communicationTips",
+          "importantNotes",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PutResidentAboutRequestInput": {
+        "type": "object",
+        "properties": {
+          "preferredName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "howToAddress": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "likes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dislikes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dailyRoutine": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calmingTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "communicationTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "importantNotes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "preferredName",
+          "howToAddress",
+          "likes",
+          "dislikes",
+          "dailyRoutine",
+          "calmingTips",
+          "communicationTips",
+          "importantNotes"
+        ],
+        "additionalProperties": false
+      },
+      "HandoverInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "houseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "residentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "family",
+              "guest"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "postedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "acknowledgedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "description": "RFC 3339 instant in UTC"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acknowledgedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "houseId",
+          "residentId",
+          "audience",
+          "body",
+          "postedAt",
+          "acknowledgedAt",
+          "acknowledgedBy",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "HandoverPageInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HandoverInput"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateHandoverRequestInput": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "audience": {
+            "default": "family",
+            "type": "string",
+            "enum": [
+              "family",
+              "guest"
+            ]
+          },
+          "houseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "residentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "postedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateHandoverRequestInput": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "family",
+              "guest"
+            ]
+          },
+          "houseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "residentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelationshipEntryInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "ownerAccountId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastContactOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contactIntervalDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3660
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextReminderOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reminderState": {
+            "type": "string",
+            "enum": [
+              "none",
+              "upcoming",
+              "due",
+              "overdue"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "ownerAccountId",
+          "displayName",
+          "relation",
+          "lastContactOn",
+          "contactIntervalDays",
+          "notes",
+          "nextReminderOn",
+          "reminderState",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RelationshipEntryPageInput": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelationshipEntryInput"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateRelationshipRequestInput": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastContactOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contactIntervalDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3660
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "displayName"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateRelationshipRequestInput": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastContactOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contactIntervalDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3660
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
         "additionalProperties": false
       },
       "FinAccountInput": {
@@ -17554,880 +17828,6 @@
           }
         ]
       },
-      "VitalEntry": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "familyId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "residentId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "measuredAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "systolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 40,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "diastolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 200
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "heartRateBpm": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "temperatureCelsius": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 30,
-                "maximum": 45
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "bloodGlucoseMgDl": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 800
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "weightKg": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "oxygenSaturationPercent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 50,
-                "maximum": 100
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "id",
-          "familyId",
-          "residentId",
-          "measuredAt",
-          "systolicMmhg",
-          "diastolicMmhg",
-          "heartRateBpm",
-          "temperatureCelsius",
-          "bloodGlucoseMgDl",
-          "weightKg",
-          "oxygenSaturationPercent",
-          "notes",
-          "version",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "VitalEntryPage": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/VitalEntry"
-            }
-          },
-          "nextCursor": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "nextCursor"
-        ],
-        "additionalProperties": false
-      },
-      "CreateVitalEntryRequest": {
-        "type": "object",
-        "properties": {
-          "measuredAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "systolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 40,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "diastolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 200
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "heartRateBpm": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "temperatureCelsius": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 30,
-                "maximum": 45
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "bloodGlucoseMgDl": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 800
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "weightKg": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "oxygenSaturationPercent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 50,
-                "maximum": 100
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "measuredAt"
-        ],
-        "additionalProperties": false
-      },
-      "UpdateVitalEntryRequest": {
-        "type": "object",
-        "properties": {
-          "measuredAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "systolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 40,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "diastolicMmhg": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 200
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "heartRateBpm": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 300
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "temperatureCelsius": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 30,
-                "maximum": 45
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "bloodGlucoseMgDl": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 20,
-                "maximum": 800
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "weightKg": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 1,
-                "maximum": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "oxygenSaturationPercent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 50,
-                "maximum": 100
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
-      "ResidentAboutCard": {
-        "type": "object",
-        "properties": {
-          "residentId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "familyId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "preferredName": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 80
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "howToAddress": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "likes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dislikes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dailyRoutine": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "calmingTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "communicationTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "importantNotes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "residentId",
-          "familyId",
-          "preferredName",
-          "howToAddress",
-          "likes",
-          "dislikes",
-          "dailyRoutine",
-          "calmingTips",
-          "communicationTips",
-          "importantNotes",
-          "version",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "PutResidentAboutRequest": {
-        "type": "object",
-        "properties": {
-          "preferredName": {
-            "anyOf": [
-              {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 80
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "howToAddress": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 500
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "likes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dislikes": {
-            "maxItems": 40,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 120
-            }
-          },
-          "dailyRoutine": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "calmingTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "communicationTips": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "importantNotes": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 4000
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "preferredName",
-          "howToAddress",
-          "likes",
-          "dislikes",
-          "dailyRoutine",
-          "calmingTips",
-          "communicationTips",
-          "importantNotes"
-        ],
-        "additionalProperties": false
-      },
-      "Handover": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "familyId": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "description": "UUID in canonical lowercase form"
-          },
-          "houseId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "residentId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "audience": {
-            "type": "string",
-            "enum": [
-              "family",
-              "guest"
-            ]
-          },
-          "body": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
-          },
-          "postedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "acknowledgedAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-                "description": "RFC 3339 instant in UTC"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "acknowledgedBy": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "id",
-          "familyId",
-          "houseId",
-          "residentId",
-          "audience",
-          "body",
-          "postedAt",
-          "acknowledgedAt",
-          "acknowledgedBy",
-          "version",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "HandoverPage": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Handover"
-            }
-          },
-          "nextCursor": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "nextCursor"
-        ],
-        "additionalProperties": false
-      },
-      "CreateHandoverRequest": {
-        "type": "object",
-        "properties": {
-          "body": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
-          },
-          "audience": {
-            "default": "family",
-            "type": "string",
-            "enum": [
-              "family",
-              "guest"
-            ]
-          },
-          "houseId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "residentId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "postedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
-            "description": "RFC 3339 instant in UTC"
-          }
-        },
-        "required": [
-          "body",
-          "audience"
-        ],
-        "additionalProperties": false
-      },
-      "UpdateHandoverRequest": {
-        "type": "object",
-        "properties": {
-          "body": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 4000
-          },
-          "audience": {
-            "type": "string",
-            "enum": [
-              "family",
-              "guest"
-            ]
-          },
-          "houseId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "residentId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                "description": "UUID in canonical lowercase form"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false
-      },
       "Resident": {
         "type": "object",
         "properties": {
@@ -21336,6 +20736,1154 @@
           "week",
           "month"
         ],
+        "additionalProperties": false
+      },
+      "VitalEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "residentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "measuredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "systolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 40,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "diastolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartRateBpm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperatureCelsius": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 30,
+                "maximum": 45
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bloodGlucoseMgDl": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 800
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weightKg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "oxygenSaturationPercent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 50,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "residentId",
+          "measuredAt",
+          "systolicMmhg",
+          "diastolicMmhg",
+          "heartRateBpm",
+          "temperatureCelsius",
+          "bloodGlucoseMgDl",
+          "weightKg",
+          "oxygenSaturationPercent",
+          "notes",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "VitalEntryPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VitalEntry"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateVitalEntryRequest": {
+        "type": "object",
+        "properties": {
+          "measuredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "systolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 40,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "diastolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartRateBpm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperatureCelsius": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 30,
+                "maximum": 45
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bloodGlucoseMgDl": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 800
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weightKg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "oxygenSaturationPercent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 50,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "measuredAt"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateVitalEntryRequest": {
+        "type": "object",
+        "properties": {
+          "measuredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "systolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 40,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "diastolicMmhg": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartRateBpm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "temperatureCelsius": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 30,
+                "maximum": 45
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bloodGlucoseMgDl": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 20,
+                "maximum": 800
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weightKg": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "oxygenSaturationPercent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 50,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResidentAboutCard": {
+        "type": "object",
+        "properties": {
+          "residentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "preferredName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "howToAddress": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "likes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dislikes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dailyRoutine": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calmingTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "communicationTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "importantNotes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "residentId",
+          "familyId",
+          "preferredName",
+          "howToAddress",
+          "likes",
+          "dislikes",
+          "dailyRoutine",
+          "calmingTips",
+          "communicationTips",
+          "importantNotes",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PutResidentAboutRequest": {
+        "type": "object",
+        "properties": {
+          "preferredName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "howToAddress": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "likes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dislikes": {
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          },
+          "dailyRoutine": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calmingTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "communicationTips": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "importantNotes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "preferredName",
+          "howToAddress",
+          "likes",
+          "dislikes",
+          "dailyRoutine",
+          "calmingTips",
+          "communicationTips",
+          "importantNotes"
+        ],
+        "additionalProperties": false
+      },
+      "Handover": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "houseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "residentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "family",
+              "guest"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "postedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "acknowledgedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "description": "RFC 3339 instant in UTC"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acknowledgedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "houseId",
+          "residentId",
+          "audience",
+          "body",
+          "postedAt",
+          "acknowledgedAt",
+          "acknowledgedBy",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "HandoverPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Handover"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateHandoverRequest": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "audience": {
+            "default": "family",
+            "type": "string",
+            "enum": [
+              "family",
+              "guest"
+            ]
+          },
+          "houseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "residentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "postedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "body",
+          "audience"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateHandoverRequest": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "family",
+              "guest"
+            ]
+          },
+          "houseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "residentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "description": "UUID in canonical lowercase form"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelationshipEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "ownerAccountId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "UUID in canonical lowercase form"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastContactOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contactIntervalDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3660
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextReminderOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reminderState": {
+            "type": "string",
+            "enum": [
+              "none",
+              "upcoming",
+              "due",
+              "overdue"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "RFC 3339 instant in UTC"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "ownerAccountId",
+          "displayName",
+          "relation",
+          "lastContactOn",
+          "contactIntervalDays",
+          "notes",
+          "nextReminderOn",
+          "reminderState",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RelationshipEntryPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelationshipEntry"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateRelationshipRequest": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastContactOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contactIntervalDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3660
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "displayName"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateRelationshipRequest": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastContactOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "description": "Calendar date in the family time zone"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contactIntervalDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3660
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
         "additionalProperties": false
       },
       "FinAccount": {
@@ -50879,6 +51427,450 @@
         }
       }
     },
+    "/api/v1/families/{familyId}/relationships": {
+      "get": {
+        "operationId": "care.listRelationships",
+        "summary": "Personal relationship notebook of the caller",
+        "tags": [
+          "care"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            },
+            "in": "query",
+            "name": "cursor",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipEntryPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "care.createRelationship",
+        "summary": "Add a personal relationship notebook entry",
+        "tags": [
+          "care"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRelationshipRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "description": "UUID chosen by the client; replays return the stored response for 24 hours"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/families/{familyId}/relationships/{entryId}": {
+      "patch": {
+        "operationId": "care.updateRelationship",
+        "summary": "Update a personal relationship notebook entry",
+        "tags": [
+          "care"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRelationshipRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "entryId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "care.deleteRelationship",
+        "summary": "Remove a personal relationship notebook entry",
+        "tags": [
+          "care"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "entryId",
+            "required": true,
+            "description": "UUID in canonical lowercase form"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "description": "Strong ETag of the version being changed, e.g. \"3\""
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response"
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/families/{familyId}/chores": {
       "get": {
         "operationId": "rewards.listChores",
@@ -59888,7 +60880,7 @@
     },
     {
       "name": "care",
-      "description": "Vital diary, Chi sono identity sheet and caregiver handovers"
+      "description": "Vital diary, Chi sono identity sheet, caregiver handovers and ethical personal relationship notebook"
     },
     {
       "name": "rewards",

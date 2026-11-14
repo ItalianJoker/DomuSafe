@@ -52,3 +52,4 @@ pnpm verify
 | Dispensa e piano pasti                                | `packages/db/migrations/0019_pantry_meal_plan.sql`                      |
 | Contabilità di famiglia (partita doppia)              | `packages/db/migrations/0020_finance.sql`                               |
 | Domotica (assistente di casa, broker messaggi)        | `packages/db/migrations/0021_home_automation.sql`                       |
+| Rubrica relazioni etica (quaderno contatti personali) | `packages/db/migrations/0022_relationship_entries.sql`                  |
