@@ -75,6 +75,9 @@ const GuidePage = lazy(() => sections().then((mod) => ({ default: mod.GuidePage 
 const RescuePage = lazy(() =>
   import('@/features/rescue/rescue-page.js').then((mod) => ({ default: mod.RescuePage })),
 );
+const KioskPage = lazy(() =>
+  import('@/features/kiosk/kiosk-page.js').then((mod) => ({ default: mod.KioskPage })),
+);
 
 /**
  * Shows a quiet loading line while a section chunk arrives.
@@ -228,12 +231,11 @@ const houseRoute = createRoute({
     useEffect(() => {
       applyTheme(me.theme);
     }, [me.theme]);
-    if (
-      pathname
-        .split('/')
-        .filter((part) => part.length > 0)
-        .at(-1) === 'soccorso'
-    ) {
+    const tail = pathname
+      .split('/')
+      .filter((part) => part.length > 0)
+      .at(-1);
+    if (tail === 'soccorso' || tail === 'kiosk') {
       return <Outlet />;
     }
     return (
@@ -387,6 +389,23 @@ const rescueRoute = createRoute({
     );
   },
 });
+const kioskRoute = createRoute({
+  getParentRoute: () => houseRoute,
+  path: '/kiosk',
+  component: function KioskFrame() {
+    const { me, houses } = houseRoute.useRouteContext();
+    const { familyId, houseId } = houseRoute.useParams();
+    const house = houses.find((item: House) => item.id === houseId);
+    if (house === undefined) {
+      return <p className="text-lg">{m.noHouses()}</p>;
+    }
+    return (
+      <Suspended>
+        <KioskPage me={me} familyId={familyId} houseId={houseId} houseName={house.name} />
+      </Suspended>
+    );
+  },
+});
 const accountRoute = createRoute({
   getParentRoute: () => houseRoute,
   path: '/account',
@@ -443,6 +462,7 @@ const routeTree = rootRoute.addChildren([
       casaRoute,
       personalRoute,
       rescueRoute,
+      kioskRoute,
       printRoute,
       extraRoute,
       guideRoute,
