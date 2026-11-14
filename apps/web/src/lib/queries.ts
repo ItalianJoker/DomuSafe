@@ -700,3 +700,33 @@ export function financeRecurringQuery(api: DomusafeApi, familyId: string) {
     queryFn: () => api.listFinanceRecurring(familyId),
   });
 }
+
+/**
+ * Query of the family audit history.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function auditEventsQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['audit-events', familyId] as const,
+    queryFn: () => api.listAuditEvents(familyId),
+  });
+}
+
+/**
+ * Query of revisions for one resource.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param resourceType - Resource table name.
+ * @param resourceId - Resource id.
+ * @returns Options for TanStack Query.
+ */
+export function revisionsQuery(api: DomusafeApi, familyId: string, resourceType: string, resourceId: string) {
+  return queryOptions({
+    queryKey: ['revisions', familyId, resourceType, resourceId] as const,
+    queryFn: () => api.listRevisions(familyId, resourceType, resourceId),
+  });
+}

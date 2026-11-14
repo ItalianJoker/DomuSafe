@@ -208,6 +208,31 @@ export function createTenancyService(db: Database, now: () => Date = () => new D
     },
 
     /**
+     * House ids assigned to the caller's membership when the membership is house-scoped.
+     *
+     * Preconditions: the account is an active member of the family.
+     * Postconditions: empty when the membership sees every house (`allHouses`).
+     * Data contract: only house identifiers, never contents.
+     *
+     * @param accountId - Account id.
+     * @param familyId - Family id.
+     * @returns Scoped house ids, or an empty list when every house is visible.
+     */
+    async membershipHouseIds(accountId: string, familyId: string): Promise<readonly string[]> {
+      return withContext(db, { principal: account(accountId), familyId }, async (tx) => {
+        const membership = await repo.findActiveMembership(tx, familyId, accountId);
+        if (membership === null) {
+          return [];
+        }
+        if (membership.allHouses) {
+          return [];
+        }
+        const member = await repo.findMember(tx, familyId, membership.id);
+        return member?.houseIds ?? [];
+      });
+    },
+
+    /**
      * Lists the caller's families with role and effective plan.
      *
      * @param accountId - Authenticated account.

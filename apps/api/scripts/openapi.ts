@@ -26,7 +26,7 @@ async function main(mode: string | undefined): Promise<number> {
     DOMUSAFE_MASTER_KEYS: `1:${randomBytes(32).toString('base64url')}`,
     DOMUSAFE_MASTER_KEY_ACTIVE: '1',
   });
-  const app = await buildApp({ config, store: new MemoryStore() });
+  const app = await buildApp({ config, store: new MemoryStore(), realtime: false });
   try {
     await app.ready();
     const document = `${JSON.stringify(app.swagger(), null, 2)}\n`;

@@ -2156,6 +2156,74 @@ export interface paths {
         patch: operations["succession.update"];
         trace?: never;
     };
+    "/api/v1/families/{familyId}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Revision history of one resource, newest first */
+        get: operations["sync.listRevisions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/revisions/{revisionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One revision with its class C snapshot */
+        get: operations["sync.getRevision"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/revisions/{revisionId}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore a resource from a previous revision (guide entries in this release) */
+        post: operations["sync.restoreRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/audit-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Family audit history for administrators (Premium or trial) */
+        get: operations["sync.listAuditEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5020,6 +5088,99 @@ export interface components {
              * @description UUID in canonical lowercase form
              */
             residentId: string;
+        };
+        /** @description Resource change notification without contents */
+        RealtimeEventInput: {
+            /** @enum {string} */
+            kind: "resource.changed" | "resource.deleted" | "membership.changed" | "keys.rotation_required" | "notification.created" | "vault.locked";
+            /** @description Resource table or logical type, e.g. house_guide_entries */
+            resource: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number | null;
+            houseId: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            occurredAt: string;
+        };
+        /** @description Append-only revision of a versioned resource */
+        RevisionInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            houseId: string | null;
+            residentId: string | null;
+            /** @enum {string} */
+            visibility: "family" | "personal";
+            ownerAccountId: string | null;
+            resourceType: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            resourceId: string;
+            version: number;
+            /** @enum {string} */
+            op: "create" | "update" | "delete" | "restore";
+            /** @enum {string} */
+            actorKind: "account" | "kiosk" | "integration" | "system" | "anonymous";
+            actorId: string | null;
+            data?: {
+                [key: string]: string | number | boolean | null;
+            } | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+        };
+        RevisionListInput: {
+            items: components["schemas"]["RevisionInput"][];
+            nextCursor: string | null;
+        };
+        RestoreRevisionRequestInput: {
+            sealed?: components["schemas"]["SealedInput"];
+        };
+        /** @description Append-only audit event without contents */
+        AuditEventInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            occurredAt: string;
+            familyId: string | null;
+            /** @enum {string} */
+            actorKind: "account" | "kiosk" | "integration" | "system" | "anonymous";
+            actorId: string | null;
+            action: string;
+            resourceType: string | null;
+            resourceId: string | null;
+            /** @enum {string} */
+            outcome: "success" | "denied" | "failure";
+            metadata: {
+                [key: string]: string | number | boolean | null;
+            };
+        };
+        AuditEventListInput: {
+            items: components["schemas"]["AuditEventInput"][];
+            nextCursor: string | null;
         };
         ProblemIssueInput: {
             path: string;
@@ -8367,6 +8528,99 @@ export interface components {
              * @description UUID in canonical lowercase form
              */
             residentId: string;
+        };
+        /** @description Resource change notification without contents */
+        RealtimeEvent: {
+            /** @enum {string} */
+            kind: "resource.changed" | "resource.deleted" | "membership.changed" | "keys.rotation_required" | "notification.created" | "vault.locked";
+            /** @description Resource table or logical type, e.g. house_guide_entries */
+            resource: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number | null;
+            houseId: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            occurredAt: string;
+        };
+        /** @description Append-only revision of a versioned resource */
+        Revision: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            houseId: string | null;
+            residentId: string | null;
+            /** @enum {string} */
+            visibility: "family" | "personal";
+            ownerAccountId: string | null;
+            resourceType: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            resourceId: string;
+            version: number;
+            /** @enum {string} */
+            op: "create" | "update" | "delete" | "restore";
+            /** @enum {string} */
+            actorKind: "account" | "kiosk" | "integration" | "system" | "anonymous";
+            actorId: string | null;
+            data?: {
+                [key: string]: string | number | boolean | null;
+            } | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+        };
+        RevisionList: {
+            items: components["schemas"]["Revision"][];
+            nextCursor: string | null;
+        };
+        RestoreRevisionRequest: {
+            sealed?: components["schemas"]["Sealed"];
+        };
+        /** @description Append-only audit event without contents */
+        AuditEvent: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            occurredAt: string;
+            familyId: string | null;
+            /** @enum {string} */
+            actorKind: "account" | "kiosk" | "integration" | "system" | "anonymous";
+            actorId: string | null;
+            action: string;
+            resourceType: string | null;
+            resourceId: string | null;
+            /** @enum {string} */
+            outcome: "success" | "denied" | "failure";
+            metadata: {
+                [key: string]: string | number | boolean | null;
+            };
+        };
+        AuditEventList: {
+            items: components["schemas"]["AuditEvent"][];
+            nextCursor: string | null;
         };
         ProblemIssue: {
             path: string;
@@ -24676,6 +24930,260 @@ export interface operations {
             };
             /** @description Default Response */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "sync.listRevisions": {
+        parameters: {
+            query: {
+                limit?: number;
+                cursor?: string;
+                resourceType: string;
+                /** @description UUID in canonical lowercase form */
+                resourceId: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionList"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "sync.getRevision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Revision"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "sync.restoreRevision": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestoreRevisionRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Revision"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "sync.listAuditEvents": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                /** @description RFC 3339 instant in UTC */
+                from?: string;
+                /** @description RFC 3339 instant in UTC */
+                to?: string;
+                action?: string;
+                /** @description UUID in canonical lowercase form */
+                actorId?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventList"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

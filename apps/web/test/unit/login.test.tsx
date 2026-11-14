@@ -175,6 +175,9 @@ function unusedApi(partial: Partial<DomusafeApi>): DomusafeApi {
     createSuccessionItem: fail,
     updateSuccessionItem: fail,
     deleteSuccessionItem: fail,
+    listAuditEvents: fail,
+    listRevisions: fail,
+    restoreRevision: fail,
     listDeadlines: fail,
     ...partial,
   };

@@ -84,6 +84,15 @@ export class Client {
     return this.request('POST', url, { body, headers: { 'idempotency-key': key } });
   }
 
+  /**
+   * Cookie header for WebSocket upgrades that bypass {@link Client.request}.
+   *
+   * @returns `name=value` pairs joined by `; `, or an empty string.
+   */
+  cookieHeader(): string {
+    return [...this.#cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+  }
+
   async signUp(name: string, email: string, password: string): Promise<string> {
     const response = await this.request('POST', '/api/auth/sign-up/email', {
       body: { name, email, password },

@@ -248,6 +248,89 @@ export async function findGuide(
 }
 
 /**
+ * Reads one guide entry including soft-deleted rows (for revision restore).
+ *
+ * Preconditions: the transaction has the family context.
+ * Postconditions: missing rows are `null`; deleted rows are returned.
+ * Data contract: same columns as {@link findGuide}.
+ *
+ * @param tx - Transaction.
+ * @param scope - Family, house and entry id.
+ * @returns The row, or `null`.
+ */
+export async function findGuideIncludingDeleted(
+  tx: Transaction,
+  scope: { readonly familyId: string; readonly houseId: string; readonly entryId: string },
+): Promise<GuideEntryRow | null> {
+  const [row] = await tx
+    .select()
+    .from(houseGuideEntries)
+    .where(
+      and(
+        eq(houseGuideEntries.familyId, scope.familyId),
+        eq(houseGuideEntries.houseId, scope.houseId),
+        eq(houseGuideEntries.id, scope.entryId),
+      ),
+    );
+  return row ?? null;
+}
+
+/**
+ * Restores a guide entry from a revision snapshot, including undelete.
+ *
+ * Preconditions: `expectedVersion` is the live row version; the caller already checked write permission.
+ * Postconditions: version increments; `deletedAt` is cleared; missing or conflicting rows return `null`.
+ * Data contract: class C fields come from the snapshot; envelope may be replaced or left unchanged.
+ *
+ * @param tx - Transaction.
+ * @param target - Family, house, entry and expected version.
+ * @param snapshot - Columns to apply.
+ * @returns The updated row, or `null`.
+ */
+export async function restoreGuide(
+  tx: Transaction,
+  target: {
+    readonly familyId: string;
+    readonly houseId: string;
+    readonly entryId: string;
+    readonly expectedVersion: number;
+  },
+  snapshot: {
+    readonly audience: GuideEntryRow['audience'];
+    readonly topic: GuideEntryRow['topic'];
+    readonly title: string;
+    readonly body: string;
+    readonly sortOrder: number;
+    readonly updatedBy: string;
+    readonly envelope?: Envelope | null;
+  },
+): Promise<GuideEntryRow | null> {
+  const [row] = await tx
+    .update(houseGuideEntries)
+    .set({
+      audience: snapshot.audience,
+      topic: snapshot.topic,
+      title: snapshot.title,
+      body: snapshot.body,
+      sortOrder: snapshot.sortOrder,
+      deletedAt: null,
+      updatedBy: snapshot.updatedBy,
+      ...envelopeUpdate(snapshot.envelope),
+      version: sql`${houseGuideEntries.version} + 1`,
+    })
+    .where(
+      and(
+        eq(houseGuideEntries.familyId, target.familyId),
+        eq(houseGuideEntries.houseId, target.houseId),
+        eq(houseGuideEntries.id, target.entryId),
+        eq(houseGuideEntries.version, target.expectedVersion),
+      ),
+    )
+    .returning();
+  return row ?? null;
+}
+
+/**
  * Updates a guide entry when the version matches.
  *
  * Preconditions: `expectedVersion` is the version the caller read.
