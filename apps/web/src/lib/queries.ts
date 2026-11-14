@@ -273,6 +273,64 @@ export function rewardsQuery(api: DomusafeApi, familyId: string) {
 }
 
 /**
+ * Query of the family recipe library.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function recipesQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['recipes', familyId] as const,
+    queryFn: () => api.listRecipes(familyId),
+  });
+}
+
+/**
+ * Query of family stores used by shopping lists.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @returns Options for TanStack Query.
+ */
+export function storesQuery(api: DomusafeApi, familyId: string) {
+  return queryOptions({
+    queryKey: ['stores', familyId] as const,
+    queryFn: () => api.listStores(familyId),
+  });
+}
+
+/**
+ * Query of shopping lists for one house.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param houseId - House id.
+ * @returns Options for TanStack Query.
+ */
+export function shoppingListsQuery(api: DomusafeApi, familyId: string, houseId: string) {
+  return queryOptions({
+    queryKey: ['shopping-lists', familyId, houseId] as const,
+    queryFn: () => api.listShoppingLists(familyId, houseId),
+  });
+}
+
+/**
+ * Query of items on one shopping list.
+ *
+ * @param api - Shell API.
+ * @param familyId - Family id.
+ * @param listId - List id.
+ * @returns Options for TanStack Query.
+ */
+export function shoppingItemsQuery(api: DomusafeApi, familyId: string, listId: string) {
+  return queryOptions({
+    queryKey: ['shopping-items', familyId, listId] as const,
+    queryFn: () => api.listShoppingItems(familyId, listId),
+  });
+}
+
+/**
  * Query of the printed codes of one house.
  *
  * @param api - Shell API.

@@ -101,13 +101,19 @@ import {
   type TaxChecklist,
   type TaxChecklistItem,
   type Vehicle,
+  type CheckShoppingItemRequest,
   type Chore,
   type ChoreCompletion,
   type CreateChoreCompletionRequest,
   type CreateChoreRequest,
   type CreateHandoverRequest,
+  type CreateRecipeImportRequest,
+  type CreateRecipeRequest,
   type CreateRedemptionRequest,
   type CreateRewardRequest,
+  type CreateShoppingItemRequest,
+  type CreateShoppingListRequest,
+  type CreateStoreRequest,
   type CreatePersonalBankAccountRequest,
   type CreatePersonalSubscriptionRequest,
   type CreatePetRequest,
@@ -119,9 +125,18 @@ import {
   type Handover,
   type PointsView,
   type PutResidentAboutRequest,
+  type Recipe,
+  type RecipeImport,
   type Reward,
   type RewardRedemption,
   type ResidentAboutCard,
+  type ShoppingItem,
+  type ShoppingList,
+  type Store,
+  type UpdateRecipeRequest,
+  type UpdateShoppingItemRequest,
+  type UpdateShoppingListRequest,
+  type UpdateStoreRequest,
   type UpdateResidentRequest,
   type UpdateTaxChecklistItemRequest,
   type Membership,
@@ -149,11 +164,20 @@ import {
   handoverPageSchema,
   handoverSchema,
   pointsViewSchema,
+  recipeImportSchema,
+  recipePageSchema,
+  recipeSchema,
   residentAboutCardSchema,
   rewardPageSchema,
   rewardRedemptionPageSchema,
   rewardRedemptionSchema,
   rewardSchema,
+  shoppingItemPageSchema,
+  shoppingItemSchema,
+  shoppingListPageSchema,
+  shoppingListSchema,
+  storePageSchema,
+  storeSchema,
   vitalEntryPageSchema,
   vitalEntrySchema,
 } from '@domusafe/contracts';
@@ -895,6 +919,77 @@ export interface DomusafeApi {
   approveRedemption(familyId: string, redemptionId: string, version: number): Promise<RewardRedemption>;
   /** Rejects a redemption. */
   rejectRedemption(familyId: string, redemptionId: string, version: number): Promise<RewardRedemption>;
+  /** Lists family recipes. */
+  listRecipes(familyId: string): Promise<readonly Recipe[]>;
+  /** Creates a recipe by hand. */
+  createRecipe(familyId: string, idempotencyKey: string, body: CreateRecipeRequest): Promise<Recipe>;
+  /** Updates a recipe. */
+  updateRecipe(
+    familyId: string,
+    recipeId: string,
+    version: number,
+    body: UpdateRecipeRequest,
+  ): Promise<Recipe>;
+  /** Soft-deletes a recipe. */
+  deleteRecipe(familyId: string, recipeId: string, version: number): Promise<void>;
+  /** Imports a recipe from a public page address. */
+  importRecipe(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateRecipeImportRequest,
+  ): Promise<RecipeImport>;
+  /** Lists family stores. */
+  listStores(familyId: string): Promise<readonly Store[]>;
+  /** Creates a store. */
+  createStore(familyId: string, idempotencyKey: string, body: CreateStoreRequest): Promise<Store>;
+  /** Updates a store. */
+  updateStore(familyId: string, storeId: string, version: number, body: UpdateStoreRequest): Promise<Store>;
+  /** Soft-deletes a store. */
+  deleteStore(familyId: string, storeId: string, version: number): Promise<void>;
+  /** Lists shopping lists for one house. */
+  listShoppingLists(familyId: string, houseId: string): Promise<readonly ShoppingList[]>;
+  /** Creates a shopping list. */
+  createShoppingList(
+    familyId: string,
+    idempotencyKey: string,
+    body: CreateShoppingListRequest,
+  ): Promise<ShoppingList>;
+  /** Updates a shopping list. */
+  updateShoppingList(
+    familyId: string,
+    listId: string,
+    version: number,
+    body: UpdateShoppingListRequest,
+  ): Promise<ShoppingList>;
+  /** Soft-deletes a shopping list. */
+  deleteShoppingList(familyId: string, listId: string, version: number): Promise<void>;
+  /** Lists items on one shopping list. */
+  listShoppingItems(familyId: string, listId: string): Promise<readonly ShoppingItem[]>;
+  /** Adds an item to a shopping list. */
+  createShoppingItem(
+    familyId: string,
+    listId: string,
+    idempotencyKey: string,
+    body: CreateShoppingItemRequest,
+  ): Promise<ShoppingItem>;
+  /** Updates a shopping item. */
+  updateShoppingItem(
+    familyId: string,
+    listId: string,
+    itemId: string,
+    version: number,
+    body: UpdateShoppingItemRequest,
+  ): Promise<ShoppingItem>;
+  /** Checks or unchecks a shopping item. */
+  checkShoppingItem(
+    familyId: string,
+    listId: string,
+    itemId: string,
+    version: number,
+    body: CheckShoppingItemRequest,
+  ): Promise<ShoppingItem>;
+  /** Soft-deletes a shopping item. */
+  deleteShoppingItem(familyId: string, listId: string, itemId: string, version: number): Promise<void>;
   /**
    * Printed codes of one house, newest first, including the last reading.
    *
@@ -2019,6 +2114,179 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         },
       });
       return unwrap(rewardRedemptionSchema, result);
+    },
+    listRecipes(familyId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/recipes', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(recipePageSchema, result)),
+      );
+    },
+    async createRecipe(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/recipes', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateRecipeRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(recipeSchema, result);
+    },
+    async updateRecipe(familyId, recipeId, version, body) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/recipes/{recipeId}', {
+        params: { path: { familyId, recipeId } },
+        body: body as components['schemas']['UpdateRecipeRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(recipeSchema, result);
+    },
+    async deleteRecipe(familyId, recipeId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/recipes/{recipeId}', {
+        params: { path: { familyId, recipeId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
+    },
+    async importRecipe(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/recipe-imports', {
+        params: { path: { familyId } },
+        body,
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(recipeImportSchema, result);
+    },
+    listStores(familyId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/stores', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(storePageSchema, result)),
+      );
+    },
+    async createStore(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/stores', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateStoreRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(storeSchema, result);
+    },
+    async updateStore(familyId, storeId, version, body) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/stores/{storeId}', {
+        params: { path: { familyId, storeId } },
+        body: body as components['schemas']['UpdateStoreRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(storeSchema, result);
+    },
+    async deleteStore(familyId, storeId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/stores/{storeId}', {
+        params: { path: { familyId, storeId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
+    },
+    listShoppingLists(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/shopping-lists', {
+            params: {
+              path: { familyId },
+              query: {
+                limit: 200,
+                houseId,
+                archived: false,
+                ...(cursor === undefined ? {} : { cursor }),
+              },
+            },
+          })
+          .then((result) => unwrap(shoppingListPageSchema, result)),
+      );
+    },
+    async createShoppingList(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/shopping-lists', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateShoppingListRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(shoppingListSchema, result);
+    },
+    async updateShoppingList(familyId, listId, version, body) {
+      const result = await client.PATCH('/api/v1/families/{familyId}/shopping-lists/{listId}', {
+        params: { path: { familyId, listId } },
+        body: body as components['schemas']['UpdateShoppingListRequestInput'],
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      return unwrap(shoppingListSchema, result);
+    },
+    async deleteShoppingList(familyId, listId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/shopping-lists/{listId}', {
+        params: { path: { familyId, listId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
+    },
+    listShoppingItems(familyId, listId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/shopping-lists/{listId}/items', {
+            params: {
+              path: { familyId, listId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(shoppingItemPageSchema, result)),
+      );
+    },
+    async createShoppingItem(familyId, listId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/shopping-lists/{listId}/items', {
+        params: { path: { familyId, listId } },
+        body: body as components['schemas']['CreateShoppingItemRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(shoppingItemSchema, result);
+    },
+    async updateShoppingItem(familyId, listId, itemId, version, body) {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/shopping-lists/{listId}/items/{itemId}',
+        {
+          params: { path: { familyId, listId, itemId } },
+          body: body as components['schemas']['UpdateShoppingItemRequestInput'],
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      return unwrap(shoppingItemSchema, result);
+    },
+    async checkShoppingItem(familyId, listId, itemId, version, body) {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/shopping-lists/{listId}/items/{itemId}/check',
+        {
+          params: { path: { familyId, listId, itemId } },
+          body,
+          headers: {
+            [HEADERS.ifMatch]: formatEtag(version),
+            [HEADERS.idempotencyKey]: crypto.randomUUID(),
+          },
+        },
+      );
+      return unwrap(shoppingItemSchema, result);
+    },
+    async deleteShoppingItem(familyId, listId, itemId, version) {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/shopping-lists/{listId}/items/{itemId}',
+        {
+          params: { path: { familyId, listId, itemId } },
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      ensureOk(result);
     },
     async listPublications(familyId, houseId) {
       const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publications', {

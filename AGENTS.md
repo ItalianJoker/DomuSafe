@@ -48,3 +48,4 @@ pnpm verify
 | Inventario (stanze, contenitori, oggetti, ricerca)    | `packages/db/migrations/0015_inventory.sql`                             |
 | Coordinamento assistenza (diario, Chi sono, consegne) | `packages/db/migrations/0016_care.sql`                                  |
 | Faccende, punti, serie e ricompense                   | `packages/db/migrations/0017_chores_rewards.sql`                        |
+| Cucina (ricette, import URL, negozi, liste spesa)     | `packages/db/migrations/0018_kitchen.sql`                               |
