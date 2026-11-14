@@ -33,16 +33,17 @@ pnpm verify
 
 ## Dove si trova cosa
 
-| Cerco                                              | File                                                                    |
-| :------------------------------------------------- | :---------------------------------------------------------------------- |
-| Matrice dei permessi                               | `packages/contracts/src/access.ts`                                      |
-| Codici di errore                                   | `packages/contracts/src/problems.ts`                                    |
-| Limiti e funzioni dei piani                        | `packages/plans/src/index.ts`                                           |
-| Policy RLS e funzioni `app.*`                      | `packages/db/migrations/0006_access_functions.sql`, `0007_policies.sql` |
-| Contesto transazionale                             | `packages/db/src/context.ts`                                            |
-| Formati cifrati e vettori                          | `packages/crypto/src/formats.ts`, `packages/crypto/test/vectors.ts`     |
-| Hook di autenticazione e autorizzazione            | `apps/api/src/plugins/access.ts`                                        |
-| Interfaccia, token, shell                          | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`             |
-| Registro letture dei codici pubblici               | `packages/db/migrations/0013_publication_readings.sql`                  |
-| Marchio della famiglia                             | `packages/db/migrations/0014_family_branding.sql`                       |
-| Inventario (stanze, contenitori, oggetti, ricerca) | `packages/db/migrations/0015_inventory.sql`                             |
+| Cerco                                                 | File                                                                    |
+| :---------------------------------------------------- | :---------------------------------------------------------------------- |
+| Matrice dei permessi                                  | `packages/contracts/src/access.ts`                                      |
+| Codici di errore                                      | `packages/contracts/src/problems.ts`                                    |
+| Limiti e funzioni dei piani                           | `packages/plans/src/index.ts`                                           |
+| Policy RLS e funzioni `app.*`                         | `packages/db/migrations/0006_access_functions.sql`, `0007_policies.sql` |
+| Contesto transazionale                                | `packages/db/src/context.ts`                                            |
+| Formati cifrati e vettori                             | `packages/crypto/src/formats.ts`, `packages/crypto/test/vectors.ts`     |
+| Hook di autenticazione e autorizzazione               | `apps/api/src/plugins/access.ts`                                        |
+| Interfaccia, token, shell                             | `apps/web/src/components/ui`, `apps/web/src/styles/app.css`             |
+| Registro letture dei codici pubblici                  | `packages/db/migrations/0013_publication_readings.sql`                  |
+| Marchio della famiglia                                | `packages/db/migrations/0014_family_branding.sql`                       |
+| Inventario (stanze, contenitori, oggetti, ricerca)    | `packages/db/migrations/0015_inventory.sql`                             |
+| Coordinamento assistenza (diario, Chi sono, consegne) | `packages/db/migrations/0016_care.sql`                                  |

@@ -10,12 +10,13 @@ import { roleAllows } from '@/lib/permissions.js';
 import { m } from '@/paraglide/messages.js';
 
 /** Tabs of Personale, in screen order. */
-export const PERSONALE_TABS = ['card', 'services', 'pets', 'taxes', 'accounts'] as const;
+export const PERSONALE_TABS = ['card', 'about', 'vitals', 'services', 'pets', 'taxes', 'accounts'] as const;
 /** A tab of the Personale section. */
 export type PersonaleTab = (typeof PERSONALE_TABS)[number];
 
 /**
  * Tabs a role may open. Premium gates sit inside the tax and account tabs.
+ * «Chi sono» and the parameters diary follow health permissions.
  *
  * @param role - Role inside the family.
  * @returns The tabs to render, in screen order.
@@ -29,6 +30,10 @@ export function personaleTabs(role: MemberRole | undefined): readonly PersonaleT
     allowed.add('card');
     allowed.add('services');
     allowed.add('accounts');
+  }
+  if (roleAllows(role, 'health.read')) {
+    allowed.add('about');
+    allowed.add('vitals');
   }
   if (roleAllows(role, 'pets.read')) {
     allowed.add('pets');
@@ -49,6 +54,10 @@ export function personaleTabLabel(tab: PersonaleTab): string {
   switch (tab) {
     case 'card':
       return m.personaleCard();
+    case 'about':
+      return m.personaleAbout();
+    case 'vitals':
+      return m.personaleVitals();
     case 'services':
       return m.personaleServices();
     case 'pets':

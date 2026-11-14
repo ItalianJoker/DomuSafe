@@ -101,13 +101,18 @@ import {
   type TaxChecklist,
   type TaxChecklistItem,
   type Vehicle,
+  type CreateHandoverRequest,
   type CreatePersonalBankAccountRequest,
   type CreatePersonalSubscriptionRequest,
   type CreatePetRequest,
   type CreatePhoneLineRequest,
   type CreateResidentRequest,
   type CreateVehicleRequest,
+  type CreateVitalEntryRequest,
   type GenerateTaxChecklistRequest,
+  type Handover,
+  type PutResidentAboutRequest,
+  type ResidentAboutCard,
   type UpdateResidentRequest,
   type UpdateTaxChecklistItemRequest,
   type Membership,
@@ -122,11 +127,17 @@ import {
   type UpdateUtilityRequest,
   type UpdateWasteCollectionRequest,
   type Utility,
+  type VitalEntry,
   type WasteCollection,
   type ProblemDetails,
   type UpdateFamilyRequest,
   type UpdateHouseRequest,
   type UpdateProfileRequest,
+  handoverPageSchema,
+  handoverSchema,
+  residentAboutCardSchema,
+  vitalEntryPageSchema,
+  vitalEntrySchema,
 } from '@domusafe/contracts';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { z } from 'zod';
@@ -735,6 +746,95 @@ export interface DomusafeApi {
    * @returns People, medicines, contacts and animals.
    */
   getRescueSheet(familyId: string, houseId: string): Promise<RescueSheet>;
+  /**
+   * Reads the «Chi sono» sheet.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @returns The sheet, empty when never written.
+   */
+  getAbout(familyId: string, residentId: string): Promise<ResidentAboutCard>;
+  /**
+   * Replaces the «Chi sono» sheet.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param version - Version the form was loaded with.
+   * @param body - The whole sheet.
+   * @returns The stored sheet.
+   */
+  putAbout(
+    familyId: string,
+    residentId: string,
+    version: number,
+    body: PutResidentAboutRequest,
+  ): Promise<ResidentAboutCard>;
+  /**
+   * Lists vital diary rows for one person.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @returns Every page, newest first.
+   */
+  listVitals(familyId: string, residentId: string): Promise<readonly VitalEntry[]>;
+  /**
+   * Adds a vital diary row.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Measurements.
+   * @returns The stored row.
+   */
+  createVital(
+    familyId: string,
+    residentId: string,
+    idempotencyKey: string,
+    body: CreateVitalEntryRequest,
+  ): Promise<VitalEntry>;
+  /**
+   * Soft-deletes a vital diary row.
+   *
+   * @param familyId - Family id.
+   * @param residentId - Person id.
+   * @param entryId - Entry id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteVital(familyId: string, residentId: string, entryId: string, version: number): Promise<void>;
+  /**
+   * Lists handover notes for one house.
+   *
+   * @param familyId - Family id.
+   * @param houseId - House id.
+   * @returns Every page, newest first.
+   */
+  listHandovers(familyId: string, houseId: string): Promise<readonly Handover[]>;
+  /**
+   * Adds a handover note.
+   *
+   * @param familyId - Family id.
+   * @param idempotencyKey - UUID for this attempt.
+   * @param body - Note content.
+   * @returns The stored note.
+   */
+  createHandover(familyId: string, idempotencyKey: string, body: CreateHandoverRequest): Promise<Handover>;
+  /**
+   * Marks a handover as read.
+   *
+   * @param familyId - Family id.
+   * @param handoverId - Note id.
+   * @param version - Version the client loaded.
+   * @returns The acknowledged note.
+   */
+  acknowledgeHandover(familyId: string, handoverId: string, version: number): Promise<Handover>;
+  /**
+   * Soft-deletes a handover note.
+   *
+   * @param familyId - Family id.
+   * @param handoverId - Note id.
+   * @param version - Version the form was loaded with.
+   */
+  deleteHandover(familyId: string, handoverId: string, version: number): Promise<void>;
   /**
    * Printed codes of one house, newest first, including the last reading.
    *
@@ -1641,6 +1741,90 @@ export function createApi(options: ApiOptions = {}): DomusafeApi {
         params: { path: { familyId, houseId } },
       });
       return unwrap(rescueSheetSchema, result);
+    },
+    async getAbout(familyId, residentId) {
+      const result = await client.GET('/api/v1/families/{familyId}/residents/{residentId}/about', {
+        params: { path: { familyId, residentId } },
+      });
+      return unwrap(residentAboutCardSchema, result);
+    },
+    async putAbout(familyId, residentId, version, body) {
+      const result = await client.PUT('/api/v1/families/{familyId}/residents/{residentId}/about', {
+        params: { path: { familyId, residentId } },
+        body,
+        headers: {
+          [HEADERS.ifMatch]: formatEtag(version),
+          [HEADERS.idempotencyKey]: crypto.randomUUID(),
+        },
+      });
+      return unwrap(residentAboutCardSchema, result);
+    },
+    listVitals(familyId, residentId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/residents/{residentId}/vitals', {
+            params: {
+              path: { familyId, residentId },
+              query: { limit: 200, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(vitalEntryPageSchema, result)),
+      );
+    },
+    async createVital(familyId, residentId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/residents/{residentId}/vitals', {
+        params: { path: { familyId, residentId } },
+        body: body as components['schemas']['CreateVitalEntryRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(vitalEntrySchema, result);
+    },
+    async deleteVital(familyId, residentId, entryId, version) {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/residents/{residentId}/vitals/{entryId}',
+        {
+          params: { path: { familyId, residentId, entryId } },
+          headers: { [HEADERS.ifMatch]: formatEtag(version) },
+        },
+      );
+      ensureOk(result);
+    },
+    listHandovers(familyId, houseId) {
+      return collect((cursor) =>
+        client
+          .GET('/api/v1/families/{familyId}/handovers', {
+            params: {
+              path: { familyId },
+              query: { limit: 200, houseId, ...(cursor === undefined ? {} : { cursor }) },
+            },
+          })
+          .then((result) => unwrap(handoverPageSchema, result)),
+      );
+    },
+    async createHandover(familyId, idempotencyKey, body) {
+      const result = await client.POST('/api/v1/families/{familyId}/handovers', {
+        params: { path: { familyId } },
+        body: body as components['schemas']['CreateHandoverRequestInput'],
+        headers: { [HEADERS.idempotencyKey]: idempotencyKey },
+      });
+      return unwrap(handoverSchema, result);
+    },
+    async acknowledgeHandover(familyId, handoverId, version) {
+      const result = await client.POST('/api/v1/families/{familyId}/handovers/{handoverId}/acknowledge', {
+        params: { path: { familyId, handoverId } },
+        headers: {
+          [HEADERS.ifMatch]: formatEtag(version),
+          [HEADERS.idempotencyKey]: crypto.randomUUID(),
+        },
+      });
+      return unwrap(handoverSchema, result);
+    },
+    async deleteHandover(familyId, handoverId, version) {
+      const result = await client.DELETE('/api/v1/families/{familyId}/handovers/{handoverId}', {
+        params: { path: { familyId, handoverId } },
+        headers: { [HEADERS.ifMatch]: formatEtag(version) },
+      });
+      ensureOk(result);
     },
     async listPublications(familyId, houseId) {
       const result = await client.GET('/api/v1/families/{familyId}/houses/{houseId}/publications', {

@@ -6,8 +6,24 @@ import { personaleTabs, taxLabel } from '../../src/features/personale/model.js';
 
 describe('personale tabs', () => {
   it('keeps the rescue card for members and hides it from a guest', () => {
-    expect(personaleTabs('admin')).toEqual(['card', 'services', 'pets', 'taxes', 'accounts']);
-    expect(personaleTabs('child')).toEqual(['card', 'services', 'pets', 'taxes', 'accounts']);
+    expect(personaleTabs('admin')).toEqual([
+      'card',
+      'about',
+      'vitals',
+      'services',
+      'pets',
+      'taxes',
+      'accounts',
+    ]);
+    expect(personaleTabs('child')).toEqual([
+      'card',
+      'about',
+      'vitals',
+      'services',
+      'pets',
+      'taxes',
+      'accounts',
+    ]);
     expect(personaleTabs('guest')).toEqual([]);
   });
 });

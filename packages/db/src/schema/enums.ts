@@ -190,3 +190,5 @@ export const vaultSectionEnum = pgEnum('vault_section', [
   'bills_and_cancellations',
   'digital_legacy',
 ]);
+/** Who a caregiver handover note is written for. */
+export const handoverAudienceEnum = pgEnum('handover_audience', ['family', 'guest']);
