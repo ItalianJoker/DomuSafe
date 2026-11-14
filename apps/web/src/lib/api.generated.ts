@@ -1487,6 +1487,112 @@ export interface paths {
         patch: operations["care.updateRelationship"];
         trace?: never;
     };
+    "/api/v1/families/{familyId}/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Family calendar board of schedules and deadlines */
+        get: operations["calendar.board"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/calendar/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Downloadable family calendar file */
+        get: operations["calendar.export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/calendar/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List stored family calendar events */
+        get: operations["calendar.listEvents"];
+        put?: never;
+        /** Create a family calendar event */
+        post: operations["calendar.createEvent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/calendar/events/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a family calendar event */
+        delete: operations["calendar.deleteEvent"];
+        options?: never;
+        head?: never;
+        /** Update a family calendar event */
+        patch: operations["calendar.updateEvent"];
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/calendar/timetable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List weekly timetable slots */
+        get: operations["calendar.listTimetable"];
+        put?: never;
+        /** Create a weekly timetable slot */
+        post: operations["calendar.createTimetableSlot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/families/{familyId}/calendar/timetable/{slotId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a weekly timetable slot */
+        delete: operations["calendar.deleteTimetableSlot"];
+        options?: never;
+        head?: never;
+        /** Update a weekly timetable slot */
+        patch: operations["calendar.updateTimetableSlot"];
+        trace?: never;
+    };
     "/api/v1/families/{familyId}/chores": {
         parameters: {
             query?: never;
@@ -3145,6 +3251,247 @@ export interface components {
             overdue: components["schemas"]["DeadlineItemInput"][];
             week: components["schemas"]["DeadlineItemInput"][];
             month: components["schemas"]["DeadlineItemInput"][];
+        };
+        CalendarEventInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            houseId: string | null;
+            /** @enum {string} */
+            visibility: "family" | "personal";
+            ownerAccountId: string | null;
+            title: string;
+            description: string | null;
+            location: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            endsAt: string;
+            allDay: boolean;
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone: string;
+            rrule: string | null;
+            exdates: string[];
+            /** @enum {string} */
+            category: "appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other";
+            /** @enum {string} */
+            source: "internal" | "ics_import";
+            icsUid: string | null;
+            icsSourceLabel: string | null;
+            residentIds: string[];
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CalendarEventPageInput: {
+            items: components["schemas"]["CalendarEventInput"][];
+            nextCursor: string | null;
+        };
+        CreateCalendarEventRequestInput: {
+            title: string;
+            description?: string;
+            location?: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            endsAt: string;
+            /** @default false */
+            allDay: boolean;
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone?: string;
+            rrule?: string;
+            exdates?: string[];
+            /**
+             * @default other
+             * @enum {string}
+             */
+            category: "appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other";
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId?: string;
+            /**
+             * @default family
+             * @enum {string}
+             */
+            visibility: "family" | "personal";
+            residentIds?: string[];
+        };
+        UpdateCalendarEventRequestInput: {
+            title?: string;
+            description?: string | null;
+            location?: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            startsAt?: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            endsAt?: string;
+            allDay?: boolean;
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone?: string;
+            rrule?: string | null;
+            exdates?: string[];
+            /** @enum {string} */
+            category?: "appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other";
+            houseId?: string | null;
+            /** @enum {string} */
+            visibility?: "family" | "personal";
+            residentIds?: string[];
+        };
+        TimetableSlotInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            weekday: number;
+            startsAt: string;
+            endsAt: string;
+            title: string;
+            location: string | null;
+            validFrom: string | null;
+            validTo: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        TimetableSlotPageInput: {
+            items: components["schemas"]["TimetableSlotInput"][];
+            nextCursor: string | null;
+        };
+        CreateTimetableSlotRequestInput: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            weekday: number;
+            startsAt: string;
+            endsAt: string;
+            title: string;
+            location?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            validFrom?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            validTo?: string;
+        };
+        UpdateTimetableSlotRequestInput: {
+            weekday?: number;
+            startsAt?: string;
+            endsAt?: string;
+            title?: string;
+            location?: string | null;
+            validFrom?: string | null;
+            validTo?: string | null;
+        };
+        CalendarOccurrenceInput: {
+            id: string;
+            /** @enum {string} */
+            kind: "event" | "chore" | "deadline" | "timetable";
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            sourceId: string;
+            title: string;
+            description: string | null;
+            location: string | null;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startDate: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            endDate: string;
+            startTime: string | null;
+            endTime: string | null;
+            allDay: boolean;
+            category: ("appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other") | null;
+            deadlineKind: ("maintenance" | "vehicle_insurance" | "vehicle_road_tax" | "vehicle_inspection" | "tax" | "succession") | null;
+            houseId: string | null;
+            residentIds: string[];
+            version: number | null;
+        };
+        CalendarBoardInput: {
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            from: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            to: string;
+            items: components["schemas"]["CalendarOccurrenceInput"][];
+        };
+        CalendarExportInput: {
+            filename: string;
+            /** @constant */
+            mediaType: "text/calendar";
+            body: string;
         };
         VitalEntryInput: {
             /**
@@ -6949,6 +7296,247 @@ export interface components {
             overdue: components["schemas"]["DeadlineItem"][];
             week: components["schemas"]["DeadlineItem"][];
             month: components["schemas"]["DeadlineItem"][];
+        };
+        CalendarEvent: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            houseId: string | null;
+            /** @enum {string} */
+            visibility: "family" | "personal";
+            ownerAccountId: string | null;
+            title: string;
+            description: string | null;
+            location: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            endsAt: string;
+            allDay: boolean;
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone: string;
+            rrule: string | null;
+            exdates: string[];
+            /** @enum {string} */
+            category: "appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other";
+            /** @enum {string} */
+            source: "internal" | "ics_import";
+            icsUid: string | null;
+            icsSourceLabel: string | null;
+            residentIds: string[];
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        CalendarEventPage: {
+            items: components["schemas"]["CalendarEvent"][];
+            nextCursor: string | null;
+        };
+        CreateCalendarEventRequest: {
+            title: string;
+            description?: string;
+            location?: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            endsAt: string;
+            /** @default false */
+            allDay: boolean;
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone?: string;
+            rrule?: string;
+            exdates?: string[];
+            /**
+             * @default other
+             * @enum {string}
+             */
+            category: "appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other";
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            houseId?: string;
+            /**
+             * @default family
+             * @enum {string}
+             */
+            visibility: "family" | "personal";
+            residentIds?: string[];
+        };
+        UpdateCalendarEventRequest: {
+            title?: string;
+            description?: string | null;
+            location?: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            startsAt?: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            endsAt?: string;
+            allDay?: boolean;
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone?: string;
+            rrule?: string | null;
+            exdates?: string[];
+            /** @enum {string} */
+            category?: "appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other";
+            houseId?: string | null;
+            /** @enum {string} */
+            visibility?: "family" | "personal";
+            residentIds?: string[];
+        };
+        TimetableSlot: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            id: string;
+            version: number;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            familyId: string;
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            weekday: number;
+            startsAt: string;
+            endsAt: string;
+            title: string;
+            location: string | null;
+            validFrom: string | null;
+            validTo: string | null;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description RFC 3339 instant in UTC
+             */
+            updatedAt: string;
+        };
+        TimetableSlotPage: {
+            items: components["schemas"]["TimetableSlot"][];
+            nextCursor: string | null;
+        };
+        CreateTimetableSlotRequest: {
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            residentId: string;
+            weekday: number;
+            startsAt: string;
+            endsAt: string;
+            title: string;
+            location?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            validFrom?: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            validTo?: string;
+        };
+        UpdateTimetableSlotRequest: {
+            weekday?: number;
+            startsAt?: string;
+            endsAt?: string;
+            title?: string;
+            location?: string | null;
+            validFrom?: string | null;
+            validTo?: string | null;
+        };
+        CalendarOccurrence: {
+            id: string;
+            /** @enum {string} */
+            kind: "event" | "chore" | "deadline" | "timetable";
+            /**
+             * Format: uuid
+             * @description UUID in canonical lowercase form
+             */
+            sourceId: string;
+            title: string;
+            description: string | null;
+            location: string | null;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            startDate: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            endDate: string;
+            startTime: string | null;
+            endTime: string | null;
+            allDay: boolean;
+            category: ("appointment" | "school" | "work" | "health" | "birthday" | "holiday" | "other") | null;
+            deadlineKind: ("maintenance" | "vehicle_insurance" | "vehicle_road_tax" | "vehicle_inspection" | "tax" | "succession") | null;
+            houseId: string | null;
+            residentIds: string[];
+            version: number | null;
+        };
+        CalendarBoard: {
+            /** @description IANA time zone, for example Europe/Rome */
+            timezone: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            from: string;
+            /**
+             * Format: date
+             * @description Calendar date in the family time zone
+             */
+            to: string;
+            items: components["schemas"]["CalendarOccurrence"][];
+        };
+        CalendarExport: {
+            filename: string;
+            /** @constant */
+            mediaType: "text/calendar";
+            body: string;
         };
         VitalEntry: {
             /**
@@ -21431,6 +22019,770 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RelationshipEntry"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.board": {
+        parameters: {
+            query: {
+                /** @description Calendar date in the family time zone */
+                from: string;
+                /** @description Calendar date in the family time zone */
+                to: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarBoard"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.export": {
+        parameters: {
+            query: {
+                /** @description Calendar date in the family time zone */
+                from: string;
+                /** @description Calendar date in the family time zone */
+                to: string;
+                /** @description UUID in canonical lowercase form */
+                houseId: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarExport"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.listEvents": {
+        parameters: {
+            query: {
+                /** @description Calendar date in the family time zone */
+                from: string;
+                /** @description Calendar date in the family time zone */
+                to: string;
+                /** @description UUID in canonical lowercase form */
+                houseId?: string;
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarEventPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.createEvent": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCalendarEventRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarEvent"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.deleteEvent": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.updateEvent": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                eventId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCalendarEventRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarEvent"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.listTimetable": {
+        parameters: {
+            query?: {
+                /** @description UUID in canonical lowercase form */
+                residentId?: string;
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimetableSlotPage"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.createTimetableSlot": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description UUID chosen by the client; replays return the stored response for 24 hours */
+                "idempotency-key"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTimetableSlotRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimetableSlot"];
+                };
+            };
+            /** @description Default Response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.deleteTimetableSlot": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Default Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Default Response */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Default Response */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "calendar.updateTimetableSlot": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Strong ETag of the version being changed, e.g. "3" */
+                "if-match"?: string;
+            };
+            path: {
+                /** @description UUID in canonical lowercase form */
+                familyId: string;
+                /** @description UUID in canonical lowercase form */
+                slotId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTimetableSlotRequestInput"];
+            };
+        };
+        responses: {
+            /** @description Default Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimetableSlot"];
                 };
             };
             /** @description Default Response */

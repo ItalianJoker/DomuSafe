@@ -42,6 +42,11 @@ export const openApiPlugin = fp(
               'Vital diary, Chi sono identity sheet, caregiver handovers and ethical personal relationship notebook',
           },
           {
+            name: 'calendar',
+            description:
+              'Family calendar of appointments, weekly schedules, chores and deadlines, with calendar-file export',
+          },
+          {
             name: 'rewards',
             description: 'Family chores, points, streaks and the rewards store',
           },
